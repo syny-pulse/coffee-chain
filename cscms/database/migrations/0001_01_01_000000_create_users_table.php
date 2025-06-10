@@ -6,24 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('user_type', ['farmer', 'processor', 'retailer', 'admin'])->after('email');
-            $table->unsignedBigInteger('company_id')->nullable()->after('user_type');
-            $table->string('phone', 20)->nullable()->after('company_id');
-            $table->string('address', 255)->nullable()->after('phone');
-            $table->enum('status', ['active', 'inactive', 'pending'])->default('pending')->after('address');
-            
-            $table->foreign('company_id')->references('company_id')->on('companies')->onDelete('set null');
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['company_id']);
-            $table->dropColumn(['user_type', 'company_id', 'phone', 'address', 'status']);
-        });
+        Schema::dropIfExists('users');
     }
 };
