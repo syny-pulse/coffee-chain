@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,7 +151,7 @@
             justify-content: center;
             position: relative;
             padding-top: 80px;
-            background: 
+            background:
                 radial-gradient(circle at 20% 80%, rgba(160, 112, 42, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(111, 78, 55, 0.1) 0%, transparent 50%);
         }
@@ -644,15 +645,35 @@
 
         /* Animations */
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         @keyframes floatAround {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-10px) rotate(90deg); }
-            50% { transform: translateY(-5px) rotate(180deg); }
-            75% { transform: translateY(-15px) rotate(270deg); }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-10px) rotate(90deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(180deg);
+            }
+
+            75% {
+                transform: translateY(-15px) rotate(270deg);
+            }
         }
 
         /* Mobile Responsiveness */
@@ -708,6 +729,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -716,7 +738,7 @@
                 <i class="fas fa-seedling"></i>
                 Coffee Chain
             </a>
-            
+
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#features">Features</a></li>
@@ -725,11 +747,11 @@
             </ul>
 
             <div class="auth-buttons">
-                <a href="#" class="btn btn-outline">
+                <a href="{{ route('login') }}" class="btn btn-outline">
                     <i class="fas fa-sign-in-alt"></i>
                     Login
                 </a>
-                <a href="#" class="btn btn-primary">
+                <a href="{{ route('register') }}" class="btn btn-primary">
                     <i class="fas fa-user-plus"></i>
                     Register
                 </a>
@@ -742,8 +764,9 @@
         <div class="hero-container">
             <div class="hero-content">
                 <h1>From Farm to Cup</h1>
-                <p>Streamline your coffee supply chain with intelligent demand prediction, seamless communication, and optimized inventory management across farmers, processors, and retailers.</p>
-                
+                <p>Streamline your coffee supply chain with intelligent demand prediction, seamless communication, and
+                    optimized inventory management across farmers, processors, and retailers.</p>
+
                 <div class="hero-stats">
                     <div class="stat-item">
                         <span class="stat-number">80%</span>
@@ -804,7 +827,8 @@
                         <i class="fas fa-brain"></i>
                     </div>
                     <h3>AI-Powered Predictions</h3>
-                    <p>Advanced machine learning algorithms using ARIMA, LSTM, and Random Forest models to predict demand with 80% accuracy and optimize your supply chain.</p>
+                    <p>Advanced machine learning algorithms using ARIMA, LSTM, and Random Forest models to predict
+                        demand with 80% accuracy and optimize your supply chain.</p>
                 </div>
 
                 <div class="feature-card">
@@ -812,7 +836,8 @@
                         <i class="fas fa-link"></i>
                     </div>
                     <h3>Three-Tier Integration</h3>
-                    <p>Seamlessly connect farmers, processors, and retailers in one unified platform with real-time data flow and automated coordination.</p>
+                    <p>Seamlessly connect farmers, processors, and retailers in one unified platform with real-time data
+                        flow and automated coordination.</p>
                 </div>
 
                 <div class="feature-card">
@@ -820,7 +845,8 @@
                         <i class="fas fa-warehouse"></i>
                     </div>
                     <h3>Smart Inventory</h3>
-                    <p>Dynamic inventory management with automated reorder points, safety stock calculations, and real-time tracking across all supply chain tiers.</p>
+                    <p>Dynamic inventory management with automated reorder points, safety stock calculations, and
+                        real-time tracking across all supply chain tiers.</p>
                 </div>
 
                 <div class="feature-card">
@@ -828,7 +854,8 @@
                         <i class="fas fa-comments"></i>
                     </div>
                     <h3>Real-Time Communication</h3>
-                    <p>Built-in messaging system enabling seamless collaboration between farmers, processors, and retailers with context-aware notifications.</p>
+                    <p>Built-in messaging system enabling seamless collaboration between farmers, processors, and
+                        retailers with context-aware notifications.</p>
                 </div>
 
                 <div class="feature-card">
@@ -836,7 +863,8 @@
                         <i class="fas fa-users-cog"></i>
                     </div>
                     <h3>Customer Segmentation</h3>
-                    <p>RFM analysis to identify distinct customer groups and enable targeted marketing strategies that improve satisfaction by 20%.</p>
+                    <p>RFM analysis to identify distinct customer groups and enable targeted marketing strategies that
+                        improve satisfaction by 20%.</p>
                 </div>
 
                 <div class="feature-card">
@@ -844,7 +872,8 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <h3>Automated Validation</h3>
-                    <p>Java-powered vendor validation system with automated compliance checks, risk assessment, and facility visit scheduling.</p>
+                    <p>Java-powered vendor validation system with automated compliance checks, risk assessment, and
+                        facility visit scheduling.</p>
                 </div>
             </div>
         </div>
@@ -860,12 +889,20 @@
 
             <div class="about-content">
                 <div class="about-text">
-                    <p>Coffee Chain Management System is a comprehensive platform designed to transform the traditional coffee supply chain. Built by Group 26 (G-26), our system bridges the gap between coffee farmers in Bukomansimbi, processors, and retailers like Café Javas, creating a seamless ecosystem that benefits everyone involved.</p>
-                    
+                    <p>Coffee Chain Management System is a comprehensive platform designed to transform the traditional
+                        coffee supply chain. Built by Group 26 (G-26), our system bridges the gap between coffee farmers
+                        in Bukomansimbi, processors, and retailers like Café Javas, creating a seamless ecosystem that
+                        benefits everyone involved.</p>
+
                     <h3>Our Story</h3>
-                    <p>Founded on the principle that technology can solve real-world problems, we recognized the inefficiencies plaguing the coffee industry. From unpredictable demand to communication barriers between supply chain partners, these challenges were costing businesses millions and preventing optimal resource utilization.</p>
-                    
-                    <p>Our solution combines cutting-edge machine learning algorithms with intuitive user interfaces, creating a platform that's both powerful and accessible to users at every level of technical expertise.</p>
+                    <p>Founded on the principle that technology can solve real-world problems, we recognized the
+                        inefficiencies plaguing the coffee industry. From unpredictable demand to communication barriers
+                        between supply chain partners, these challenges were costing businesses millions and preventing
+                        optimal resource utilization.</p>
+
+                    <p>Our solution combines cutting-edge machine learning algorithms with intuitive user interfaces,
+                        creating a platform that's both powerful and accessible to users at every level of technical
+                        expertise.</p>
                 </div>
 
                 <div class="about-visual">
@@ -877,25 +914,29 @@
                 <div class="mission-card">
                     <i class="fas fa-bullseye"></i>
                     <h4>Our Mission</h4>
-                    <p>To create a transparent, efficient, and sustainable coffee supply chain that empowers farmers, optimizes operations, and delivers quality to consumers.</p>
+                    <p>To create a transparent, efficient, and sustainable coffee supply chain that empowers farmers,
+                        optimizes operations, and delivers quality to consumers.</p>
                 </div>
 
                 <div class="mission-card">
                     <i class="fas fa-eye"></i>
                     <h4>Our Vision</h4>
-                    <p>To become the leading platform for agricultural supply chain management, setting the standard for transparency and efficiency in the industry.</p>
+                    <p>To become the leading platform for agricultural supply chain management, setting the standard for
+                        transparency and efficiency in the industry.</p>
                 </div>
 
                 <div class="mission-card">
                     <i class="fas fa-heart"></i>
                     <h4>Our Values</h4>
-                    <p>Innovation, transparency, sustainability, and partnership drive everything we do, ensuring mutual success for all stakeholders.</p>
+                    <p>Innovation, transparency, sustainability, and partnership drive everything we do, ensuring mutual
+                        success for all stakeholders.</p>
                 </div>
 
                 <div class="mission-card">
                     <i class="fas fa-lightbulb"></i>
                     <h4>Innovation</h4>
-                    <p>Leveraging AI and machine learning to solve complex supply chain challenges with elegant, user-friendly solutions.</p>
+                    <p>Leveraging AI and machine learning to solve complex supply chain challenges with elegant,
+                        user-friendly solutions.</p>
                 </div>
             </div>
         </div>
@@ -912,7 +953,9 @@
             <div class="contact-content">
                 <div class="contact-info">
                     <h3>Let's Start a Conversation</h3>
-                    <p>Whether you're a coffee farmer looking to optimize your harvest predictions, a processor seeking better inventory management, or a retailer wanting to improve customer satisfaction, we're here to help you succeed.</p>
+                    <p>Whether you're a coffee farmer looking to optimize your harvest predictions, a processor seeking
+                        better inventory management, or a retailer wanting to improve customer satisfaction, we're here
+                        to help you succeed.</p>
 
                     <div class="contact-details">
                         <div class="contact-item">
@@ -998,7 +1041,8 @@
 
                         <div class="form-group">
                             <label for="message">Message *</label>
-                            <textarea id="message" name="message" placeholder="Tell us about your coffee supply chain challenges and how we can help..." required></textarea>
+                            <textarea id="message" name="message"
+                                placeholder="Tell us about your coffee supply chain challenges and how we can help..." required></textarea>
                         </div>
 
                         <button type="submit" class="submit-btn">
@@ -1017,9 +1061,10 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>Coffee Chain Management</h4>
-                    <p>Connecting the complete coffee ecosystem from Bukomansimbi farms to retail outlets like Café Javas, powered by intelligent supply chain optimization.</p>
+                    <p>Connecting the complete coffee ecosystem from Bukomansimbi farms to retail outlets like Café
+                        Javas, powered by intelligent supply chain optimization.</p>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Quick Links</h4>
                     <p><a href="#home">Home</a></p>
@@ -1027,7 +1072,7 @@
                     <p><a href="#about">About</a></p>
                     <p><a href="#contact">Contact</a></p>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Support</h4>
                     <p><a href="#contact">Contact Us</a></p>
@@ -1036,7 +1081,7 @@
                     <p><a href="https://github.com/syny-pulse/coffee-chain.git">GitHub</a></p>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <p>&copy; 2024 Coffee Supply Chain Management System - G-26. Built with Laravel.</p>
             </div>
@@ -1046,7 +1091,7 @@
     <script>
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
@@ -1075,7 +1120,7 @@
             card.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-10px) scale(1.02)';
             });
-            
+
             card.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0) scale(1)';
             });
@@ -1118,7 +1163,7 @@
         // Contact form handling
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Get form data
             const formData = new FormData(this);
             const data = {};
@@ -1129,15 +1174,16 @@
             // Show success message (in a real app, you'd send this to a server)
             const submitBtn = this.querySelector('.submit-btn');
             const originalText = submitBtn.innerHTML;
-            
+
             submitBtn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
             submitBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-            
+
             // Reset form
             setTimeout(() => {
                 this.reset();
                 submitBtn.innerHTML = originalText;
-                submitBtn.style.background = 'linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%)';
+                submitBtn.style.background =
+                    'linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%)';
             }, 3000);
         });
 
@@ -1188,4 +1234,5 @@
         });
     </script>
 </body>
+
 </html>
