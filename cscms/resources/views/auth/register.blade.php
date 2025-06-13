@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
+            background:
                 radial-gradient(circle at 20% 80%, rgba(160, 112, 42, 0.06) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(111, 78, 55, 0.06) 0%, transparent 50%);
             pointer-events: none;
@@ -196,8 +197,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .step-title {
@@ -315,7 +323,8 @@
             margin-bottom: 0.75rem;
         }
 
-        .form-input, .form-textarea {
+        .form-input,
+        .form-textarea {
             width: 100%;
             padding: 1rem 1.25rem;
             border: 2px solid rgba(111, 78, 55, 0.2);
@@ -327,14 +336,16 @@
             outline: none;
         }
 
-        .form-input:focus, .form-textarea:focus {
+        .form-input:focus,
+        .form-textarea:focus {
             border-color: var(--coffee-medium);
             box-shadow: 0 0 0 4px rgba(111, 78, 55, 0.1);
             background: white;
             transform: translateY(-2px);
         }
 
-        .form-input.error, .form-textarea.error {
+        .form-input.error,
+        .form-textarea.error {
             border-color: var(--error);
             box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1);
         }
@@ -419,9 +430,19 @@
         }
 
         @keyframes bounceIn {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .success-title {
@@ -504,11 +525,17 @@
         }
 
         @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="onboarding-container">
         <!-- Header -->
@@ -547,9 +574,10 @@
                     Choose Your Role
                 </div>
                 <p class="step-description">
-                    Tell us about your role in the coffee supply chain. This helps us customize your experience and connect you with the right partners.
+                    Tell us about your role in the coffee supply chain. This helps us customize your experience and
+                    connect you with the right partners.
                 </p>
-                
+
                 <div class="user-type-grid">
                     <div class="user-type-card" data-type="farmer">
                         <i class="fas fa-seedling user-type-icon"></i>
@@ -558,7 +586,7 @@
                             I grow and harvest coffee beans, managing farms and working directly with the land.
                         </p>
                     </div>
-                    
+
                     <div class="user-type-card" data-type="processor">
                         <i class="fas fa-industry user-type-icon"></i>
                         <div class="user-type-title">Coffee Processor</div>
@@ -566,7 +594,7 @@
                             I process raw coffee beans, handling roasting, packaging, and quality control.
                         </p>
                     </div>
-                    
+
                     <div class="user-type-card" data-type="retailer">
                         <i class="fas fa-store user-type-icon"></i>
                         <div class="user-type-title">Coffee Retailer</div>
@@ -584,25 +612,26 @@
                     Personal Information
                 </div>
                 <p class="step-description">
-                    Let's get to know you better. This information will be used for your profile and account verification.
+                    Let's get to know you better. This information will be used for your profile and account
+                    verification.
                 </p>
-                
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="name" class="form-label">Full Name *</label>
                         <input type="text" id="name" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="email" class="form-label">Email Address *</label>
                         <input type="email" id="email" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="phone" class="form-label">Phone Number</label>
                         <input type="tel" id="phone" class="form-input">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="address" class="form-label">Personal Address</label>
                         <input type="text" id="address" class="form-input">
@@ -617,16 +646,17 @@
                     Secure Your Account
                 </div>
                 <p class="step-description">
-                    Create a strong password to protect your account. Make sure it's at least 8 characters long and includes a mix of letters, numbers, and symbols.
+                    Create a strong password to protect your account. Make sure it's at least 8 characters long and
+                    includes a mix of letters, numbers, and symbols.
                 </p>
-                
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="password" class="form-label">Password *</label>
                         <input type="password" id="password" class="form-input" required>
                         <div class="password-strength" id="passwordStrength"></div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="password_confirmation" class="form-label">Confirm Password *</label>
                         <input type="password" id="password_confirmation" class="form-input" required>
@@ -641,31 +671,32 @@
                     Company Details
                 </div>
                 <p class="step-description">
-                    Tell us about your business. This information helps us verify your company and enables business-to-business transactions.
+                    Tell us about your business. This information helps us verify your company and enables
+                    business-to-business transactions.
                 </p>
-                
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="company_name" class="form-label">Company Name *</label>
                         <input type="text" id="company_name" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="company_email" class="form-label">Company Email *</label>
                         <input type="email" id="company_email" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="company_phone" class="form-label">Company Phone *</label>
                         <input type="tel" id="company_phone" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="registration_number" class="form-label">Business Registration Number *</label>
                         <input type="text" id="registration_number" class="form-input" required>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="company_address" class="form-label">Company Address *</label>
                     <textarea id="company_address" class="form-textarea" required></textarea>
@@ -679,9 +710,10 @@
                     Review Your Information
                 </div>
                 <p class="step-description">
-                    Please review all the information you've provided. Make sure everything is correct before submitting your registration.
+                    Please review all the information you've provided. Make sure everything is correct before submitting
+                    your registration.
                 </p>
-                
+
                 <div id="reviewContent">
                     <!-- Review content will be populated by JavaScript -->
                 </div>
@@ -693,7 +725,7 @@
                     <i class="fas fa-check-circle success-icon"></i>
                     <div class="success-title">Welcome to Coffee Supply Chain!</div>
                     <p class="success-description">
-                        Your account has been created successfully. We've sent a verification email to your inbox. 
+                        Your account has been created successfully. We've sent a verification email to your inbox.
                         Please check your email and click the verification link to activate your account.
                     </p>
                     <a href="/login" class="nav-button primary">
@@ -709,7 +741,7 @@
                     <i class="fas fa-arrow-left"></i>
                     Previous
                 </button>
-                
+
                 <button type="button" class="nav-button primary" id="nextBtn" disabled>
                     Next
                     <i class="fas fa-arrow-right"></i>
@@ -740,7 +772,8 @@
                 // User type selection
                 document.querySelectorAll('.user-type-card').forEach(card => {
                     card.addEventListener('click', () => {
-                        document.querySelectorAll('.user-type-card').forEach(c => c.classList.remove('selected'));
+                        document.querySelectorAll('.user-type-card').forEach(c => c.classList.remove(
+                            'selected'));
                         card.classList.add('selected');
                         this.formData.user_type = card.dataset.type;
                         this.validateCurrentStep();
@@ -877,19 +910,19 @@
                         isValid = !!this.formData.user_type;
                         break;
                     case 2:
-                        isValid = this.formData.name && this.formData.email && 
-                                 this.validateField(document.getElementById('name')) &&
-                                 this.validateField(document.getElementById('email'));
+                        isValid = this.formData.name && this.formData.email &&
+                            this.validateField(document.getElementById('name')) &&
+                            this.validateField(document.getElementById('email'));
                         break;
                     case 3:
                         isValid = this.formData.password && this.formData.password_confirmation &&
-                                 this.formData.password === this.formData.password_confirmation &&
-                                 this.formData.password.length >= 8;
+                            this.formData.password === this.formData.password_confirmation &&
+                            this.formData.password.length >= 8;
                         break;
                     case 4:
-                        isValid = this.formData.company_name && this.formData.company_email && 
-                                 this.formData.company_phone && this.formData.registration_number &&
-                                 this.formData.company_address;
+                        isValid = this.formData.company_name && this.formData.company_email &&
+                            this.formData.company_phone && this.formData.registration_number &&
+                            this.formData.company_address;
                         break;
                     case 5:
                         isValid = true;
@@ -941,7 +974,7 @@
                 document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
                     const stepNum = index + 1;
                     indicator.classList.remove('active', 'completed');
-                    
+
                     if (stepNum < this.currentStep) {
                         indicator.classList.add('completed');
                         indicator.innerHTML = '<i class="fas fa-check"></i>';
@@ -976,7 +1009,7 @@
                 if (activeContent) {
                     activeContent.style.opacity = '0';
                     activeContent.style.transform = 'translateY(20px)';
-                    
+
                     setTimeout(() => {
                         activeContent.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                         activeContent.style.opacity = '1';
@@ -1077,15 +1110,15 @@
                 try {
                     // Simulate API call
                     await new Promise(resolve => setTimeout(resolve, 2000));
-                    
+
                     // Show success screen
                     document.querySelectorAll('.step-content').forEach(content => {
                         content.style.display = 'none';
                     });
-                    
+
                     document.getElementById('success').style.display = 'block';
                     document.querySelector('.step-navigation').style.display = 'none';
-                    
+
                     // Update progress to 100%
                     document.getElementById('progressFill').style.width = '100%';
                     document.querySelectorAll('.step-indicator').forEach(indicator => {
@@ -1114,7 +1147,7 @@
             elements.forEach((el, index) => {
                 el.style.opacity = '0';
                 el.style.transform = 'translateY(30px)';
-                
+
                 setTimeout(() => {
                     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
                     el.style.opacity = '1';
@@ -1124,4 +1157,5 @@
         });
     </script>
 </body>
+
 </html>
