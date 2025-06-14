@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Coffee Supply Chain - Onboarding</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Include jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --coffee-dark: #2D1B0E;
@@ -62,6 +64,8 @@
             text-align: center;
             margin-bottom: 2rem;
         }
+
+
 
         .logo {
             font-size: 2rem;
@@ -155,7 +159,7 @@
             font-size: 0.85rem;
             color: var(--text-light);
             text-align: center;
-            min-width: 80px;
+            min-width: 60px;
         }
 
         .step-label.active {
@@ -183,6 +187,38 @@
             right: 0;
             height: 4px;
             background: linear-gradient(90deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);
+        }
+
+        /* Review Section Grid Text Wrapping */
+        .review-grid span {
+            word-break: break-word;
+            overflow-wrap: break-word;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        /* Optional: Enhance readability for long text */
+        .review-grid strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Responsive adjustment for smaller screens */
+        @media (max-width: 768px) {
+            .review-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .review-grid>div {
+                padding: 0.5rem 0;
+                border-bottom: 1px solid rgba(111, 78, 55, 0.1);
+            }
+
+            .review-grid>div:last-child {
+                border-bottom: none;
+                /* Remove border from last item */
+            }
         }
 
         /* Step Content */
@@ -364,16 +400,49 @@
             gap: 0.5rem;
         }
 
-        /* Navigation Buttons */
-        .step-navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2rem 3rem;
-            border-top: 1px solid rgba(111, 78, 55, 0.1);
-            background: rgba(255, 255, 255, 0.5);
+        /* File Upload Styles */
+        .file-upload {
+            position: relative;
+            padding: 1rem;
+            border: 2px dashed rgba(111, 78, 55, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
         }
 
+        .file-upload:hover {
+            border-color: var(--coffee-medium);
+            background: rgba(111, 78, 55, 0.05);
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            color: var(--coffee-medium);
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .file-upload-text {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Navigation Buttons */
         .nav-button {
             padding: 0.875rem 2rem;
             border: none;
@@ -414,6 +483,34 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
+        }
+
+        /* Download Button */
+        .download-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 2rem;
+            background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(111, 78, 55, 0.4);
+        }
+
+        .download-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         /* Success Animation */
@@ -459,6 +556,16 @@
             margin-bottom: 2rem;
         }
 
+        /* Navigation Container */
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-top: 1px solid rgba(111, 78, 55, 0.1);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .onboarding-container {
@@ -500,7 +607,12 @@
 
             .step-label {
                 font-size: 0.75rem;
-                min-width: 60px;
+                min-width: 50px;
+            }
+
+            .download-button {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -555,12 +667,14 @@
                 <div class="step-indicator" data-step="3">3</div>
                 <div class="step-indicator" data-step="4">4</div>
                 <div class="step-indicator" data-step="5">5</div>
+                <div class="step-indicator" data-step="6">6</div>
             </div>
             <div class="step-labels">
                 <div class="step-label active">Role</div>
                 <div class="step-label">Personal</div>
                 <div class="step-label">Security</div>
                 <div class="step-label">Company</div>
+                <div class="step-label">Upload PDF</div>
                 <div class="step-label">Review</div>
             </div>
         </div>
@@ -584,14 +698,6 @@
                         <div class="user-type-title">Coffee Farmer</div>
                         <p class="user-type-description">
                             I grow and harvest coffee beans, managing farms and working directly with the land.
-                        </p>
-                    </div>
-
-                    <div class="user-type-card" data-type="processor">
-                        <i class="fas fa-industry user-type-icon"></i>
-                        <div class="user-type-title">Coffee Processor</div>
-                        <p class="user-type-description">
-                            I process raw coffee beans, handling roasting, packaging, and quality control.
                         </p>
                     </div>
 
@@ -664,7 +770,7 @@
                 </div>
             </div>
 
-            <!-- Step 4: Company Information -->
+            <!-- Step 4: Company Information with PDF Download -->
             <div class="step-content" id="step4">
                 <div class="step-title">
                     <i class="fas fa-building"></i>
@@ -672,7 +778,7 @@
                 </div>
                 <p class="step-description">
                     Tell us about your business. This information helps us verify your company and enables
-                    business-to-business transactions.
+                    business-to-business transactions. Download the form as a PDF after filling it out.
                 </p>
 
                 <div class="form-grid">
@@ -701,17 +807,224 @@
                     <label for="company_address" class="form-label">Company Address *</label>
                     <textarea id="company_address" class="form-textarea" required></textarea>
                 </div>
+
+                <div class="step-title">
+                    <i class="fas fa-building"></i>
+                    Financial Stability
+                </div>
+
+                <p class="step-description">
+                    Please provide your financial stability information. This helps us assess your business's
+                    reliability and creditworthiness.
+                </p>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="annual_revenue" class="form-label">Annual Revenue (UGX, last year) *</label>
+                        <input type="text" id="annual_revenue" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="years_in_business" class="form-label">Years in Business( Atleast 1 year) *</label>
+                        <input type="number" id="years_in_business" class="form-input" required min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="business_bank" class="form-label">Business Bank Account *</label>
+                        <input type="text" id="business_bank" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="debt_to_equity_ratio" class="form-label">Debt-to-Equity Ratio *</label>
+                        <input type="text" id="debt_to_equity_ratio" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cash_flow_summary_year_1" class="form-label">Cash Flow Summary - Year 1 *</label>
+                        <input type="text" id="cash_flow_summary_year_1" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cash_flow_summary_year_2" class="form-label">Cash Flow Summary - Year 2 </label>
+                        <input type="text" id="cash_flow_summary_year_2" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="credit_score" class="form-label">Credit Score *</label>
+                        <input type="text" id="credit_score" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="step-title">
+                    <i class="fas fa-building"></i>
+                    Reputation
+                </div>
+
+                <p class="step-description">
+                    Please provide your reputation information. This helps us assess your business's standing in the
+                    industry and its relationship with customers and partners.
+                </p>
+                <div class="form-grid">
+                    <!-- Reference 1 -->
+                    <div class="form-group">
+                        <label for="ref1_name" class="form-label">Reference 1 - Name *</label>
+                        <input type="text" id="ref1_name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ref1_contact" class="form-label">Reference 1 - Contact *</label>
+                        <input type="text" id="ref1_contact" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ref1_relationship" class="form-label">Reference 1 - Relationship *</label>
+                        <input type="text" id="ref1_relationship" class="form-input" required>
+                    </div>
+
+                    <!-- Reference 2 -->
+                    <div class="form-group">
+                        <label for="ref2_name" class="form-label">Reference 2 - Name</label>
+                        <input type="text" id="ref2_name" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ref2_contact" class="form-label">Reference 2 - Contact </label>
+                        <input type="text" id="ref2_contact" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ref2_relationship" class="form-label">Reference 2 - Relationship </label>
+                        <input type="text" id="ref2_relationship" class="form-input">
+                    </div>
+
+                    <!-- Reference 3 -->
+                    <div class="form-group">
+                        <label for="ref3_name" class="form-label">Reference 3 - Name </label>
+                        <input type="text" id="ref3_name" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ref3_contact" class="form-label">Reference 3 - Contact </label>
+                        <input type="text" id="ref3_contact" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ref3_relationship" class="form-label">Reference 3 - Relationship </label>
+                        <input type="text" id="ref3_relationship" class="form-input">
+                    </div>
+
+                    <!-- Legal Disputes -->
+                    <div class="form-group">
+                        <label class="form-label">Any Legal Disputes (last 5 years)? *</label>
+                        <div>
+                            <label><input type="radio" name="legal_disputes" value="yes" required> Yes</label>
+                            <label style="margin-left: 1rem;"><input type="radio" name="legal_disputes"
+                                    value="no" required> No</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="legal_dispute_details_group" style="display: none;">
+                        <label for="legal_dispute_details" class="form-label">If Yes, provide details:</label>
+                        <textarea id="legal_dispute_details" class="form-textarea"></textarea>
+                    </div>
+                </div>
+
+                <div class="step-title">
+                    <i class="fas fa-building"></i>
+                    Compliance
+                </div>
+
+                <p class="step-description">
+                    Please provide your compliance information. This helps us ensure that your business meets all
+                    necessary legal and regulatory requirements.
+                </p>
+                <div class="form-grid">
+                    <!-- Certification 1 -->
+                    <div class="form-group">
+                        <label for="cert1_type" class="form-label">Certification 1 - Type (e.g., Fair Trade, Organic)
+                            *</label>
+                        <input type="text" id="cert1_type" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cert1_issuer" class="form-label">Certification 1 - Issuer *</label>
+                        <input type="text" id="cert1_issuer" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cert1_expiry" class="form-label">Certification 1 - Expiry Date *</label>
+                        <input type="date" id="cert1_expiry" class="form-input" required>
+                    </div>
+
+                    <!-- Certification 2 -->
+                    <div class="form-group">
+                        <label for="cert2_type" class="form-label">Certification 2 - Type </label>
+                        <input type="text" id="cert2_type" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cert2_issuer" class="form-label">Certification 2 - Issuer </label>
+                        <input type="text" id="cert2_issuer" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cert2_expiry" class="form-label">Certification 2 - Expiry Date </label>
+                        <input type="date" id="cert2_expiry" class="form-input">
+                    </div>
+
+                    <!-- Compliance with Environmental Regulations -->
+                    <div class="form-group">
+                        <label class="form-label">Compliance with Environmental Regulations *</label>
+                        <div>
+                            <label><input type="radio" name="env_compliance" value="yes" required> Yes</label>
+                            <label style="margin-left: 1rem;"><input type="radio" name="env_compliance"
+                                    value="no" required> No</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="env_compliance_details_group" style="display: none;">
+                        <label for="env_compliance_details" class="form-label">If No, provide details:</label>
+                        <textarea id="env_compliance_details" class="form-textarea"></textarea>
+                    </div>
+                </div>
+
+                <button type="button" class="download-button" id="downloadPdfBtn">
+                    <i class="fas fa-download"></i>
+                    Download Form as PDF
+                </button>
             </div>
 
-            <!-- Step 5: Review & Submit -->
+            <!-- Step 5: PDF Upload -->
             <div class="step-content" id="step5">
+                <div class="step-title">
+                    <i class="fas fa-file-upload"></i>
+                    Upload PDF
+                </div>
+                <p class="step-description">
+                    Upload the PDF you downloaded in the previous step. Ensure it is the correct file before proceeding.
+                </p>
+
+                <div class="form-group">
+                    <div class="file-upload">
+                        <input type="file" id="pdfUpload" accept=".pdf" required>
+                        <div class="file-upload-label">
+                            <i class="fas fa-upload"></i>
+                            Choose PDF File
+                        </div>
+                        <p class="file-upload-text" id="fileName">No file selected</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Review & Submit -->
+            <div class="step-content" id="step6">
                 <div class="step-title">
                     <i class="fas fa-check-circle"></i>
                     Review Your Information
                 </div>
                 <p class="step-description">
-                    Please review all the information you've provided. Make sure everything is correct before submitting
-                    your registration.
+                    Please review all the information you've provided, including the uploaded PDF. Make sure everything
+                    is correct before submitting your registration.
                 </p>
 
                 <div id="reviewContent">
@@ -725,8 +1038,8 @@
                     <i class="fas fa-check-circle success-icon"></i>
                     <div class="success-title">Welcome to Coffee Supply Chain!</div>
                     <p class="success-description">
-                        Your account has been created successfully. We've sent a verification email to your inbox.
-                        Please check your email and click the verification link to activate your account.
+                        Your account has been created successfully. We've sent a verification email to your
+                        inbox. Please check your email and click the verification link to activate your account.
                     </p>
                     <a href="/login" class="nav-button primary">
                         <i class="fas fa-sign-in-alt"></i>
@@ -741,7 +1054,6 @@
                     <i class="fas fa-arrow-left"></i>
                     Previous
                 </button>
-
                 <button type="button" class="nav-button primary" id="nextBtn" disabled>
                     Next
                     <i class="fas fa-arrow-right"></i>
@@ -754,8 +1066,9 @@
         class OnboardingFlow {
             constructor() {
                 this.currentStep = 1;
-                this.totalSteps = 5;
+                this.totalSteps = 6; // Updated to 6 steps
                 this.formData = {};
+                this.uploadedFile = null;
                 this.init();
             }
 
@@ -793,9 +1106,59 @@
                     });
                 });
 
+                // Radio buttons for legal disputes and environmental compliance
+                document.querySelectorAll('input[name="legal_disputes"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        this.formData.legal_disputes = radio.value;
+                        if (radio.value === 'yes') {
+                            document.getElementById('legal_dispute_details').setAttribute('required',
+                                'required');
+                        } else {
+                            document.getElementById('legal_dispute_details').removeAttribute(
+                                'required');
+                        }
+                        this.validateCurrentStep();
+                    });
+                });
+
+                document.querySelectorAll('input[name="env_compliance"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        this.formData.env_compliance = radio.value;
+                        if (radio.value === 'no') {
+                            document.getElementById('env_compliance_details').setAttribute('required',
+                                'required');
+                        } else {
+                            document.getElementById('env_compliance_details').removeAttribute(
+                                'required');
+                        }
+                        this.validateCurrentStep();
+                    });
+                });
+
                 // Password confirmation
                 document.getElementById('password_confirmation').addEventListener('input', () => {
                     this.validatePasswordMatch();
+                });
+
+                // PDF Download
+                document.getElementById('downloadPdfBtn').addEventListener('click', () => this.downloadPDF());
+
+                // File Upload
+                const fileInput = document.getElementById('pdfUpload');
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    const fileNameDisplay = document.getElementById('fileName');
+                    if (file && file.type === 'application/pdf') {
+                        this.uploadedFile = file;
+                        fileNameDisplay.textContent = file.name;
+                        fileNameDisplay.style.color = 'var(--success)';
+                        this.validateCurrentStep();
+                    } else {
+                        this.uploadedFile = null;
+                        fileNameDisplay.textContent = 'Please select a valid PDF file';
+                        fileNameDisplay.style.color = 'var(--error)';
+                        this.validateCurrentStep();
+                    }
                 });
             }
 
@@ -922,9 +1285,22 @@
                     case 4:
                         isValid = this.formData.company_name && this.formData.company_email &&
                             this.formData.company_phone && this.formData.registration_number &&
-                            this.formData.company_address;
+                            this.formData.company_address &&
+                            this.formData.annual_revenue && this.formData.years_in_business &&
+                            this.formData.business_bank && this.formData.debt_to_equity_ratio &&
+                            this.formData.cash_flow_summary_year_1 &&
+                            this.formData.credit_score &&
+                            this.formData.ref1_name && this.formData.ref1_contact && this.formData.ref1_relationship &&
+                            this.formData.legal_disputes &&
+                            (this.formData.legal_disputes !== 'yes' || this.formData.legal_dispute_details) &&
+                            this.formData.cert1_type && this.formData.cert1_issuer && this.formData.cert1_expiry &&
+                            this.formData.env_compliance &&
+                            (this.formData.env_compliance !== 'no' || this.formData.env_compliance_details);
                         break;
                     case 5:
+                        isValid = !!this.uploadedFile;
+                        break;
+                    case 6:
                         isValid = true;
                         break;
                 }
@@ -934,10 +1310,76 @@
                 return isValid;
             }
 
+            downloadPDF() {
+                const {
+                    jsPDF
+                } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFontSize(16);
+                doc.text('Coffee Supply Chain Registration Form', 20, 20);
+                doc.setFontSize(12);
+
+                let y = 40;
+                const addSection = (title, fields, startY) => {
+                    doc.setFontSize(14);
+                    doc.text(title, 20, startY);
+                    doc.setFontSize(12);
+                    y = startY + 10;
+                    for (const [label, value] of Object.entries(fields)) {
+                        doc.text(`${label}: ${value || 'Not provided'}`, 20, y);
+                        y += 10;
+                        if (y > 280) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                    }
+                    return y;
+                };
+
+                // Collect form data
+                const fields = {
+                    'Company Name': this.formData.company_name,
+                    'Company Email': this.formData.company_email,
+                    'Company Phone': this.formData.company_phone,
+                    'Registration Number': this.formData.registration_number,
+                    'Company Address': this.formData.company_address,
+                    'Annual Revenue (UGX)': this.formData.annual_revenue,
+                    'Years in Business': this.formData.years_in_business,
+                    'Business Bank Account': this.formData.business_bank,
+                    'Debt-to-Equity Ratio': this.formData.debt_to_equity_ratio,
+                    'Cash Flow Summary - Year 1': this.formData.cash_flow_summary_year_1,
+                    'Cash Flow Summary - Year 2': this.formData.cash_flow_summary_year_2,
+                    'Credit Score': this.formData.credit_score,
+                    'Reference 1 - Name': this.formData.ref1_name,
+                    'Reference 1 - Contact': this.formData.ref1_contact,
+                    'Reference 1 - Relationship': this.formData.ref1_relationship,
+                    'Reference 2 - Name': this.formData.ref2_name,
+                    'Reference 2 - Contact': this.formData.ref2_contact,
+                    'Reference 2 - Relationship': this.formData.ref2_relationship,
+                    'Reference 3 - Name': this.formData.ref3_name,
+                    'Reference 3 - Contact': this.formData.ref3_contact,
+                    'Reference 3 - Relationship': this.formData.ref3_relationship,
+                    'Legal Disputes': this.formData.legal_disputes,
+                    'Legal Dispute Details': this.formData.legal_dispute_details,
+                    'Certification 1 - Type': this.formData.cert1_type,
+                    'Certification 1 - Issuer': this.formData.cert1_issuer,
+                    'Certification 1 - Expiry': this.formData.cert1_expiry,
+                    'Certification 2 - Type': this.formData.cert2_type,
+                    'Certification 2 - Issuer': this.formData.cert2_issuer,
+                    'Certification 2 - Expiry': this.formData.cert2_expiry,
+                    'Environmental Compliance': this.formData.env_compliance,
+                    'Environmental Compliance Details': this.formData.env_compliance_details
+                };
+
+                y = addSection('Company Information', fields, 30);
+
+                doc.save('coffee_supply_chain_form.pdf');
+            }
+
             nextStep() {
                 if (!this.validateCurrentStep()) return;
 
-                if (this.currentStep === 5) {
+                if (this.currentStep === 6) {
                     this.submitForm();
                     return;
                 }
@@ -946,9 +1388,11 @@
                 this.updateUI();
                 this.animateStep();
 
-                if (this.currentStep === 5) {
+                if (this.currentStep === 6) {
                     this.populateReview();
                     document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Complete Registration';
+                } else {
+                    document.getElementById('nextBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
                 }
             }
 
@@ -958,7 +1402,7 @@
                     this.updateUI();
                     this.animateStep();
 
-                    if (this.currentStep < 5) {
+                    if (this.currentStep < 6) {
                         document.getElementById('nextBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
                     }
                 }
@@ -1022,7 +1466,6 @@
                 const reviewContent = document.getElementById('reviewContent');
                 const userTypeLabels = {
                     farmer: 'Coffee Farmer',
-                    processor: 'Coffee Processor',
                     retailer: 'Coffee Retailer'
                 };
 
@@ -1043,7 +1486,7 @@
                                 <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
                                 Personal Information
                             </h3>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                                 <div>
                                     <strong style="color: var(--coffee-dark);">Name:</strong><br>
                                     <span style="color: var(--text-dark);">${this.formData.name || 'Not provided'}</span>
@@ -1068,7 +1511,7 @@
                                 <i class="fas fa-building" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
                                 Company Information
                             </h3>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                                 <div>
                                     <strong style="color: var(--coffee-dark);">Company Name:</strong><br>
                                     <span style="color: var(--text-dark);">${this.formData.company_name || 'Not provided'}</span>
@@ -1090,6 +1533,47 @@
                                 <strong style="color: var(--coffee-dark);">Company Address:</strong><br>
                                 <span style="color: var(--text-dark);">${this.formData.company_address || 'Not provided'}</span>
                             </div>
+                            <div style="margin-top: 1rem;">
+                                <strong style="color: var(--coffee-dark);">Financial Information:</strong><br>
+                                <span style="color: var(--text-dark);">
+                                    Annual Revenue: ${this.formData.annual_revenue || 'Not provided'}<br>
+                                    Years in Business: ${this.formData.years_in_business || 'Not provided'}<br>
+                                    Business Bank Account: ${this.formData.business_bank || 'Not provided'}<br>
+                                    Debt-to-Equity Ratio: ${this.formData.debt_to_equity_ratio || 'Not provided'}<br>
+                                    Cash Flow Summary Year 1: ${this.formData.cash_flow_summary_year_1 || 'Not provided'}<br>
+                                    Cash Flow Summary Year 2: ${this.formData.cash_flow_summary_year_2 || 'Not provided'}<br>
+                                    Credit Score: ${this.formData.credit_score || 'Not provided'}
+                                </span>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <strong style="color: var(--coffee-dark);">Reputation:</strong><br>
+                                <span style="color: var(--text-dark);">
+                                    Reference 1: ${this.formData.ref1_name || 'Not provided'} (${this.formData.ref1_contact || 'Not provided'}, ${this.formData.ref1_relationship || 'Not provided'})<br>
+                                    Reference 2: ${this.formData.ref2_name || 'Not provided'} (${this.formData.ref2_contact || 'Not provided'}, ${this.formData.ref2_relationship || 'Not provided'})<br>
+                                    Reference 3: ${this.formData.ref3_name || 'Not provided'} (${this.formData.ref3_contact || 'Not provided'}, ${this.formData.ref3_relationship || 'Not provided'})<br>
+                                    Legal Disputes: ${this.formData.legal_disputes || 'Not provided'}<br>
+                                    ${this.formData.legal_disputes === 'yes' ? `Details: ${this.formData.legal_dispute_details || 'Not provided'}` : ''}
+                                </span>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <strong style="color: var(--coffee-dark);">Compliance:</strong><br>
+                                <span style="color: var(--text-dark);">
+                                    Certification 1: ${this.formData.cert1_type || 'Not provided'} (${this.formData.cert1_issuer || 'Not provided'}, Expires: ${this.formData.cert1_expiry || 'Not provided'})<br>
+                                    Certification 2: ${this.formData.cert2_type || 'Not provided'} (${this.formData.cert2_issuer || 'Not provided'}, Expires: ${this.formData.cert2_expiry || 'Not provided'})<br>
+                                    Environmental Compliance: ${this.formData.env_compliance || 'Not provided'}<br>
+                                    ${this.formData.env_compliance === 'no' ? `Details: ${this.formData.env_compliance_details || 'Not provided'}` : ''}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
+                            <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
+                                <i class="fas fa-file-upload" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
+                                Uploaded PDF
+                            </h3>
+                            <p style="color: var(--text-dark); font-size: 1.1rem; font-weight: 600;">
+                                ${this.uploadedFile ? this.uploadedFile.name : 'No file uploaded'}
+                            </p>
                         </div>
 
                         <div style="background: rgba(40, 167, 69, 0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(40, 167, 69, 0.2);">
@@ -1141,7 +1625,7 @@
             new OnboardingFlow();
         });
 
-        // Add some nice entrance animations
+        // Add entrance animations
         document.addEventListener('DOMContentLoaded', () => {
             const elements = document.querySelectorAll('.onboarding-header, .progress-container, .onboarding-card');
             elements.forEach((el, index) => {
@@ -1153,6 +1637,45 @@
                     el.style.opacity = '1';
                     el.style.transform = 'translateY(0)';
                 }, index * 150);
+            });
+        });
+
+        // Legal disputes radio button handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const radios = document.getElementsByName('legal_disputes');
+            const detailsGroup = document.getElementById('legal_dispute_details_group');
+
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'yes') {
+                        detailsGroup.style.display = 'block';
+                        document.getElementById('legal_dispute_details').setAttribute('required',
+                            'required');
+                    } else {
+                        detailsGroup.style.display = 'none';
+                        document.getElementById('legal_dispute_details').removeAttribute(
+                            'required');
+                    }
+                });
+            });
+        });
+
+        // Environmental compliance radio button handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const envRadios = document.getElementsByName('env_compliance');
+            const envDetailsGroup = document.getElementById('env_compliance_details_group');
+            const envDetailsInput = document.getElementById('env_compliance_details');
+
+            envRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'no') {
+                        envDetailsGroup.style.display = 'block';
+                        envDetailsInput.setAttribute('required', 'required');
+                    } else {
+                        envDetailsGroup.style.display = 'none';
+                        envDetailsInput.removeAttribute('required');
+                    }
+                });
             });
         });
     </script>
