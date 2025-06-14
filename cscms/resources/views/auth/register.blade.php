@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Join Coffee Supply Chain - Onboarding</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Include jsPDF library -->
@@ -1066,9 +1067,10 @@
         class OnboardingFlow {
             constructor() {
                 this.currentStep = 1;
-                this.totalSteps = 6; // Updated to 6 steps
+                this.totalSteps = 6;
                 this.formData = {};
                 this.uploadedFile = null;
+                this.maxSizeInBytes = 10240; // 10KB for PDF validation
                 this.init();
             }
 
@@ -1085,10 +1087,14 @@
                 // User type selection
                 document.querySelectorAll('.user-type-card').forEach(card => {
                     card.addEventListener('click', () => {
+                        // Remove 'selected' class from all cards
                         document.querySelectorAll('.user-type-card').forEach(c => c.classList.remove(
                             'selected'));
+                        // Add 'selected' class to clicked card
                         card.classList.add('selected');
+                        // Set user_type in formData
                         this.formData.user_type = card.dataset.type;
+                        // Validate step to enable Next button
                         this.validateCurrentStep();
                     });
                 });
@@ -1110,12 +1116,15 @@
                 document.querySelectorAll('input[name="legal_disputes"]').forEach(radio => {
                     radio.addEventListener('change', () => {
                         this.formData.legal_disputes = radio.value;
+                        const detailsInput = document.getElementById('legal_dispute_details');
+                        const detailsGroup = document.getElementById('legal_dispute_details_group');
                         if (radio.value === 'yes') {
-                            document.getElementById('legal_dispute_details').setAttribute('required',
-                                'required');
+                            detailsGroup.style.display = 'block';
+                            detailsInput.setAttribute('required', 'required');
                         } else {
-                            document.getElementById('legal_dispute_details').removeAttribute(
-                                'required');
+                            detailsGroup.style.display = 'none';
+                            detailsInput.removeAttribute('required');
+                            this.formData.legal_dispute_details = ''; // Clear details if 'no'
                         }
                         this.validateCurrentStep();
                     });
@@ -1124,12 +1133,15 @@
                 document.querySelectorAll('input[name="env_compliance"]').forEach(radio => {
                     radio.addEventListener('change', () => {
                         this.formData.env_compliance = radio.value;
+                        const detailsInput = document.getElementById('env_compliance_details');
+                        const detailsGroup = document.getElementById('env_compliance_details_group');
                         if (radio.value === 'no') {
-                            document.getElementById('env_compliance_details').setAttribute('required',
-                                'required');
+                            detailsGroup.style.display = 'block';
+                            detailsInput.setAttribute('required', 'required');
                         } else {
-                            document.getElementById('env_compliance_details').removeAttribute(
-                                'required');
+                            detailsGroup.style.display = 'none';
+                            detailsInput.removeAttribute('required');
+                            this.formData.env_compliance_details = ''; // Clear details if 'yes'
                         }
                         this.validateCurrentStep();
                     });
@@ -1138,6 +1150,7 @@
                 // Password confirmation
                 document.getElementById('password_confirmation').addEventListener('input', () => {
                     this.validatePasswordMatch();
+                    this.validateCurrentStep();
                 });
 
                 // PDF Download
@@ -1148,17 +1161,28 @@
                 fileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     const fileNameDisplay = document.getElementById('fileName');
-                    if (file && file.type === 'application/pdf') {
-                        this.uploadedFile = file;
-                        fileNameDisplay.textContent = file.name;
-                        fileNameDisplay.style.color = 'var(--success)';
-                        this.validateCurrentStep();
+                    if (file) {
+                        if (file.type !== 'application/pdf') {
+                            this.uploadedFile = null;
+                            fileNameDisplay.textContent = 'Please select a valid PDF file';
+                            fileNameDisplay.style.color = 'var(--error)';
+                            fileInput.value = ''; // Clear input
+                        } else if (file.size > this.maxSizeInBytes) {
+                            this.uploadedFile = null;
+                            fileNameDisplay.textContent = 'File size exceeds 10KB';
+                            fileNameDisplay.style.color = 'var(--error)';
+                            fileInput.value = ''; // Clear input
+                        } else {
+                            this.uploadedFile = file;
+                            fileNameDisplay.textContent = file.name;
+                            fileNameDisplay.style.color = 'var(--success)';
+                        }
                     } else {
                         this.uploadedFile = null;
-                        fileNameDisplay.textContent = 'Please select a valid PDF file';
-                        fileNameDisplay.style.color = 'var(--error)';
-                        this.validateCurrentStep();
+                        fileNameDisplay.textContent = 'No file selected';
+                        fileNameDisplay.style.color = 'var(--text-light)';
                     }
+                    this.validateCurrentStep();
                 });
             }
 
@@ -1230,15 +1254,15 @@
                 }
 
                 strengthEl.innerHTML = `
-                    <div style="margin-top: 0.5rem;">
-                        <div style="height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
-                            <div style="height: 100%; width: ${(strength + 1) * 25}%; background: ${colors[strength]}; transition: all 0.3s ease;"></div>
-                        </div>
-                        <small style="color: ${colors[strength]}; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
-                            Password strength: ${labels[strength]}
-                        </small>
+                <div style="margin-top: 0.5rem;">
+                    <div style="height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; width: ${(strength + 1) * 25}%; background: ${colors[strength]}; transition: all 0.3s ease;"></div>
                     </div>
-                `;
+                    <small style="color: ${colors[strength]}; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+                        Password strength: ${labels[strength]}
+                    </small>
+                </div>
+            `;
             }
 
             calculatePasswordStrength(password) {
@@ -1270,7 +1294,7 @@
 
                 switch (this.currentStep) {
                     case 1:
-                        isValid = !!this.formData.user_type;
+                        isValid = !!this.formData.user_type; // Check if user_type is set
                         break;
                     case 2:
                         isValid = this.formData.name && this.formData.email &&
@@ -1298,10 +1322,10 @@
                             (this.formData.env_compliance !== 'no' || this.formData.env_compliance_details);
                         break;
                     case 5:
-                        isValid = !!this.uploadedFile;
+                        isValid = !!this.uploadedFile && this.uploadedFile.size <= this.maxSizeInBytes;
                         break;
                     case 6:
-                        isValid = true;
+                        isValid = true; // Review step is always valid
                         break;
                 }
 
@@ -1336,7 +1360,7 @@
                     return y;
                 };
 
-                // Collect form data
+                // Collect form data for PDF
                 const fields = {
                     'Company Name': this.formData.company_name,
                     'Company Email': this.formData.company_email,
@@ -1372,7 +1396,6 @@
                 };
 
                 y = addSection('Company Information', fields, 30);
-
                 doc.save('coffee_supply_chain_form.pdf');
             }
 
@@ -1470,140 +1493,175 @@
                 };
 
                 reviewContent.innerHTML = `
-                    <div style="display: grid; gap: 2rem;">
-                        <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
-                            <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
-                                <i class="fas fa-user-tag" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
-                                Registration Type
-                            </h3>
-                            <p style="color: var(--text-dark); font-size: 1.1rem; font-weight: 600;">
-                                ${userTypeLabels[this.formData.user_type] || 'Not selected'}
-                            </p>
-                        </div>
+                <div style="display: grid; gap: 2rem;">
+                    <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
+                        <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-user-tag" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
+                            Registration Type
+                        </h3>
+                        <p style="color: var(--text-dark); font-size: 1.1rem; font-weight: 600;">
+                            ${userTypeLabels[this.formData.user_type] || 'Not selected'}
+                        </p>
+                    </div>
 
-                        <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
-                            <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
-                                <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
-                                Personal Information
-                            </h3>
-                            <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Name:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.name || 'Not provided'}</span>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Email:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.email || 'Not provided'}</span>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Phone:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.phone || 'Not provided'}</span>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Address:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.address || 'Not provided'}</span>
-                                </div>
+                    <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
+                        <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
+                            Personal Information
+                        </h3>
+                        <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Name:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.name || 'Not provided'}</span>
                             </div>
-                        </div>
-
-                        <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
-                            <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
-                                <i class="fas fa-building" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
-                                Company Information
-                            </h3>
-                            <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Company Name:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.company_name || 'Not provided'}</span>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Company Email:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.company_email || 'Not provided'}</span>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Company Phone:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.company_phone || 'Not provided'}</span>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--coffee-dark);">Registration Number:</strong><br>
-                                    <span style="color: var(--text-dark);">${this.formData.registration_number || 'Not provided'}</span>
-                                </div>
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Email:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.email || 'Not provided'}</span>
                             </div>
-                            <div style="margin-top: 1rem;">
-                                <strong style="color: var(--coffee-dark);">Company Address:</strong><br>
-                                <span style="color: var(--text-dark);">${this.formData.company_address || 'Not provided'}</span>
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Phone:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.phone || 'Not provided'}</span>
                             </div>
-                            <div style="margin-top: 1rem;">
-                                <strong style="color: var(--coffee-dark);">Financial Information:</strong><br>
-                                <span style="color: var(--text-dark);">
-                                    Annual Revenue: ${this.formData.annual_revenue || 'Not provided'}<br>
-                                    Years in Business: ${this.formData.years_in_business || 'Not provided'}<br>
-                                    Business Bank Account: ${this.formData.business_bank || 'Not provided'}<br>
-                                    Debt-to-Equity Ratio: ${this.formData.debt_to_equity_ratio || 'Not provided'}<br>
-                                    Cash Flow Summary Year 1: ${this.formData.cash_flow_summary_year_1 || 'Not provided'}<br>
-                                    Cash Flow Summary Year 2: ${this.formData.cash_flow_summary_year_2 || 'Not provided'}<br>
-                                    Credit Score: ${this.formData.credit_score || 'Not provided'}
-                                </span>
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Address:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.address || 'Not provided'}</span>
                             </div>
-                            <div style="margin-top: 1rem;">
-                                <strong style="color: var(--coffee-dark);">Reputation:</strong><br>
-                                <span style="color: var(--text-dark);">
-                                    Reference 1: ${this.formData.ref1_name || 'Not provided'} (${this.formData.ref1_contact || 'Not provided'}, ${this.formData.ref1_relationship || 'Not provided'})<br>
-                                    Reference 2: ${this.formData.ref2_name || 'Not provided'} (${this.formData.ref2_contact || 'Not provided'}, ${this.formData.ref2_relationship || 'Not provided'})<br>
-                                    Reference 3: ${this.formData.ref3_name || 'Not provided'} (${this.formData.ref3_contact || 'Not provided'}, ${this.formData.ref3_relationship || 'Not provided'})<br>
-                                    Legal Disputes: ${this.formData.legal_disputes || 'Not provided'}<br>
-                                    ${this.formData.legal_disputes === 'yes' ? `Details: ${this.formData.legal_dispute_details || 'Not provided'}` : ''}
-                                </span>
-                            </div>
-                            <div style="margin-top: 1rem;">
-                                <strong style="color: var(--coffee-dark);">Compliance:</strong><br>
-                                <span style="color: var(--text-dark);">
-                                    Certification 1: ${this.formData.cert1_type || 'Not provided'} (${this.formData.cert1_issuer || 'Not provided'}, Expires: ${this.formData.cert1_expiry || 'Not provided'})<br>
-                                    Certification 2: ${this.formData.cert2_type || 'Not provided'} (${this.formData.cert2_issuer || 'Not provided'}, Expires: ${this.formData.cert2_expiry || 'Not provided'})<br>
-                                    Environmental Compliance: ${this.formData.env_compliance || 'Not provided'}<br>
-                                    ${this.formData.env_compliance === 'no' ? `Details: ${this.formData.env_compliance_details || 'Not provided'}` : ''}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
-                            <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
-                                <i class="fas fa-file-upload" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
-                                Uploaded PDF
-                            </h3>
-                            <p style="color: var(--text-dark); font-size: 1.1rem; font-weight: 600;">
-                                ${this.uploadedFile ? this.uploadedFile.name : 'No file uploaded'}
-                            </p>
-                        </div>
-
-                        <div style="background: rgba(40, 167, 69, 0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(40, 167, 69, 0.2);">
-                            <p style="color: var(--success); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-info-circle"></i>
-                                By completing this registration, you agree to our Terms of Service and Privacy Policy.
-                            </p>
                         </div>
                     </div>
-                `;
+
+                    <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
+                        <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-building" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
+                            Company Information
+                        </h3>
+                        <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Company Name:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.company_name || 'Not provided'}</span>
+                            </div>
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Company Email:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.company_email || 'Not provided'}</span>
+                            </div>
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Company Phone:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.company_phone || 'Not provided'}</span>
+                            </div>
+                            <div>
+                                <strong style="color: var(--coffee-dark);">Registration Number:</strong><br>
+                                <span style="color: var(--text-dark);">${this.formData.registration_number || 'Not provided'}</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="color: var(--coffee-dark);">Company Address:</strong><br>
+                            <span style="color: var(--text-dark);">${this.formData.company_address || 'Not provided'}</span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="color: var(--coffee-dark);">Financial Information:</strong><br>
+                            <span style="color: var(--text-dark);">
+                                Annual Revenue: ${this.formData.annual_revenue || 'Not provided'}<br>
+                                Years in Business: ${this.formData.years_in_business || 'Not provided'}<br>
+                                Business Bank Account: ${this.formData.business_bank || 'Not provided'}<br>
+                                Debt-to-Equity Ratio: ${this.formData.debt_to_equity_ratio || 'Not provided'}<br>
+                                Cash Flow Summary Year 1: ${this.formData.cash_flow_summary_year_1 || 'Not provided'}<br>
+                                Cash Flow Summary Year 2: ${this.formData.cash_flow_summary_year_2 || 'Not provided'}<br>
+                                Credit Score: ${this.formData.credit_score || 'Not provided'}
+                            </span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="color: var(--coffee-dark);">Reputation:</strong><br>
+                            <span style="color: var(--text-dark);">
+                                Reference 1: ${this.formData.ref1_name || 'Not provided'} (${this.formData.ref1_contact || 'Not provided'}, ${this.formData.ref1_relationship || 'Not provided'})<br>
+                                Reference 2: ${this.formData.ref2_name || 'Not provided'} (${this.formData.ref2_contact || 'Not provided'}, ${this.formData.ref2_relationship || 'Not provided'})<br>
+                                Reference 3: ${this.formData.ref3_name || 'Not provided'} (${this.formData.ref3_contact || 'Not provided'}, ${this.formData.ref3_relationship || 'Not provided'})<br>
+                                Legal Disputes: ${this.formData.legal_disputes || 'Not provided'}<br>
+                                ${this.formData.legal_disputes === 'yes' ? `Details: ${this.formData.legal_dispute_details || 'Not provided'}` : ''}
+                            </span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="color: var(--coffee-dark);">Compliance:</strong><br>
+                            <span style="color: var(--text-dark);">
+                                Certification 1: ${this.formData.cert1_type || 'Not provided'} (${this.formData.cert1_issuer || 'Not provided'}, Expires: ${this.formData.cert1_expiry || 'Not provided'})<br>
+                                Certification 2: ${this.formData.cert2_type || 'Not provided'} (${this.formData.cert2_issuer || 'Not provided'}, Expires: ${this.formData.cert2_expiry || 'Not provided'})<br>
+                                Environmental Compliance: ${this.formData.env_compliance || 'Not provided'}<br>
+                                ${this.formData.env_compliance === 'no' ? `Details: ${this.formData.env_compliance_details || 'Not provided'}` : ''}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
+                        <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
+                            <i class="fas fa-file-upload" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
+                            Uploaded PDF
+                        </h3>
+                        <p style="color: var(--text-dark); font-size: 1.1rem; font-weight: 600;">
+                            ${this.uploadedFile ? this.uploadedFile.name : 'No file uploaded'}
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(40, 167, 69, 0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(40, 167, 69, 0.2);">
+                        <p style="color: var(--success); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-info-circle"></i>
+                            By completing this registration, you agree to our Terms of Service and Privacy Policy.
+                        </p>
+                    </div>
+                </div>
+            `;
             }
 
             async submitForm() {
                 const nextBtn = document.getElementById('nextBtn');
                 nextBtn.classList.add('loading');
-                nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+                nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting application...';
 
                 try {
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    // Define fields to send
+                    const fieldsToSend = [
+                        'name', 'email', 'password', 'password_confirmation', 'phone', 'address', 'user_type',
+                        'company_name', 'company_email', 'company_phone', 'registration_number', 'company_address'
+                    ];
+
+                    // Create FormData object
+                    const formData = new FormData();
+                    // Add selected form fields
+                    fieldsToSend.forEach(field => {
+                        if (this.formData[field] !== undefined) {
+                            formData.append(field, this.formData[field]);
+                        }
+                    });
+                    // Add PDF file
+                    if (this.uploadedFile) {
+                        formData.append('pdf', this.uploadedFile);
+                    }
+
+                    // Send request to Laravel
+                    const response = await fetch('/register', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content'),
+                        },
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        if (response.status === 422) {
+                            const errors = result.errors;
+                            const errorMessages = Object.values(errors).flat().join('\n');
+                            throw new Error(errorMessages);
+                        }
+                        throw new Error(result.message || 'Registration failed');
+                    }
 
                     // Show success screen
                     document.querySelectorAll('.step-content').forEach(content => {
                         content.style.display = 'none';
                     });
-
                     document.getElementById('success').style.display = 'block';
                     document.querySelector('.step-navigation').style.display = 'none';
-
-                    // Update progress to 100%
                     document.getElementById('progressFill').style.width = '100%';
                     document.querySelectorAll('.step-indicator').forEach(indicator => {
                         indicator.classList.remove('active');
@@ -1615,7 +1673,7 @@
                     console.error('Registration failed:', error);
                     nextBtn.classList.remove('loading');
                     nextBtn.innerHTML = '<i class="fas fa-check"></i> Complete Registration';
-                    alert('Registration failed. Please try again.');
+                    alert(error.message || 'Registration failed. Please try again.');
                 }
             }
         }
