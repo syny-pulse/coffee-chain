@@ -841,12 +841,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="cash_flow_summary_year_1" class="form-label">Cash Flow Summary - Year 1 *</label>
+                        <label for="cash_flow_summary_year_1" id="label_year_1" class="form-label">Cash Flow Summary
+                            - Year 1 *</label>
                         <input type="text" id="cash_flow_summary_year_1" class="form-input" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="cash_flow_summary_year_2" class="form-label">Cash Flow Summary - Year 2 </label>
+                        <label for="cash_flow_summary_year_2" id="label_year_2" class="form-label">Cash Flow Summary
+                            - Year 2</label>
                         <input type="text" id="cash_flow_summary_year_2" class="form-input">
                     </div>
 
@@ -1039,13 +1041,11 @@
                     <i class="fas fa-check-circle success-icon"></i>
                     <div class="success-title">Welcome to Coffee Supply Chain!</div>
                     <p class="success-description">
-                        Your account has been created successfully. We've sent a verification email to your
-                        inbox. Please check your email and click the verification link to activate your account.
+                        Your application has been submitted successfully.
+                        You will receive an email notification once your application has been approved or if further
+                        details are required. Thank you for your patience.
                     </p>
-                    <a href="/login" class="nav-button primary">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Sign In to Your Account
-                    </a>
+
                 </div>
             </div>
 
@@ -1735,6 +1735,15 @@
                     }
                 });
             });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentYear = new Date().getFullYear();
+            const year1 = currentYear - 1;
+            const year2 = currentYear - 2;
+
+            document.getElementById("label_year_1").textContent = `Cash Flow Summary - ${year1} *`;
+            document.getElementById("label_year_2").textContent = `Cash Flow Summary - ${year2}`;
         });
     </script>
 </body>
