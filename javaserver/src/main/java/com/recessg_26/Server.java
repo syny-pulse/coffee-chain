@@ -2,6 +2,8 @@ package com.recessg_26;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -11,6 +13,39 @@ import java.util.concurrent.TimeUnit;
 
 class Server {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+     // Method to execute the query for pending companies
+    static void executeQuery(Connection conn) throws SQLException {
+        String query = "SELECT company_id, company_name, pdf_path FROM companies WHERE acceptance_status = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, "pending");
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                System.out.println("=== Companies with Pending Status ===");
+                int count = 0;
+                
+                while (rs.next()) {
+                    int companyId = rs.getInt("company_id");
+                    String companyName = rs.getString("company_name");
+                    String pdfPath = rs.getString("pdf_path");
+                    
+                    System.out.println("Company ID: " + companyId);
+                    System.out.println("Company Name: " + companyName);
+                    System.out.println("PDF Path: " + pdfPath);
+                    System.out.println("---");
+                    count++;
+                }
+                
+                if (count == 0) {
+                    System.out.println("No companies found with pending status.");
+                } else {
+                    System.out.println("Total companies with pending status: " + count);
+                }
+                System.out.println("=== End of Query Results ===");
+            }
+        }
+    }
     
     static void createConnection() throws SQLException, ClassNotFoundException {
         Connection conn = null;
@@ -19,8 +54,8 @@ class Server {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/coffeechain", "root", "");
             System.out.println("Database Connection success at: " + LocalDateTime.now());
             
-            // Add your database operations here
-            // For example: executeQuery(conn);
+            // Execute the query for pending companies
+            executeQuery(conn);
             
         } finally {
             if (conn != null) {
