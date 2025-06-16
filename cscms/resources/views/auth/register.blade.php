@@ -1089,14 +1089,10 @@
                 // User type selection
                 document.querySelectorAll('.user-type-card').forEach(card => {
                     card.addEventListener('click', () => {
-                        // Remove 'selected' class from all cards
                         document.querySelectorAll('.user-type-card').forEach(c => c.classList.remove(
                             'selected'));
-                        // Add 'selected' class to clicked card
                         card.classList.add('selected');
-                        // Set user_type in formData
                         this.formData.user_type = card.dataset.type;
-                        // Validate step to enable Next button
                         this.validateCurrentStep();
                     });
                 });
@@ -1106,6 +1102,18 @@
                     input.addEventListener('input', () => {
                         this.formData[input.id] = input.value;
                         this.validateField(input);
+                        // NEW: Handle conditional required fields for Reference 2
+                        if (input.id === 'ref2_name') {
+                            this.toggleReference2Fields(input.value);
+                        }
+                        // NEW: Handle conditional required fields for Reference 3
+                        if (input.id === 'ref3_name') {
+                            this.toggleReference3Fields(input.value);
+                        }
+                        // NEW: Handle conditional required fields for Certification 2
+                        if (input.id === 'cert2_type') {
+                            this.toggleCertification2Fields(input.value);
+                        }
                         this.validateCurrentStep();
                     });
 
@@ -1113,6 +1121,57 @@
                         this.validateField(input);
                     });
                 });
+
+                // NEW: Method to toggle required attributes for Reference 2 fields
+                this.toggleReference2Fields = (value) => {
+                    const ref2Contact = document.getElementById('ref2_contact');
+                    const ref2Relationship = document.getElementById('ref2_relationship');
+                    if (value.trim()) {
+                        ref2Contact.setAttribute('required', 'required');
+                        ref2Relationship.setAttribute('required', 'required');
+                    } else {
+                        ref2Contact.removeAttribute('required');
+                        ref2Relationship.removeAttribute('required');
+                        this.removeErrorMessage(ref2Contact);
+                        this.removeErrorMessage(ref2Relationship);
+                        ref2Contact.classList.remove('error');
+                        ref2Relationship.classList.remove('error');
+                    }
+                };
+
+                // NEW: Method to toggle required attributes for Reference 3 fields
+                this.toggleReference3Fields = (value) => {
+                    const ref3Contact = document.getElementById('ref3_contact');
+                    const ref3Relationship = document.getElementById('ref3_relationship');
+                    if (value.trim()) {
+                        ref3Contact.setAttribute('required', 'required');
+                        ref3Relationship.setAttribute('required', 'required');
+                    } else {
+                        ref3Contact.removeAttribute('required');
+                        ref3Relationship.removeAttribute('required');
+                        this.removeErrorMessage(ref3Contact);
+                        this.removeErrorMessage(ref3Relationship);
+                        ref3Contact.classList.remove('error');
+                        ref3Relationship.classList.remove('error');
+                    }
+                };
+
+                // NEW: Method to toggle required attributes for Certification 2 fields
+                this.toggleCertification2Fields = (value) => {
+                    const cert2Issuer = document.getElementById('cert2_issuer');
+                    const cert2Expiry = document.getElementById('cert2_expiry');
+                    if (value.trim()) {
+                        cert2Issuer.setAttribute('required', 'required');
+                        cert2Expiry.setAttribute('required', 'required');
+                    } else {
+                        cert2Issuer.removeAttribute('required');
+                        cert2Expiry.removeAttribute('required');
+                        this.removeErrorMessage(cert2Issuer);
+                        this.removeErrorMessage(cert2Expiry);
+                        cert2Issuer.classList.remove('error');
+                        cert2Expiry.classList.remove('error');
+                    }
+                };
 
                 // Radio buttons for legal disputes and environmental compliance
                 document.querySelectorAll('input[name="legal_disputes"]').forEach(radio => {
@@ -1126,7 +1185,7 @@
                         } else {
                             detailsGroup.style.display = 'none';
                             detailsInput.removeAttribute('required');
-                            this.formData.legal_dispute_details = ''; // Clear details if 'no'
+                            this.formData.legal_dispute_details = '';
                         }
                         this.validateCurrentStep();
                     });
@@ -1143,7 +1202,7 @@
                         } else {
                             detailsGroup.style.display = 'none';
                             detailsInput.removeAttribute('required');
-                            this.formData.env_compliance_details = ''; // Clear details if 'yes'
+                            this.formData.env_compliance_details = '';
                         }
                         this.validateCurrentStep();
                     });
@@ -1168,12 +1227,12 @@
                             this.uploadedFile = null;
                             fileNameDisplay.textContent = 'Please select a valid PDF file';
                             fileNameDisplay.style.color = 'var(--error)';
-                            fileInput.value = ''; // Clear input
+                            fileInput.value = '';
                         } else if (file.size > this.maxSizeInBytes) {
                             this.uploadedFile = null;
                             fileNameDisplay.textContent = 'File size exceeds 10KB';
                             fileNameDisplay.style.color = 'var(--error)';
-                            fileInput.value = ''; // Clear input
+                            fileInput.value = '';
                         } else {
                             this.uploadedFile = file;
                             fileNameDisplay.textContent = file.name;
@@ -1296,7 +1355,7 @@
 
                 switch (this.currentStep) {
                     case 1:
-                        isValid = !!this.formData.user_type; // Check if user_type is set
+                        isValid = !!this.formData.user_type;
                         break;
                     case 2:
                         isValid = this.formData.name && this.formData.email &&
@@ -1322,12 +1381,33 @@
                             this.formData.cert1_type && this.formData.cert1_issuer && this.formData.cert1_expiry &&
                             this.formData.env_compliance &&
                             (this.formData.env_compliance !== 'no' || this.formData.env_compliance_details);
+
+                        // NEW: Validate Reference 2 fields if ref2_name is filled
+                        if (this.formData.ref2_name) {
+                            isValid = isValid && this.formData.ref2_contact && this.formData.ref2_relationship &&
+                                this.validateField(document.getElementById('ref2_contact')) &&
+                                this.validateField(document.getElementById('ref2_relationship'));
+                        }
+
+                        // NEW: Validate Reference 3 fields if ref3_name is filled
+                        if (this.formData.ref3_name) {
+                            isValid = isValid && this.formData.ref3_contact && this.formData.ref3_relationship &&
+                                this.validateField(document.getElementById('ref3_contact')) &&
+                                this.validateField(document.getElementById('ref3_relationship'));
+                        }
+
+                        // NEW: Validate Certification 2 fields if cert2_type is filled
+                        if (this.formData.cert2_type) {
+                            isValid = isValid && this.formData.cert2_issuer && this.formData.cert2_expiry &&
+                                this.validateField(document.getElementById('cert2_issuer')) &&
+                                this.validateField(document.getElementById('cert2_expiry'));
+                        }
                         break;
                     case 5:
                         isValid = !!this.uploadedFile && this.uploadedFile.size <= this.maxSizeInBytes;
                         break;
                     case 6:
-                        isValid = true; // Review step is always valid
+                        isValid = true;
                         break;
                 }
 
@@ -1362,7 +1442,6 @@
                     return y;
                 };
 
-                // Collect form data for PDF
                 const fields = {
                     'Company Name': this.formData.company_name,
                     'Company Email': this.formData.company_email,
@@ -1414,7 +1493,6 @@
                 this.animateStep();
 
                 if (this.currentStep === 6) {
-                    this.populateReview();
                     document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Complete Registration';
                 } else {
                     document.getElementById('nextBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
@@ -1434,12 +1512,10 @@
             }
 
             updateUI() {
-                // Update progress bar
                 const progressFill = document.getElementById('progressFill');
                 const progressPercent = ((this.currentStep - 1) / (this.totalSteps - 1)) * 100;
                 progressFill.style.width = `${progressPercent}%`;
 
-                // Update step indicators
                 document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
                     const stepNum = index + 1;
                     indicator.classList.remove('active', 'completed');
@@ -1455,17 +1531,14 @@
                     }
                 });
 
-                // Update step labels
                 document.querySelectorAll('.step-label').forEach((label, index) => {
                     label.classList.toggle('active', index + 1 === this.currentStep);
                 });
 
-                // Show/hide step content
                 document.querySelectorAll('.step-content').forEach((content, index) => {
                     content.classList.toggle('active', index + 1 === this.currentStep);
                 });
 
-                // Update navigation buttons
                 const prevBtn = document.getElementById('prevBtn');
                 const nextBtn = document.getElementById('nextBtn');
 
@@ -1591,16 +1664,6 @@
                         </div>
                     </div>
 
-                    <div style="background: rgba(111, 78, 55, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--coffee-medium);">
-                        <h3 style="color: var(--coffee-dark); margin-bottom: 1rem; font-size: 1.2rem;">
-                            <i class="fas fa-file-upload" style="margin-right: 0.5rem; color: var(--coffee-medium);"></i>
-                            Uploaded PDF
-                        </h3>
-                        <p style="color: var(--text-dark); font-size: 1.1rem; font-weight: 600;">
-                            ${this.uploadedFile ? this.uploadedFile.name : 'No file uploaded'}
-                        </p>
-                    </div>
-
                     <div style="background: rgba(40, 167, 69, 0.1); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(40, 167, 69, 0.2);">
                         <p style="color: var(--success); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-info-circle"></i>
@@ -1617,26 +1680,21 @@
                 nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting application...';
 
                 try {
-                    // Define fields to send
                     const fieldsToSend = [
                         'name', 'email', 'password', 'password_confirmation', 'phone', 'address', 'user_type',
                         'company_name', 'company_email', 'company_phone', 'registration_number', 'company_address'
                     ];
 
-                    // Create FormData object
                     const formData = new FormData();
-                    // Add selected form fields
                     fieldsToSend.forEach(field => {
                         if (this.formData[field] !== undefined) {
                             formData.append(field, this.formData[field]);
                         }
                     });
-                    // Add PDF file
                     if (this.uploadedFile) {
                         formData.append('pdf', this.uploadedFile);
                     }
 
-                    // Send request to Laravel
                     const response = await fetch('/register', {
                         method: 'POST',
                         body: formData,
@@ -1658,7 +1716,6 @@
                         throw new Error(result.message || 'Registration failed');
                     }
 
-                    // Show success screen
                     document.querySelectorAll('.step-content').forEach(content => {
                         content.style.display = 'none';
                     });
@@ -1680,18 +1737,15 @@
             }
         }
 
-        // Initialize the onboarding flow
         document.addEventListener('DOMContentLoaded', () => {
             new OnboardingFlow();
         });
 
-        // Add entrance animations
         document.addEventListener('DOMContentLoaded', () => {
             const elements = document.querySelectorAll('.onboarding-header, .progress-container, .onboarding-card');
             elements.forEach((el, index) => {
                 el.style.opacity = '0';
                 el.style.transform = 'translateY(30px)';
-
                 setTimeout(() => {
                     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
                     el.style.opacity = '1';
@@ -1700,7 +1754,6 @@
             });
         });
 
-        // Legal disputes radio button handling
         document.addEventListener('DOMContentLoaded', function() {
             const radios = document.getElementsByName('legal_disputes');
             const detailsGroup = document.getElementById('legal_dispute_details_group');
@@ -1720,7 +1773,6 @@
             });
         });
 
-        // Environmental compliance radio button handling
         document.addEventListener('DOMContentLoaded', function() {
             const envRadios = document.getElementsByName('env_compliance');
             const envDetailsGroup = document.getElementById('env_compliance_details_group');
