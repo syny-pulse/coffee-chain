@@ -822,7 +822,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="annual_revenue" class="form-label">Annual Revenue (UGX, last year) *</label>
-                        <input type="text" id="annual_revenue" class="form-input" required>
+                        <input type="number" id="annual_revenue" class="form-input" required>
                     </div>
 
                     <div class="form-group">
@@ -832,29 +832,31 @@
 
                     <div class="form-group">
                         <label for="business_bank" class="form-label">Business Bank Account *</label>
-                        <input type="text" id="business_bank" class="form-input" required>
+                        <input type="number" id="business_bank" class="form-input" required>
                     </div>
 
                     <div class="form-group">
                         <label for="debt_to_equity_ratio" class="form-label">Debt-to-Equity Ratio *</label>
-                        <input type="text" id="debt_to_equity_ratio" class="form-input" required>
+                        <input type="number" id="debt_to_equity_ratio" class="form-input" required min="0.0"
+                            max="4.0" step="0.1">
                     </div>
 
                     <div class="form-group">
                         <label for="cash_flow_summary_year_1" id="label_year_1" class="form-label">Cash Flow Summary
                             - Year 1 *</label>
-                        <input type="text" id="cash_flow_summary_year_1" class="form-input" required>
+                        <input type="number" id="cash_flow_summary_year_1" class="form-input" required>
                     </div>
 
                     <div class="form-group">
                         <label for="cash_flow_summary_year_2" id="label_year_2" class="form-label">Cash Flow Summary
                             - Year 2</label>
-                        <input type="text" id="cash_flow_summary_year_2" class="form-input">
+                        <input type="number" id="cash_flow_summary_year_2" class="form-input">
                     </div>
 
                     <div class="form-group">
                         <label for="credit_score" class="form-label">Credit Score *</label>
-                        <input type="text" id="credit_score" class="form-input" required>
+                        <input type="number" id="credit_score" class="form-input" required max="90"
+                            min = "0">
                     </div>
                 </div>
 
