@@ -25,15 +25,19 @@ class Company extends Model
     ];
 
     protected $casts = [
+        'company_type' => 'string',
+        'acceptance_status' => 'string',
         'financial_risk_rating' => 'decimal:1',
         'reputational_risk_rating' => 'decimal:1',
         'compliance_risk_rating' => 'decimal:1',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     // Relationships
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'company_id', 'company_id');
     }
 
     public function isAccepted()
