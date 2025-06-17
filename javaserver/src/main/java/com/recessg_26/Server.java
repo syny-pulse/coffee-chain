@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -110,8 +112,63 @@ class Server {
         }
     }
 
+    static CompanyPdfData parsePdfData(String text) {
+        // List of fields to extract
+        String[] fields = {
+                "Annual Revenue (UGX):", 
+                "Debt-to-Equity Ratio:", 
+                "Cash Flow Summary - Year 1:", 
+                "Cash Flow Summary - Year 2:",
+                "Credit Score:", 
+                "Reference 1 - Name:",
+                "Reference 2 - Name:", 
+                "Reference 3 - Name:", 
+                "Legal Disputes:",
+                "Certification 1 - Type:",
+                "Certification 2 - Type:",
+                "Certification 1 - Expiry:",
+                "Certification 2 - Expiry:", 
+                "Environmental Compliance:"
+        };
+
+        CompanyPdfData data = new CompanyPdfData();
+        // Extract each field from the text
+
+        data.annualRevenue = extract(text, fields[0]);
+        data.debtToEquityRatio = extract(text, fields[1]);
+        data.cashFlowYear1 = extract(text, fields[2]);
+        data.cashFlowYear2 = extract(text, fields[3]);
+        data.creditScore = extract(text, fields[4]);
+        data.reference1Name = extract(text, fields[5]);
+        data.reference2Name = extract(text, fields[6]);
+        data.reference3Name = extract(text, fields[7]);
+        data.legalDisputes = extract(text, fields[8]);
+        data.certification1Type = extract(text, fields[9]);
+        data.certification2Type = extract(text, fields[10]);
+        data.certification1Expiry = extract(text, fields[11]);
+        data.certification2Expiry = extract(text, fields[12]);
+        data.environmentalCompliance = extract(text, fields[13]);
+
+        return data;
+
+    }
+
+    static String extract(String text, String label) {
+        // Use multiline flag to handle labels across lines
+        Pattern pattern = Pattern.compile(Pattern.quote(label) + "\\s*(.*?)(?=\\n\\S|$)", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            String value = matcher.group(1).trim();
+            return value.isEmpty() ? "Not found" : value;
+        
+        } else {
+            return "Not found";
+        }
+    }
+
+
     // Method to process all PDFs
-    static void processPdfFiles(List<CompanyData> companies) {
+    static void processPdfs(List<CompanyData> companies) {
         if (companies.isEmpty()) {
             System.out.println("No PDFs to process.");
             return;
@@ -119,7 +176,14 @@ class Server {
         System.out.println("=== Processing PDFs ===");
         for (CompanyData company : companies) {
             try {
-                System.out.println("Processing PDF for Company ID: " + company.companyName);
+                System.out.println("Processing PDF for: " + company.companyName);
+
+                // Extract text from PDF
+                String pdfText = extractTextFromPdf(company.pdfPath);
+
+                // Parse the extracted text
+                CompanyPdfData pdfData = parsePdfData(pdfText);
+
 
 
             } catch (Exception e) {
@@ -190,7 +254,8 @@ class Server {
         Runnable task = () -> {
             try {
                 System.out.println("Running scheduled database task...");
-                createConnection();
+                List<CompanyData> companies = createConnection();
+                processPdfs(companies);
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
