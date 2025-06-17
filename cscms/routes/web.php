@@ -4,6 +4,69 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Processor\ProcessorDashboardController;
+use App\Http\Controllers\Processor\InventoryController;
+use App\Http\Controllers\Processor\RetailerOrderController;
+use App\Http\Controllers\Processor\FarmerOrderController;
+use App\Http\Controllers\Processor\MessageController;
+use App\Http\Controllers\Processor\AnalyticsController;
+use App\Http\Controllers\Processor\EmployeeController;
+
+Route::prefix('processor')->group(function () {
+    Route::get('/dashboard', [ProcessorDashboardController::class, 'index'])->name('processor.dashboard');
+    
+    Route::resource('employee', EmployeeController::class)->names([
+        'index' => 'processor.employee.index',
+        'create' => 'processor.employee.create',
+        'store' => 'processor.employee.store',
+        'show' => 'processor.employee.show',
+        'edit' => 'processor.employee.edit',
+        'update' => 'processor.employee.update',
+        'destroy' => 'processor.employee.destroy',
+    ]);
+    
+    Route::resource('inventory', InventoryController::class)->names([
+        'index' => 'processor.inventory.index',
+        'create' => 'processor.inventory.create',
+        'store' => 'processor.inventory.store',
+        'show' => 'processor.inventory.show',
+        'edit' => 'processor.inventory.edit',
+        'update' => 'processor.inventory.update',
+        'destroy' => 'processor.inventory.destroy',
+    ]);
+    
+    Route::resource('retailer_order', RetailerOrderController::class)->names([
+        'index' => 'processor.order.retailer_order.index',
+        'create' => 'processor.order.retailer_order.create',
+        'store' => 'processor.order.retailer_order.store',
+        'show' => 'processor.order.retailer_order.show',
+        'edit' => 'processor.order.retailer_order.edit',
+        'update' => 'processor.order.retailer_order.update',
+        'destroy' => 'processor.order.retailer_order.destroy',
+    ]);
+    
+    Route::resource('farmer_order', FarmerOrderController::class)->names([
+        'index' => 'processor.order.farmer_order.index',
+        'create' => 'processor.order.farmer_order.create',
+        'store' => 'processor.order.farmer_order.store',
+        'show' => 'processor.order.farmer_order.show',
+        'edit' => 'processor.order.farmer_order.edit',
+        'update' => 'processor.order.farmer_order.update',
+        'destroy' => 'processor.order.farmer_order.destroy',
+    ]);
+    
+    Route::resource('message', MessageController::class)->names([
+        'index' => 'processor.message.index',
+        'create' => 'processor.message.create',
+        'store' => 'processor.message.store',
+        'show' => 'processor.message.show',
+        'edit' => 'processor.message.edit',
+        'update' => 'processor.message.update',
+        'destroy' => 'processor.message.destroy',
+    ]);
+    
+    Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
+});
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,15 +81,16 @@ Route::middleware(['guest'])->group(function () {
     Route::post('register', [RegisterController::class, 'register']);
 });
 
-// Logout route (only for authenticated users)
-Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+// Logout route
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-// Protected routes (require authentication)
+// General dashboard route
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); 
+
+// Role-specific routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // Role-specific routes
-    Route::middleware(['role:farmer'])->prefix('farmer')->name('farmer.')->group(function () {
+    // Farmer routes
+    Route::prefix('farmer')->name('farmer.')->group(function () {
         Route::get('/inventory', function () {
             return view('farmer.inventory');
         })->name('inventory');
@@ -40,21 +104,15 @@ Route::middleware(['auth'])->group(function () {
         })->name('analytics');
     });
 
-    Route::middleware(['role:processor'])->prefix('processor')->name('processor.')->group(function () {
+    // Processor extra routes
+    Route::prefix('processor')->name('processor.')->group(function () {
         Route::get('/production', function () {
             return view('processor.production');
         })->name('production');
-        
-        Route::get('/orders', function () {
-            return view('processor.orders');
-        })->name('orders');
-        
-        Route::get('/inventory', function () {
-            return view('processor.inventory');
-        })->name('inventory');
     });
 
-    Route::middleware(['role:retailer'])->prefix('retailer')->name('retailer.')->group(function () {
+    // Retailer routes
+    Route::prefix('retailer')->name('retailer.')->group(function () {
         Route::get('/orders', function () {
             return view('retailer.orders');
         })->name('orders');
@@ -68,12 +126,14 @@ Route::middleware(['auth'])->group(function () {
         })->name('customers');
     });
 
-    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Admin routes (commented out)
+    
+    Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', function () {
             return view('admin.users');
         })->name('users');
         
-        Route::get('/companies', function () {
+        Route::get('/companies', function() {
             return view('admin.companies');
         })->name('companies');
         
@@ -81,13 +141,14 @@ Route::middleware(['auth'])->group(function () {
             return view('admin.analytics');
         })->name('analytics');
         
-        Route::get('/settings', function () {
+        Route::get('/settings', function() {
             return view('admin.settings');
         })->name('settings');
     });
     
-    // Profile routes
+
+    // Profile route
     Route::get('/profile', function () {
-        return view('profile.show');
+        return view('profile.show');  
     })->name('profile.show');
-});
+ });
