@@ -90,7 +90,7 @@ class RegisterController extends Controller
 
             // Return success response
             return response()->json([
-                'message' => 'Registration successful. Please check your email for verification.',
+                'message' => 'Registration successful.',
             ], 201);
 
         } catch (ValidationException $e) {

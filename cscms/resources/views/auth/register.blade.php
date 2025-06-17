@@ -1493,6 +1493,7 @@
                 this.animateStep();
 
                 if (this.currentStep === 6) {
+                    this.populateReview();
                     document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Complete Registration';
                 } else {
                     document.getElementById('nextBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
