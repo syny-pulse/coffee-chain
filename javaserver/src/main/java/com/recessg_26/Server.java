@@ -1,5 +1,7 @@
 package com.recessg_26;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,17 +9,55 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+
 class Server {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-     // Method to execute the query for pending companies
-    static void executeQuery(Connection conn) throws SQLException {
+    // Data class to hold company data
+    static class CompanyData {
+        int companyId;
+        String companyName;
+        String pdfPath;
+
+        CompanyData(int companyId, String companyName, String pdfPath) {
+            this.companyId = companyId;
+            this.companyName = companyName;
+            this.pdfPath = pdfPath;
+        }
+    }
+
+    // Data class to hold extracted PDF information
+    static class CompanyPdfData{
+        String reference1Name;
+        String reference2Name;
+        String reference3Name;
+        String annualRevenue;
+        String cashFlowYear1;
+        String cashFlowYear2;
+        String certification1Type;
+        String certification2Type;
+        String certification1Expiry;
+        String certification2Expiry;
+        String debtToEquityRatio;
+        String creditScore;
+        String legalDisputes;
+        String environmentalCompliance;
+    }
+
+    // Method to execute the query for pending companies
+    static List<CompanyData> executeQuery(Connection conn) throws SQLException {
         String query = "SELECT company_id, company_name, pdf_path FROM companies WHERE acceptance_status = ?";
-        
+        List<CompanyData> companies = new ArrayList<>();
+
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, "pending");
             
@@ -29,6 +69,8 @@ class Server {
                     int companyId = rs.getInt("company_id");
                     String companyName = rs.getString("company_name");
                     String pdfPath = rs.getString("pdf_path");
+
+                    companies.add(new CompanyData(companyId, companyName, pdfPath));
                     
                     System.out.println("Company ID: " + companyId);
                     System.out.println("Company Name: " + companyName);
@@ -44,10 +86,48 @@ class Server {
                 }
                 System.out.println("=== End of Query Results ===");
             }
+            return companies;
         }
     }
-    
-    static void createConnection() throws SQLException, ClassNotFoundException {
+
+    static String extractTextFromPdf(String pdfPath) throws IOException {
+        // Verify file exists
+        File pdfFile = new File(pdfPath);
+        if (!pdfFile.exists()) {
+             throw new IOException("PDF file not found: " + pdfPath);
+        }
+
+        try (PDDocument document = Loader.loadPDF(pdfFile)) {
+            if (document.isEncrypted()) {
+                throw new IOException("Error: PDF document is encrypted and cannot be processed.");
+            }
+
+            PDFTextStripper stripper = new PDFTextStripper();
+            String text = stripper.getText(document);// Verify file exists
+        
+            return text;
+
+        }
+    }
+
+    // Method to process all PDFs
+    static void processPdfFiles(List<CompanyData> companies) {
+        if (companies.isEmpty()) {
+            System.out.println("No PDFs to process.");
+            return;
+        }
+        System.out.println("=== Processing PDFs ===");
+        for (CompanyData company : companies) {
+            try {
+                System.out.println("Processing PDF for Company ID: " + company.companyName);
+
+
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    static List<CompanyData> createConnection() throws SQLException, ClassNotFoundException {
         Connection conn = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -55,8 +135,10 @@ class Server {
             System.out.println("Database Connection success at: " + LocalDateTime.now());
             
             // Execute the query for pending companies
-            executeQuery(conn);
-            
+            List<CompanyData> companies = executeQuery(conn);
+
+            return companies;
+
         } finally {
             if (conn != null) {
                 try {
