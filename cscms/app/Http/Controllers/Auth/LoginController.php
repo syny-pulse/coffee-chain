@@ -48,10 +48,17 @@ class LoginController extends Controller
                 ]);
             }
 
-            // Log login activity (if you have activity logging)
-            // activity()->causedBy($user)->log('User logged in');
-
-            return redirect()->intended($this->redirectTo);
+            // Redirect based on user role
+            switch ($user->user_type) {
+                case 'farmer':
+                    return redirect()->route('farmers.dashboard');
+                case 'processor':
+                    return redirect()->route('processor.dashboard');
+                case 'retailer':
+                    return redirect()->route('retailer.dashboard');
+                case 'admin':
+                    return redirect()->route('admin.dashboard');
+            }
         }
 
         // If login fails, increment login attempts
