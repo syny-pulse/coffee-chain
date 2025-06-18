@@ -33,7 +33,7 @@ class CheckRole
         if ($request->is('dashboard')) {
             switch ($user->user_type) {
                 case 'farmer':
-                    return redirect()->route('farmers.dashboard');
+                    return redirect()->route('dashboard.farmer');
                 case 'processor':
                     return redirect()->route('processor.dashboard');
                 case 'retailer':
