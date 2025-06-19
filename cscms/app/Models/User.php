@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -35,7 +36,7 @@ class User extends Authenticatable
     // Relationships
     public function company()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Company::class, 'company_id', 'company_id');
     }
 
     // Role checking methods

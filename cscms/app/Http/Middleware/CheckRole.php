@@ -29,6 +29,20 @@ class CheckRole
             abort(403, 'Unauthorized access.');
         }
 
+        // Redirect to appropriate dashboard based on user type
+        if ($request->is('dashboard')) {
+            switch ($user->user_type) {
+                case 'farmer':
+                    return redirect()->route('dashboard.farmer');
+                case 'processor':
+                    return redirect()->route('processor.dashboard');
+                case 'retailer':
+                    return redirect()->route('retailer.dashboard');
+                case 'admin':
+                    return redirect()->route('admin.dashboard');
+            }
+        }
+
         return $next($request);
     }
 }

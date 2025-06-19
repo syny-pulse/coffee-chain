@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('processor_company_id');
             $table->string('employee_name', 100);
             $table->string('employee_code', 30)->unique();
-            $table->set('skill_set', ['grading', 'roasting', 'packaging', 'logistics', 'quality_control', 'maintenance']);
+            $table->enum('skill_set', ['grading', 'roasting', 'packaging', 'logistics', 'quality_control', 'maintenance']);
             $table->enum('primary_station', ['grading', 'roasting', 'packaging', 'logistics', 'quality_control', 'maintenance']);
             $table->enum('current_station', ['grading', 'roasting', 'packaging', 'logistics', 'quality_control', 'maintenance'])->nullable();
             $table->enum('availability_status', ['available', 'busy', 'on_break', 'off_duty', 'on_leave'])->default('available');

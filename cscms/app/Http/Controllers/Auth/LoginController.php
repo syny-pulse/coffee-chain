@@ -48,10 +48,7 @@ class LoginController extends Controller
                 ]);
             }
 
-            // Log login activity (if you have activity logging)
-            // activity()->causedBy($user)->log('User logged in');
-
-            return redirect()->intended($this->redirectTo);
+            return redirect()->intended('/dashboard');
         }
 
         // If login fails, increment login attempts
