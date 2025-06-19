@@ -19,6 +19,7 @@ class Company extends Model
         'address',
         'registration_number',
         'acceptance_status',
+        'pdf_path',
         'financial_risk_rating',
         'reputational_risk_rating',
         'compliance_risk_rating',

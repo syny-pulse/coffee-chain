@@ -76,9 +76,9 @@ Route::get('/', function () {
 Route::middleware(['guest'])->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
-    
+
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('register', [RegisterController::class, 'register']);
+    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 });
 
 // Logout route
@@ -89,16 +89,18 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 
 // Role-specific routes
 Route::middleware(['auth'])->group(function () {
+
     // Farmer routes
     Route::prefix('farmer')->name('farmer.')->group(function () {
+
         Route::get('/inventory', function () {
             return view('farmer.inventory');
         })->name('inventory');
-        
+
         Route::get('/orders', function () {
             return view('farmer.orders');
         })->name('orders');
-        
+
         Route::get('/analytics', function () {
             return view('farmer.analytics');
         })->name('analytics');
@@ -109,6 +111,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/production', function () {
             return view('processor.production');
         })->name('production');
+
     });
 
     // Retailer routes
@@ -116,11 +119,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/orders', function () {
             return view('retailer.orders');
         })->name('orders');
-        
+
         Route::get('/inventory', function () {
             return view('retailer.inventory');
         })->name('inventory');
-        
+
         Route::get('/customers', function () {
             return view('retailer.customers');
         })->name('customers');
@@ -132,14 +135,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users', function () {
             return view('admin.users');
         })->name('users');
+
         
-        Route::get('/companies', function() {
+        Route::get('/companies', function () {
+
             return view('admin.companies');
         })->name('companies');
-        
+
         Route::get('/analytics', function () {
             return view('admin.analytics');
         })->name('analytics');
+
         
         Route::get('/settings', function() {
             return view('admin.settings');
@@ -148,7 +154,10 @@ Route::middleware(['auth'])->group(function () {
     
 
     // Profile route
+
     Route::get('/profile', function () {
         return view('profile.show');  
     })->name('profile.show');
+
  });
+
