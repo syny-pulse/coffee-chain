@@ -28,19 +28,23 @@ class Server {
     // Data class to hold company data
     static class CompanyData {
         int companyId;
+        String email;
         String companyName;
         String pdfPath;
 
-        CompanyData(int companyId, String companyName, String pdfPath) {
+        CompanyData(int companyId, String companyName, String pdfPath, String email) {
             this.companyId = companyId;
             this.companyName = companyName;
             this.pdfPath = pdfPath;
+            this.email = email;
         }
     }
 
     // Data class to hold extracted PDF information
     static class CompanyPdfData{
         int companyId;
+        String name;
+        String email;
         String reference1Name;
         String reference2Name;
         String reference3Name;
@@ -60,7 +64,7 @@ class Server {
 
     // Method to execute the query for pending companies
     static List<CompanyData> executeQuery(Connection conn) throws SQLException {
-        String query = "SELECT company_id, company_name, pdf_path FROM companies WHERE acceptance_status = ?";
+        String query = "SELECT company_id, company_name, pdf_path, email FROM companies WHERE acceptance_status = ?";
         List<CompanyData> companies = new ArrayList<>();
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -74,8 +78,9 @@ class Server {
                     int companyId = rs.getInt("company_id");
                     String companyName = rs.getString("company_name");
                     String pdfPath = rs.getString("pdf_path");
+                    String email = rs.getString("email");
 
-                    companies.add(new CompanyData(companyId, companyName, pdfPath));
+                    companies.add(new CompanyData(companyId, companyName, pdfPath, email));
                     
                     System.out.println("Company ID: " + companyId);
                     System.out.println("Company Name: " + companyName);
@@ -96,10 +101,16 @@ class Server {
     }
 
     static String extractTextFromPdf(String pdfPath) throws IOException {
+    // Use File.separator for cross-platform compatibility
+    String storageBasePath = "C:" + File.separator + "wamp64" + File.separator + 
+                            "www" + File.separator + "coffee-chain" + File.separator + 
+                            "cscms" + File.separator + "storage" + File.separator + 
+                            "app" + File.separator + "public" + File.separator;
+    String absolutePath = storageBasePath + pdfPath.replace("\", File.separator); // Normalize separators
         // Verify file exists
-        File pdfFile = new File(pdfPath);
+        File pdfFile = new File(absolutePath);
         if (!pdfFile.exists()) {
-             throw new IOException("PDF file not found: " + pdfPath);
+             throw new IOException("PDF file not found: " + absolutePath);
         }
 
         try (PDDocument document = Loader.loadPDF(pdfFile)) {
@@ -115,7 +126,7 @@ class Server {
         }
     }
 
-    static CompanyPdfData parsePdfData(String text, int companyId) {
+    static CompanyPdfData parsePdfData(String text, int companyId, String companyName, String email) {
         // List of fields to extract
         String[] fields = {
                 "Annual Revenue (UGX):", 
@@ -139,6 +150,8 @@ class Server {
         // Extract each field from the text
 
         data.companyId = companyId;
+        data.name = companyName;
+        data.email = email;
         data.annualRevenue = safeParseLong(extract(text, fields[0]));
         data.debtToEquityRatio = safeParseDouble(extract(text, fields[1]));
         data.cashFlowYear1 = safeParseLong(extract(text, fields[2]));
@@ -311,6 +324,7 @@ class Server {
     }
 
 
+
     // Method to process all PDFs
     static void processPdfs(List<CompanyData> companies) {
         if (companies.isEmpty()) {
@@ -329,7 +343,7 @@ class Server {
                 String pdfText = extractTextFromPdf(company.pdfPath);
 
                 // Parse the extracted text
-                CompanyPdfData pdfData = parsePdfData(pdfText,company.companyId);
+                CompanyPdfData pdfData = parsePdfData(pdfText,company.companyId,company.companyName,company.email);
                  // Calculate risk ratings
                     double financialRiskRating = calculateFinancialRiskRating(pdfData);
                     double reputationalRiskRating = calculateReputationalRiskRating(pdfData);
@@ -337,13 +351,18 @@ class Server {
                     double totalScore = financialRiskRating + reputationalRiskRating + complianceRiskRating;
 
                      // Determine acceptance status
-                    String status = totalScore >= 20.0 ? "accepted" : "rejected";
+                    String status = totalScore >= 20.0 ? "visit_scheduled" : "rejected";
 
                     // Update database
                     updateCompanyRiskRatings(conn, pdfData, financialRiskRating, 
                                            reputationalRiskRating, complianceRiskRating, status);
-
-
+                    
+                    // Send email notification
+                    if (status.equals("visit_scheduled")) {
+                        Email.visitScheduledEmail(pdfData);
+                    } else {
+                        Email.rejectEmail(pdfData);
+                    }
 
             } catch (Exception e) {
                 System.out.println("Error processing company " + company.companyName + ": " + e.getMessage());
@@ -422,7 +441,8 @@ class Server {
         Runnable task = () -> {
             try {
                 System.out.println("Running scheduled database task...");
-                createConnection();
+                List<CompanyData> companies = createConnection();
+                processPdfs(companies);
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
