@@ -1,54 +1,110 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Add Harvest')
+@section('page-title', 'Add New Harvest')
+@section('page-subtitle', 'Record a new coffee harvest')
+
+@section('page-actions')
+    <a href="{{ route('farmers.harvests.index') }}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i>
+        Back to Harvests
+    </a>
+@endsection
 
 @section('content')
-    <h1><i class="fas fa-seedling"></i> Add New Harvest</h1>
-    @include('farmers.partials.errors')
-    <form action="{{ route('farmers.harvests.store') }}" method="POST">
-        @csrf
-        <div class="form-group">
-            <label for="coffee_variety">Coffee Variety</label>
-            <select name="coffee_variety" id="coffee_variety" required>
-                <option value="arabica">Arabica</option>
-                <option value="robusta">Robusta</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="processing_method">Processing Method</label>
-            <select name="processing_method" id="processing_method" required>
-                <option value="natural">Natural</option>
-                <option value="washed">Washed</option>
-                <option value="honey">Honey</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="grade">Grade</label>
-            <select name="grade" id="grade" required>
-                <option value="grade_1">Grade 1</option>
-                <option value="grade_2">Grade 2</option>
-                <option value="grade_3">Grade 3</option>
-                <option value="grade_4">Grade 4</option>
-                <option value="grade_5">Grade 5</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="quantity_kg">Quantity (kg)</label>
-            <input type="number" name="quantity_kg" id="quantity_kg" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="available_quantity_kg">Available Quantity (kg)</label>
-            <input type="number" name="available_quantity_kg" id="available_quantity_kg" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="harvest_date">Harvest Date</label>
-            <input type="date" name="harvest_date" id="harvest_date" required>
-        </div>
-        <div class="form-group">
-            <label for="quality_notes">Quality Notes</label>
-            <textarea name="quality_notes" id="quality_notes"></textarea>
-        </div>
-        <button type="submit" class="btn"><i class="fas fa-save"></i> Save</button>
-    </form>
-    <a href="{{ route('farmers.harvests.index') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    <div class="form-container">
+        <form action="{{ route('farmers.harvests.store') }}" method="POST">
+            @csrf
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'coffee_variety',
+                'label' => 'Coffee Variety',
+                'type' => 'select',
+                'required' => true,
+                'options' => [
+                    '' => 'Select Coffee Variety',
+                    'arabica' => 'Arabica',
+                    'robusta' => 'Robusta'
+                ]
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'processing_method',
+                'label' => 'Processing Method',
+                'type' => 'select',
+                'required' => true,
+                'options' => [
+                    '' => 'Select Processing Method',
+                    'natural' => 'Natural',
+                    'washed' => 'Washed',
+                    'honey' => 'Honey'
+                ]
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'grade',
+                'label' => 'Grade',
+                'type' => 'select',
+                'required' => true,
+                'options' => [
+                    '' => 'Select Grade',
+                    'grade_1' => 'Grade 1',
+                    'grade_2' => 'Grade 2',
+                    'grade_3' => 'Grade 3',
+                    'grade_4' => 'Grade 4',
+                    'grade_5' => 'Grade 5'
+                ]
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'quantity_kg',
+                'label' => 'Total Quantity (kg)',
+                'type' => 'number',
+                'value' => old('quantity_kg'),
+                'placeholder' => 'Enter total harvest quantity',
+                'required' => true,
+                'step' => '0.01',
+                'min' => '0'
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'available_quantity_kg',
+                'label' => 'Available Quantity (kg)',
+                'type' => 'number',
+                'value' => old('available_quantity_kg'),
+                'placeholder' => 'Enter available quantity for sale',
+                'required' => true,
+                'step' => '0.01',
+                'min' => '0'
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'harvest_date',
+                'label' => 'Harvest Date',
+                'type' => 'date',
+                'value' => old('harvest_date'),
+                'required' => true
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'quality_notes',
+                'label' => 'Quality Notes',
+                'type' => 'textarea',
+                'value' => old('quality_notes'),
+                'placeholder' => 'Add any notes about the harvest quality, conditions, etc.',
+                'rows' => '4'
+            ])
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Harvest
+                </button>
+                <a href="{{ route('farmers.harvests.index') }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
 @endsection

@@ -1,58 +1,109 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Add Order')
+@section('page-title', 'Add New Order')
+@section('page-subtitle', 'Create a new coffee order')
+
+@section('page-actions')
+    <a href="{{ route('farmers.orders.index') }}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i>
+        Back to Orders
+    </a>
+@endsection
 
 @section('content')
-    <h1><i class="fas fa-shopping-cart"></i> Add New Order</h1>
-    @include('farmers.partials.errors')
-    <form action="{{ route('farmers.orders.store') }}" method="POST">
-        @csrf
-        <div class="form-group">
-            <label for="coffee_variety">Coffee Variety</label>
-            <select name="coffee_variety" id="coffee_variety" required>
-                <option value="arabica">Arabica</option>
-                <option value="robusta">Robusta</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="processing_method">Processing Method</label>
-            <select name="processing_method" id="processing_method" required>
-                <option value="natural">Natural</option>
-                <option value="washed">Washed</option>
-                <option value="honey">Honey</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="grade">Grade</label>
-            <select name="grade" id="grade" required>
-                <option value="grade_1">Grade 1</option>
-                <option value="grade_2">Grade 2</option>
-                <option value="grade_3">Grade 3</option>
-                <option value="grade_4">Grade 4</option>
-                <option value="grade_5">Grade 5</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="quantity_kg">Quantity (kg)</label>
-            <input type="number" name="quantity_kg" id="quantity_kg" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="unit_price">Unit Price</label>
-            <input type="number" name="unit_price" id="unit_price" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="total_amount">Total Amount</label>
-            <input type="number" name="total_amount" id="total_amount" step="0.01" required>
-        </div>
-        <div class="form-group">
-            <label for="expected_delivery_date">Expected Delivery Date</label>
-            <input type="date" name="expected_delivery_date" id="expected_delivery_date" required>
-        </div>
-        <div class="form-group">
-            <label for="notes">Notes</label>
-            <textarea name="notes" id="notes"></textarea>
-        </div>
-        <button type="submit" class="btn"><i class="fas fa-save"></i> Save</button>
-    </form>
-    <a href="{{ route('farmers.orders.index') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    <div class="form-container">
+        <form action="{{ route('farmers.orders.store') }}" method="POST">
+            @csrf
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'coffee_variety',
+                'label' => 'Coffee Variety',
+                'type' => 'select',
+                'required' => true,
+                'options' => [
+                    '' => 'Select Coffee Variety',
+                    'arabica' => 'Arabica',
+                    'robusta' => 'Robusta'
+                ]
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'grade',
+                'label' => 'Grade',
+                'type' => 'select',
+                'required' => true,
+                'options' => [
+                    '' => 'Select Grade',
+                    'grade_1' => 'Grade 1',
+                    'grade_2' => 'Grade 2',
+                    'grade_3' => 'Grade 3',
+                    'grade_4' => 'Grade 4',
+                    'grade_5' => 'Grade 5'
+                ]
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'quantity_kg',
+                'label' => 'Quantity (kg)',
+                'type' => 'number',
+                'value' => old('quantity_kg'),
+                'placeholder' => 'Enter order quantity',
+                'required' => true,
+                'step' => '0.01',
+                'min' => '0'
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'unit_price',
+                'label' => 'Unit Price (UGX/kg)',
+                'type' => 'number',
+                'value' => old('unit_price'),
+                'placeholder' => 'Enter price per kilogram',
+                'required' => true,
+                'step' => '0.01',
+                'min' => '0'
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'total_amount',
+                'label' => 'Total Amount (UGX)',
+                'type' => 'number',
+                'value' => old('total_amount'),
+                'placeholder' => 'Total will be calculated automatically',
+                'required' => true,
+                'step' => '0.01',
+                'min' => '0',
+                'readonly' => true
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'delivery_date',
+                'label' => 'Expected Delivery Date',
+                'type' => 'date',
+                'value' => old('delivery_date'),
+                'required' => true
+            ])
+            
+            @include('farmers.partials.form-field', [
+                'name' => 'order_notes',
+                'label' => 'Order Notes',
+                'type' => 'textarea',
+                'value' => old('order_notes'),
+                'placeholder' => 'Add any special requirements or notes for this order',
+                'rows' => '4'
+            ])
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Create Order
+                </button>
+                <a href="{{ route('farmers.orders.index') }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
 @endsection
