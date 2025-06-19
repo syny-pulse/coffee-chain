@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('address');
             $table->string('registration_number', 50)->unique();
             $table->enum('acceptance_status', ['accepted', 'rejected', 'pending', 'visit_scheduled'])->default('pending');
+            $table->string('pdf_path');
             $table->decimal('financial_risk_rating', 3, 1)->default(0.0);
             $table->decimal('reputational_risk_rating', 3, 1)->default(0.0);
             $table->decimal('compliance_risk_rating', 3, 1)->default(0.0);

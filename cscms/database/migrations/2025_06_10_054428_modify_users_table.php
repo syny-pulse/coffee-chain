@@ -14,7 +14,8 @@ return new class extends Migration
             $table->string('phone', 20)->nullable()->after('company_id');
             $table->string('address', 255)->nullable()->after('phone');
             $table->enum('status', ['active', 'inactive', 'pending'])->default('pending')->after('address');
-            
+
+
             $table->foreign('company_id')->references('company_id')->on('companies')->onDelete('set null');
         });
     }
