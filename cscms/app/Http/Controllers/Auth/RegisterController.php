@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RegisterController extends Controller
 {
@@ -66,6 +67,7 @@ class RegisterController extends Controller
                 throw new \Exception('Invalid or missing PDF file.');
             }
             $pdfPath = $request->file('pdf')->store('applications', 'public');
+            $absolutePdfPath = Storage::disk('public')->path($pdfPath);
 
             // Create the company
             $company = new Company();
@@ -75,7 +77,7 @@ class RegisterController extends Controller
             $company->company_type = $validated['user_type'];
             $company->registration_number = $validated['registration_number'];
             $company->address = $validated['company_address'];
-            $company->pdf_path = $pdfPath;
+            $company->pdf_path = $absolutePdfPath;
             $company->acceptance_status = 'pending';
             $company->financial_risk_rating = 0.0;
             $company->reputational_risk_rating = 0.0;

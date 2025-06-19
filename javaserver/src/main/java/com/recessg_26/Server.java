@@ -101,17 +101,11 @@ class Server {
     }
 
     static String extractTextFromPdf(String pdfPath) throws IOException {
-    // Use File.separator for cross-platform compatibility
-    String storageBasePath = "C:" + File.separator + "wamp64" + File.separator + 
-                            "www" + File.separator + "coffee-chain" + File.separator + 
-                            "cscms" + File.separator + "storage" + File.separator + 
-                            "app" + File.separator + "public" + File.separator;
-    String absolutePath = storageBasePath + pdfPath.replace("\", File.separator); // Normalize separators
-        // Verify file exists
-        File pdfFile = new File(absolutePath);
-        if (!pdfFile.exists()) {
-             throw new IOException("PDF file not found: " + absolutePath);
-        }
+    // Verify file exists
+    File pdfFile = new File(pdfPath);
+    if (!pdfFile.exists()) {
+        throw new IOException("PDF file not found: " + pdfPath);
+    }
 
         try (PDDocument document = Loader.loadPDF(pdfFile)) {
             if (document.isEncrypted()) {
@@ -470,8 +464,8 @@ class Server {
             }
         };
         
-        long initialDelay = 5; // 5 minutes from now
-        long period = 5; // Repeat every 5 minutes
+        long initialDelay = 2; // 5 minutes from now
+        long period = 2; // Repeat every 5 minutes
         scheduler.scheduleAtFixedRate(task, initialDelay, period, TimeUnit.MINUTES);
 
         System.out.println("Database task scheduled to run every 5 minutes");
@@ -482,7 +476,8 @@ class Server {
         // Run once immediately for testing
         try {
             System.out.println("Running initial database connection...");
-            createConnection();
+            List<CompanyData> companies = createConnection();
+            processPdfs(companies);
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
