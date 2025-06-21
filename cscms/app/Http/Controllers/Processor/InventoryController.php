@@ -6,31 +6,46 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class InventoryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except('index'); // Require authentication for all actions except index
+        $this->middleware('auth');
     }
 
     public function index()
     {
-        $userId = auth()->check() ? auth()->id() : null; // Null for unauthenticated users
-        $raw_materials = $userId 
-            ? Product::where('user_id', $userId)->where('product_type', 'green_beans')->get() 
-            : collect(); // Raw materials are green beans
-        $finished_goods = $userId 
-            ? Product::where('user_id', $userId)->whereIn('product_type', ['roasted_beans', 'ground_coffee'])->get() 
-            : collect(); // Finished goods are roasted or ground coffee
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to view inventory.');
+        }
+
+        $raw_materials = Product::where('user_id', $user->id)
+            ->where('product_type', 'green_beans')
+            ->get();
+
+        $finished_goods = Product::where('user_id', $user->id)
+            ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
+            ->get();
+
+        // Calculate additional metrics
+        $total_processing_capacity = 1000; // Default capacity
+        $ready_for_sale_count = $finished_goods->where('status', 'available')->count();
 
         Log::info('Inventory Index', [
-            'user_id' => $userId,
+            'user_id' => $user->id,
             'raw_materials_count' => $raw_materials->count(),
             'finished_goods_count' => $finished_goods->count()
         ]);
 
-        return view('processor.inventory.index', compact('raw_materials', 'finished_goods'));
+        return view('processor.inventory.index', compact(
+            'raw_materials', 
+            'finished_goods', 
+            'total_processing_capacity', 
+            'ready_for_sale_count'
+        ));
     }
 
     public function create()
@@ -40,7 +55,12 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to add inventory.');
+        }
+
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'product_type' => 'required|in:green_beans,roasted_beans,ground_coffee',
             'origin_country' => 'nullable|string|max:100',
@@ -53,31 +73,57 @@ class InventoryController extends Controller
             'processing_date' => 'nullable|date',
             'expiry_date' => 'nullable|date',
             'description' => 'nullable|string',
-            'status' => 'in:available,reserved,sold,expired',
+            'status' => 'required|in:available,reserved,sold,expired',
         ]);
 
-        Product::create(array_merge($request->all(), ['user_id' => auth()->id() ?? 0]));
+        Product::create(array_merge(
+            $validated,
+            ['user_id' => $user->id]
+        ));
 
         return redirect()->route('processor.inventory.index')->with('success', 'Product added to inventory.');
     }
 
     public function show(Product $product)
     {
-        $this->authorize('view', $product); // Use Laravel's authorization policy
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($product->user_id !== $user->id) {
+            return abort(403, 'Unauthorized action.');
+        }
+
         return view('processor.inventory.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
-        $this->authorize('update', $product); // Use Laravel's authorization policy
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($product->user_id !== $user->id) {
+            return abort(403, 'Unauthorized action.');
+        }
+
         return view('processor.inventory.edit', compact('product'));
     }
 
     public function update(Request $request, Product $product)
     {
-        $this->authorize('update', $product); // Use Laravel's authorization policy
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
-        $request->validate([
+        if ($product->user_id !== $user->id) {
+            return abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'product_type' => 'required|in:green_beans,roasted_beans,ground_coffee',
             'origin_country' => 'nullable|string|max:100',
@@ -90,17 +136,24 @@ class InventoryController extends Controller
             'processing_date' => 'nullable|date',
             'expiry_date' => 'nullable|date',
             'description' => 'nullable|string',
-            'status' => 'in:available,reserved,sold,expired',
+            'status' => 'required|in:available,reserved,sold,expired',
         ]);
 
-        $product->update($request->all());
+        $product->update($validated);
 
         return redirect()->route('processor.inventory.index')->with('success', 'Product updated successfully.');
     }
 
     public function destroy(Product $product)
     {
-        $this->authorize('delete', $product); // Use Laravel's authorization policy
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($product->user_id !== $user->id) {
+            return abort(403, 'Unauthorized action.');
+        }
 
         $product->delete();
 

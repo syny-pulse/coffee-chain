@@ -11,6 +11,30 @@ use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    /**
+     * Display a listing of messages.
+     */
+    public function index()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->company) {
+            return redirect()->route('login')->with('error', 'Please log in to view messages.');
+        }
+
+        // Get messages for the current user's company
+        $messages = Message::where('receiver_company_id', $user->company->company_id)
+                       ->orWhere('sender_company_id', $user->company->company_id)
+                       ->latest()
+                       ->get();
+
+        return view('processor.message.index', compact('messages'));
+    }
+
     /**
      * Show the form for creating a new message.
      */
@@ -30,6 +54,11 @@ class MessageController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || !$user->company) {
+            return redirect()->route('login')->with('error', 'Please log in to send messages.');
+        }
+
         // Validate the request
         $validated = $request->validate([
             'receiver_company_id' => 'required|exists:companies,company_id',
@@ -41,8 +70,8 @@ class MessageController extends Controller
 
         // Create the message
         Message::create([
-            'sender_company_id' => Auth::user()->company->company_id,
-            'sender_user_id' => Auth::user()->id,
+            'sender_company_id' => $user->company->company_id,
+            'sender_user_id' => $user->id,
             'receiver_company_id' => $validated['receiver_company_id'],
             'receiver_user_id' => $validated['receiver_user_id'] ?? null,
             'subject' => $validated['subject'],
