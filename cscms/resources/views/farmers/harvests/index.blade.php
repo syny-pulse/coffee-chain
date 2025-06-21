@@ -1,43 +1,74 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Harvests')
+@section('page-title', 'Coffee Harvests')
+@section('page-subtitle', 'Manage and track your coffee harvests')
+
+@section('page-actions')
+    <a href="{{ route('farmers.harvests.create') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Add New Harvest
+    </a>
+@endsection
 
 @section('content')
-    <h1><i class="fas fa-seedling"></i> Harvests</h1>
-    <a href="{{ route('farmers.harvests.create') }}" class="btn"><i class="fas fa-plus"></i> Add New Harvest</a>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Variety</th>
-                <th>Grade</th>
-                <th>Quantity (kg)</th>
-                <th>Available (kg)</th>
-                <th>Harvest Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($harvests as $harvest)
-                <tr>
-                    <td>{{ $harvest->harvest_id }}</td>
-                    <td>{{ $harvest->coffee_variety }}</td>
-                    <td>{{ $harvest->grade }}</td>
-                    <td>{{ $harvest->quantity_kg }}</td>
-                    <td>{{ $harvest->available_quantity_kg }}</td>
-                    <td>{{ $harvest->harvest_date }}</td>
-                    <td>{{ $harvest->availability_status }}</td>
-                    <td>
-                        <a href="{{ route('farmers.harvests.edit', $harvest->harvest_id) }}" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
-                        <form action="{{ route('farmers.harvests.destroy', $harvest->harvest_id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-outline" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @if(isset($harvests) && count($harvests) > 0)
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-wheat-awn"></i>
+                    All Harvests
+                </h2>
+            </div>
+            
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Variety</th>
+                            <th>Grade</th>
+                            <th>Quantity (kg)</th>
+                            <th>Available (kg)</th>
+                            <th>Harvest Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($harvests as $harvest)
+                            @include('farmers.partials.table-row', [
+                                'item' => $harvest,
+                                'columns' => [
+                                    ['field' => 'harvest_id'],
+                                    ['field' => 'coffee_variety'],
+                                    ['field' => 'grade'],
+                                    ['field' => 'quantity_kg', 'type' => 'number'],
+                                    ['field' => 'available_quantity_kg', 'type' => 'number'],
+                                    ['field' => 'harvest_date', 'type' => 'date'],
+                                    ['field' => 'availability_status', 'type' => 'status']
+                                ],
+                                'actions' => [
+                                    ['type' => 'link', 'url' => route('farmers.harvests.edit', $harvest['harvest_id']), 'icon' => 'edit', 'style' => 'outline', 'title' => 'Edit'],
+                                    ['type' => 'delete', 'url' => route('farmers.harvests.destroy', $harvest['harvest_id'])]
+                                ]
+                            ])
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @else
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-wheat-awn"></i>
+                <h3>No Harvests Recorded</h3>
+                <p>Start tracking your coffee harvests to monitor your production and manage your inventory.</p>
+                <a href="{{ route('farmers.harvests.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Record Your First Harvest
+                </a>
+            </div>
+        </div>
+    @endif
 @endsection

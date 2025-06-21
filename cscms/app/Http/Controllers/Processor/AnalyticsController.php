@@ -3,61 +3,110 @@
 namespace App\Http\Controllers\Processor;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\FarmerOrder;
+use App\Models\RetailerOrder;
+use App\Models\RetailerOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AnalyticsController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = auth()->check() ? Order::where('seller_id', auth()->id())->orWhere('buyer_id', auth()->id())->get() : collect();
-        $customerSegments = $this->segmentCustomers($orders);
+        // Get the processor's company ID
+        $processorCompanyId = auth()->user()->company->company_id;
 
-        // Dummy analytics data (replace with actual calculations if data exists)
-        $analytics = (object) [
-            'profit_margin' => 15.5, // Example value in percentage
-            'inventory_turnover' => 4.2, // Example value in times/year
-            'production_efficiency' => 87.3, // Example value in percentage
-        ];
+        // Get retailer orders where this processor is selling
+        $retailerOrders = RetailerOrder::where('processor_company_id', $processorCompanyId)
+            ->with(['orderItems'])
+            ->get();
 
-        // Debugging: Log the data being passed to the view
+        // Get farmer orders where this processor is buying
+        $farmerOrders = FarmerOrder::where('farmer_company_id', $processorCompanyId)
+            ->get();
+
+        // Calculate analytics
+        $analytics = $this->calculateAnalytics($farmerOrders, $retailerOrders);
+
+        // Get customer segments
+        $customerSegments = $this->segmentCustomers($retailerOrders);
+
+        // Log the data for debugging
         Log::info('Analytics Data', [
-            'orders' => $orders->count(),
+            'analytics' => $analytics,
             'customerSegments' => $customerSegments,
-            'analytics' => $analytics
+            'farmerOrdersCount' => $farmerOrders->count(),
+            'retailerOrdersCount' => $retailerOrders->count()
         ]);
 
-        return view('processor.analytics.index', compact('customerSegments', 'analytics'));
+        return view('processor.analytics.index', compact('analytics', 'customerSegments'));
     }
 
-    protected function segmentCustomers($orders)
+    private function calculateAnalytics($farmerOrders, $retailerOrders)
     {
-        $segments = [];
-        if ($orders->isEmpty()) {
-            return $segments;
+        // Initialize metrics
+        $totalCost = 0;
+        $totalRevenue = 0;
+        $totalInventoryValue = 0;
+        $totalProcessedKg = 0;
+
+        // Calculate costs from farmer orders
+        foreach ($farmerOrders as $order) {
+            if ($order->order_status === 'delivered') {
+                $totalCost += $order->total_amount;
+                $totalProcessedKg += $order->quantity_kg;
+            }
         }
 
-        $totalSpent = $orders->groupBy('buyer_id')->map(function ($group) {
-            return $group->sum('total_amount');
-        });
+        // Calculate revenue from retailer orders
+        foreach ($retailerOrders as $order) {
+            if ($order->order_status === 'delivered') {
+                $totalRevenue += $order->total_amount;
+            }
+        }
 
-        foreach ($totalSpent as $buyerId => $amount) {
-            if ($amount < 500) {
-                $segments["Low Spenders (ID: $buyerId)"] = [
-                    'description' => 'Customers spending less than $500',
-                    'recommendation' => 'Offer discounts or introductory bundles',
-                ];
-            } elseif ($amount >= 500 && $amount < 2000) {
-                $segments["Medium Spenders (ID: $buyerId)"] = [
-                    'description' => 'Customers spending $500-$2000',
-                    'recommendation' => 'Suggest premium products or loyalty rewards',
-                ];
+        // Calculate metrics
+        $profitMargin = $totalRevenue > 0 ? (($totalRevenue - $totalCost) / $totalRevenue) * 100 : 0;
+        $inventoryTurnover = $totalProcessedKg > 0 ? ($totalRevenue / $totalProcessedKg) : 0;
+        $productionEfficiency = $totalProcessedKg > 0 ? ($totalRevenue / ($totalProcessedKg * 100)) : 0;
+
+        return (object) [
+            'profit_margin' => round($profitMargin, 2),
+            'inventory_turnover' => round($inventoryTurnover, 2),
+            'production_efficiency' => round($productionEfficiency, 2),
+            'total_revenue' => round($totalRevenue, 2),
+            'total_cost' => round($totalCost, 2),
+            'total_processed_kg' => round($totalProcessedKg, 2)
+        ];
+    }
+
+    private function segmentCustomers($retailerOrders)
+    {
+        $segments = [
+            'high_value' => 0,
+            'medium_value' => 0,
+            'low_value' => 0
+        ];
+
+        // Group orders by retailer and calculate total value
+        $retailerValues = [];
+        foreach ($retailerOrders as $order) {
+            $retailerId = $order->processor_company_id;
+            if (!isset($retailerValues[$retailerId])) {
+                $retailerValues[$retailerId] = 0;
+            }
+            $retailerValues[$retailerId] += $order->total_amount;
+        }
+
+        // Segment retailers based on their total order value
+        foreach ($retailerValues as $totalValue) {
+            if ($totalValue >= 10000000) { // 10M UGX
+                $segments['high_value']++;
+            } elseif ($totalValue >= 5000000) { // 5M UGX
+                $segments['medium_value']++;
             } else {
-                $segments["High Spenders (ID: $buyerId)"] = [
-                    'description' => 'Customers spending over $2000',
-                    'recommendation' => 'Provide exclusive offers or personalized support',
-                ];
+                $segments['low_value']++;
             }
         }
 
