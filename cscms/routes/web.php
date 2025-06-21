@@ -11,6 +11,90 @@ use App\Http\Controllers\Processor\FarmerOrderController;
 use App\Http\Controllers\Processor\MessageController;
 use App\Http\Controllers\Processor\AnalyticsController;
 use App\Http\Controllers\Processor\EmployeeController;
+use App\Http\Controllers\Farmer\DashboardController as FarmerDashboardController;
+use App\Http\Controllers\Farmer\HarvestController;
+use App\Http\Controllers\Farmer\InventoryController as FarmerInventoryController;
+use App\Http\Controllers\Farmer\OrderController;
+use App\Http\Controllers\Farmer\CommunicationController;
+use App\Http\Controllers\Farmer\FinancialController;
+use App\Http\Controllers\Farmer\AnalyticsController as FarmerAnalyticsController;
+
+
+
+Route::prefix('processor')->group(function () {
+    Route::get('/dashboard', [ProcessorDashboardController::class, 'index'])->name('processor.dashboard');
+    
+    Route::resource('employee', EmployeeController::class)->names([
+        'index' => 'processor.employee.index',
+        'create' => 'processor.employee.create',
+        'store' => 'processor.employee.store',
+        'show' => 'processor.employee.show',
+        'edit' => 'processor.employee.edit',
+        'update' => 'processor.employee.update',
+        'destroy' => 'processor.employee.destroy',
+    ]);
+    
+    Route::resource('inventory', InventoryController::class)->names([
+        'index' => 'processor.inventory.index',
+        'create' => 'processor.inventory.create',
+        'store' => 'processor.inventory.store',
+        'show' => 'processor.inventory.show',
+        'edit' => 'processor.inventory.edit',
+        'update' => 'processor.inventory.update',
+        'destroy' => 'processor.inventory.destroy',
+    ]);
+    
+    Route::resource('retailer_order', RetailerOrderController::class)->names([
+        'index' => 'processor.order.retailer_order.index',
+        'create' => 'processor.order.retailer_order.create',
+        'store' => 'processor.order.retailer_order.store',
+        'show' => 'processor.order.retailer_order.show',
+        'edit' => 'processor.order.retailer_order.edit',
+        'update' => 'processor.order.retailer_order.update',
+        'destroy' => 'processor.order.retailer_order.destroy',
+    ]);
+    
+    Route::resource('farmer_order', FarmerOrderController::class)->names([
+        'index' => 'processor.order.farmer_order.index',
+        'create' => 'processor.order.farmer_order.create',
+        'store' => 'processor.order.farmer_order.store',
+        'show' => 'processor.order.farmer_order.show',
+        'edit' => 'processor.order.farmer_order.edit',
+        'update' => 'processor.order.farmer_order.update',
+        'destroy' => 'processor.order.farmer_order.destroy',
+    ]);
+    
+    Route::resource('message', MessageController::class)->names([
+        'index' => 'processor.message.index',
+        'create' => 'processor.message.create',
+        'store' => 'processor.message.store',
+        'show' => 'processor.message.show',
+        'edit' => 'processor.message.edit',
+        'update' => 'processor.message.update',
+        'destroy' => 'processor.message.destroy',
+    ]);
+    
+    Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
+});
+
+// Farmer Routes
+//Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
+    Route::get('/farmer/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
+    Route::resource('harvests', HarvestController::class)->names('farmers.harvests')->except(['show']);
+    Route::get('/inventory', [FarmerInventoryController::class, 'index'])->name('farmers.inventory.index');
+    Route::resource('orders', OrderController::class)->names('farmers.orders');
+    Route::get('/communication', [CommunicationController::class, 'index'])->name('farmers.communication.index');
+    Route::post('/communication/send', [CommunicationController::class, 'send'])->name('farmers.communication.send');
+    Route::get('/financials', [FinancialController::class, 'index'])->name('farmers.financials.index');
+    Route::get('/financials/pricing', [FinancialController::class, 'pricing'])->name('farmers.financials.pricing');
+    Route::post('/financials/pricing', [FinancialController::class, 'updatePricing'])->name('farmers.financials.pricing.update');
+    Route::get('/financials/reports', [FinancialController::class, 'reports'])->name('farmers.financials.reports');
+    Route::get('/financials/expenses', [FinancialController::class, 'expenses'])->name('farmers.financials.expenses');
+    Route::get('/financials/cashflow', [FinancialController::class, 'cashflow'])->name('farmers.financials.cashflow');
+    Route::get('/financials/forecasting', [FinancialController::class, 'forecasting'])->name('farmers.financials.forecasting');
+    Route::get('/analytics/reports', [FarmerAnalyticsController::class, 'reports'])->name('farmers.analytics.reports');
+//});
+
 
 Route::get('/', function () {
     return view('welcome');

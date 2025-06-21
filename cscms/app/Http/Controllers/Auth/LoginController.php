@@ -48,6 +48,7 @@ class LoginController extends Controller
                 ]);
             }
 
+
             // Redirect based on user type
             if ($user->user_type === 'processor') {
                 return redirect()->intended('/processor/dashboard');
@@ -58,6 +59,19 @@ class LoginController extends Controller
             }
 
             return redirect()->intended('/dashboard');
+
+            switch ($user->user_type) {
+                case 'farmer':
+                    return redirect()->route('farmers.dashboard');
+                case 'processor':
+                    return redirect()->route('processors.dashboard');
+                case 'retailer':
+                    return redirect()->route('retailer.dashboard');
+                case 'admin':
+                    return redirect()->route('admin.dashboard');
+            }
+            
+
         }
 
         // If login fails, increment login attempts

@@ -1,30 +1,20 @@
 <?php
 
-namespace App\Farmers\Controllers;
+namespace App\Http\Controllers\Farmer;
 
-use App\Farmers\Services\FarmerOrderService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Models\FarmerOrder;
 
 class OrderController extends Controller
 {
-    protected $orderService;
-
-    public function __construct(FarmerOrderService $orderService)
-    {
-        $this->orderService = $orderService;
-    }
-
     public function index()
     {
-        try {
-            $orders = $this->orderService->getAll();
-            return view('farmers.orders.index', compact('orders'));
-        } catch (\Exception $e) {
-            Log::error('Order index error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while loading orders.');
-        }
+        $user = Auth::user();
+        $company = $user->company;
+        $orders = FarmerOrder::where('farmer_company_id', $company->company_id)->orderByDesc('created_at')->get();
+        return view('farmers.orders.index', compact('orders'));
     }
 
     public function create()
@@ -34,60 +24,84 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            $this->orderService->create($request->all());
-            return redirect()->route('farmers.orders.index')->with('success', 'Order created successfully.');
-        } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            Log::error('Order store error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while saving the order.')->withInput();
-        }
+        $user = Auth::user();
+        $company = $user->company;
+        $request->validate([
+            'coffee_variety' => 'required|string',
+            'grade' => 'required|string',
+            'quantity_kg' => 'required|numeric|min:0',
+            'unit_price' => 'required|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+            'expected_delivery_date' => 'required|date',
+            'order_status' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+        FarmerOrder::create([
+            'farmer_company_id' => $company->company_id,
+            'coffee_variety' => $request->coffee_variety,
+            'grade' => $request->grade,
+            'quantity_kg' => $request->quantity_kg,
+            'unit_price' => $request->unit_price,
+            'total_amount' => $request->total_amount,
+            'expected_delivery_date' => $request->expected_delivery_date,
+            'order_status' => $request->order_status,
+            'notes' => $request->notes,
+        ]);
+        return redirect()->route('farmers.orders.index')->with('success', 'Order created successfully.');
     }
 
-    public function view($order_id)
+    public function show($id)
     {
-        try {
-            $order = $this->orderService->find($order_id);
-            return view('farmers.orders.view', compact('order'));
-        } catch (\Exception $e) {
-            Log::error('Order view error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while loading the order.');
-        }
+        $user = Auth::user();
+        $company = $user->company;
+        $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
+        return view('farmers.orders.show', compact('order'));
     }
 
-    public function edit($order_id)
+    public function edit($id)
     {
-        try {
-            $order = $this->orderService->find($order_id);
-            return view('farmers.orders.edit', compact('order'));
-        } catch (\Exception $e) {
-            Log::error('Order edit error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while loading the order.');
-        }
+        $user = Auth::user();
+        $company = $user->company;
+        $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
+        return view('farmers.orders.edit', compact('order'));
     }
 
-    public function update(Request $request, $order_id)
+    public function update(Request $request, $id)
     {
-        try {
-            $this->orderService->update($order_id, $request->all());
-            return redirect()->route('farmers.orders.index')->with('success', 'Order updated successfully.');
-        } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            Log::error('Order update error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while updating the order.')->withInput();
-        }
+        $user = Auth::user();
+        $company = $user->company;
+        $request->validate([
+            'coffee_variety' => 'required|string',
+            'grade' => 'required|string',
+            'quantity_kg' => 'required|numeric|min:0',
+            'unit_price' => 'required|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+            'expected_delivery_date' => 'required|date',
+            'actual_delivery_date' => 'nullable|date',
+            'order_status' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+        $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
+        $order->update([
+            'coffee_variety' => $request->coffee_variety,
+            'grade' => $request->grade,
+            'quantity_kg' => $request->quantity_kg,
+            'unit_price' => $request->unit_price,
+            'total_amount' => $request->total_amount,
+            'expected_delivery_date' => $request->expected_delivery_date,
+            'actual_delivery_date' => $request->actual_delivery_date,
+            'order_status' => $request->order_status,
+            'notes' => $request->notes,
+        ]);
+        return redirect()->route('farmers.orders.index')->with('success', 'Order updated successfully.');
     }
 
-    public function destroy($order_id)
+    public function destroy($id)
     {
-        try {
-            $this->orderService->delete($order_id);
-            return redirect()->route('farmers.orders.index')->with('success', 'Order cancelled successfully.');
-        } catch (\Exception $e) {
-            Log::error('Order delete error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while cancelling the order.');
-        }
+        $user = Auth::user();
+        $company = $user->company;
+        $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
+        $order->delete();
+        return redirect()->route('farmers.orders.index')->with('success', 'Order deleted successfully.');
     }
 }
