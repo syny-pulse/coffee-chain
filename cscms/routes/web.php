@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Processor\ProcessorDashboardController;
@@ -111,6 +113,14 @@ Route::middleware(['guest'])->group(function () {
 
     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
+    //Reset password
+    Route::get('/forgot-password', [ResetPasswordController::class, 'show'])->name('password.request');
+    Route::post('/forgot-password', [ResetPasswordController::class, 'send'])->name('password.send');
+
+    // change password
+    Route::get('/change-password/{token}', [ChangePasswordController::class, 'show'])->name('password.reset');
+    Route::post('/change-password', [ChangePasswordController::class, 'update'])->name('password.update');
 });
 
 // Logout route
