@@ -7,6 +7,7 @@ use App\Models\FarmerOrder;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class FarmerOrderController extends Controller
 {
@@ -27,9 +28,9 @@ class FarmerOrderController extends Controller
 
     public function store(Request $request)
     {
-        \Log::info('Store method hit with data: ', $request->all());
+        Log::info('Store method hit with data: ', $request->all());
         if (!Auth::check()) {
-            \Log::warning('Unauthenticated attempt to create farmer order');
+            Log::warning('Unauthenticated attempt to create farmer order');
             return redirect()->route('login')->with('error', 'Please log in as a processor to create orders.');
         }
 
@@ -56,7 +57,7 @@ class FarmerOrderController extends Controller
             'notes' => $request->notes,
         ]);
 
-        \Log::info('Order created with ID: ' . $order->order_id);
+        Log::info('Order created with ID: ' . $order->order_id);
         return redirect()->route('processor.order.farmer_order.index')->with('success', 'Farmer order created successfully.');
     }
 
