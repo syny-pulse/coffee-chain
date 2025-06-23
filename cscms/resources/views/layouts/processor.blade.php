@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -264,7 +265,7 @@
             min-height: 100vh;
         }
 
-        .sidebar.collapsed + .main-content {
+        .sidebar.collapsed+.main-content {
             margin-left: var(--sidebar-collapsed);
         }
 
@@ -535,6 +536,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -546,16 +548,16 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
-            
+
             .dashboard-header {
                 flex-direction: column;
                 gap: 1rem;
             }
-            
+
             .dashboard-actions {
                 width: 100%;
                 justify-content: flex-start;
@@ -570,8 +572,66 @@
         .text-muted {
             color: var(--text-light);
         }
+
+        /* Status Select */
+        .status-select {
+            padding: 0.5rem;
+            border: 1px solid rgba(111, 78, 55, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .status-select:hover {
+            border-color: var(--coffee-medium);
+            background: var(--cream);
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--coffee-light);
+            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+        }
+
+        .status-accepted {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .status-visit_scheduled {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
+        /* Fade Out Animation */
+        .fade-out {
+            animation: fadeOut 0.6s ease-in-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+                display: none;
+                /* Note: display won't animate, handled in JS */
+            }
+        }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
@@ -588,43 +648,57 @@
 
         <ul class="sidebar-menu">
             <li>
-                <a href="{{ route('processor.dashboard') }}" class="{{ request()->routeIs('processor.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('processor.dashboard') }}"
+                    class="{{ request()->routeIs('processor.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.employee.index') }}" class="{{ request()->routeIs('processor.employee.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.employee.index') }}"
+                    class="{{ request()->routeIs('processor.employee.*') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
                     <span>Employees</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.inventory.index') }}" class="{{ request()->routeIs('processor.inventory.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.company.index') }}"
+                    class="{{ request()->routeIs('processor.company.*') ? 'active' : '' }}">
+                    <i class="fas fa-building"></i>
+                    <span>Companies</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('processor.inventory.index') }}"
+                    class="{{ request()->routeIs('processor.inventory.*') ? 'active' : '' }}">
                     <i class="fas fa-warehouse"></i>
                     <span>Inventory</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.order.farmer_order.index') }}" class="{{ request()->routeIs('processor.order.farmer_order.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.order.farmer_order.index') }}"
+                    class="{{ request()->routeIs('processor.order.farmer_order.*') ? 'active' : '' }}">
                     <i class="fas fa-seedling"></i>
                     <span>Farmer Orders</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.order.retailer_order.index') }}" class="{{ request()->routeIs('processor.order.retailer_order.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.order.retailer_order.index') }}"
+                    class="{{ request()->routeIs('processor.order.retailer_order.*') ? 'active' : '' }}">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Retailer Orders</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.message.index') }}" class="{{ request()->routeIs('processor.message.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.message.index') }}"
+                    class="{{ request()->routeIs('processor.message.*') ? 'active' : '' }}">
                     <i class="fas fa-envelope"></i>
                     <span>Messages</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.analytics.index') }}" class="{{ request()->routeIs('processor.analytics.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.analytics.index') }}"
+                    class="{{ request()->routeIs('processor.analytics.*') ? 'active' : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span>Analytics</span>
                 </a>
@@ -639,7 +713,8 @@
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="profile-dropdown-content" id="profileDropdown">
-                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
@@ -671,13 +746,27 @@
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('profileDropdown');
             const profileBtn = document.querySelector('.profile-btn');
-            
+
             if (!profileBtn.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('show');
+            }
+        });
+        // Auto-hide success alert after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const successAlert = document.getElementById('success-alert');
+            if (successAlert) {
+                setTimeout(() => {
+                    successAlert.classList.remove('fade-in');
+                    successAlert.classList.add('fade-out');
+                    setTimeout(() => {
+                        successAlert.style.display = 'none';
+                    }, 600); // Match the animation duration
+                }, 5000); // Show for 5 seconds
             }
         });
     </script>
 
     @yield('scripts')
 </body>
+
 </html>

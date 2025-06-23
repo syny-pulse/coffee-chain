@@ -9,6 +9,7 @@ use App\Http\Controllers\Processor\InventoryController;
 use App\Http\Controllers\Processor\RetailerOrderController;
 use App\Http\Controllers\Processor\FarmerOrderController;
 use App\Http\Controllers\Processor\MessageController;
+use App\Http\Controllers\Processor\CompanyController;
 use App\Http\Controllers\Processor\AnalyticsController;
 use App\Http\Controllers\Processor\EmployeeController;
 use App\Http\Controllers\Farmer\DashboardController as FarmerDashboardController;
@@ -23,7 +24,7 @@ use App\Http\Controllers\Farmer\AnalyticsController as FarmerAnalyticsController
 
 Route::prefix('processor')->group(function () {
     Route::get('/dashboard', [ProcessorDashboardController::class, 'index'])->name('processor.dashboard');
-    
+
     Route::resource('employee', EmployeeController::class)->names([
         'index' => 'processor.employee.index',
         'create' => 'processor.employee.create',
@@ -33,7 +34,7 @@ Route::prefix('processor')->group(function () {
         'update' => 'processor.employee.update',
         'destroy' => 'processor.employee.destroy',
     ]);
-    
+
     Route::resource('inventory', InventoryController::class)->names([
         'index' => 'processor.inventory.index',
         'create' => 'processor.inventory.create',
@@ -43,7 +44,7 @@ Route::prefix('processor')->group(function () {
         'update' => 'processor.inventory.update',
         'destroy' => 'processor.inventory.destroy',
     ]);
-    
+
     Route::resource('retailer_order', RetailerOrderController::class)->names([
         'index' => 'processor.order.retailer_order.index',
         'create' => 'processor.order.retailer_order.create',
@@ -53,7 +54,7 @@ Route::prefix('processor')->group(function () {
         'update' => 'processor.order.retailer_order.update',
         'destroy' => 'processor.order.retailer_order.destroy',
     ]);
-    
+
     Route::resource('farmer_order', FarmerOrderController::class)->names([
         'index' => 'processor.order.farmer_order.index',
         'create' => 'processor.order.farmer_order.create',
@@ -63,7 +64,7 @@ Route::prefix('processor')->group(function () {
         'update' => 'processor.order.farmer_order.update',
         'destroy' => 'processor.order.farmer_order.destroy',
     ]);
-    
+
     Route::resource('message', MessageController::class)->names([
         'index' => 'processor.message.index',
         'create' => 'processor.message.create',
@@ -73,8 +74,11 @@ Route::prefix('processor')->group(function () {
         'update' => 'processor.message.update',
         'destroy' => 'processor.message.destroy',
     ]);
-    
+
     Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
+    Route::get('/company', [CompanyController::class, 'index'])->name('processor.company.index');
+    Route::post('/company/{companyId}/acceptance-status', [CompanyController::class, 'updateAcceptanceStatus'])->name('processor.company.updateAcceptanceStatus');
+    Route::post('/company/user/{userId}/account-status', [CompanyController::class, 'updateAccountStatus'])->name('processor.company.updateAccountStatus');
 });
 
 // Farmer Routes
@@ -113,7 +117,7 @@ Route::middleware(['guest'])->group(function () {
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 // General dashboard route
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); 
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Role-specific routes
 Route::middleware(['auth'])->group(function () {
@@ -121,7 +125,7 @@ Route::middleware(['auth'])->group(function () {
     // Processor routes
     Route::prefix('processor')->group(function () {
         Route::get('/dashboard', [ProcessorDashboardController::class, 'index'])->name('processor.dashboard');
-        
+
         Route::resource('employee', EmployeeController::class)->names([
             'index' => 'processor.employee.index',
             'create' => 'processor.employee.create',
@@ -131,7 +135,7 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'processor.employee.update',
             'destroy' => 'processor.employee.destroy',
         ]);
-        
+
         Route::resource('inventory', InventoryController::class)->names([
             'index' => 'processor.inventory.index',
             'create' => 'processor.inventory.create',
@@ -141,7 +145,7 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'processor.inventory.update',
             'destroy' => 'processor.inventory.destroy',
         ]);
-        
+
         Route::resource('retailer_order', RetailerOrderController::class)->names([
             'index' => 'processor.order.retailer_order.index',
             'create' => 'processor.order.retailer_order.create',
@@ -151,7 +155,7 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'processor.order.retailer_order.update',
             'destroy' => 'processor.order.retailer_order.destroy',
         ]);
-        
+
         Route::resource('farmer_order', FarmerOrderController::class)->names([
             'index' => 'processor.order.farmer_order.index',
             'create' => 'processor.order.farmer_order.create',
@@ -161,7 +165,7 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'processor.order.farmer_order.update',
             'destroy' => 'processor.order.farmer_order.destroy',
         ]);
-        
+
         Route::resource('message', MessageController::class)->names([
             'index' => 'processor.message.index',
             'create' => 'processor.message.create',
@@ -171,7 +175,7 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'processor.message.update',
             'destroy' => 'processor.message.destroy',
         ]);
-        
+
         Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
     });
 
@@ -215,13 +219,13 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Admin routes (commented out)
-    
+
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', function () {
             return view('admin.users');
         })->name('users');
 
-        
+
         Route::get('/companies', function () {
 
             return view('admin.companies');
@@ -231,17 +235,17 @@ Route::middleware(['auth'])->group(function () {
             return view('admin.analytics');
         })->name('analytics');
 
-        
+
         Route::get('/settings', function() {
             return view('admin.settings');
         })->name('settings');
     });
-    
+
 
     // Profile route
 
     Route::get('/profile', function () {
-        return view('profile.show');  
+        return view('profile.show');
     })->name('profile.show');
 
  });
