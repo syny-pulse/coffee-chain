@@ -11,6 +11,7 @@ use App\Http\Controllers\Processor\InventoryController;
 use App\Http\Controllers\Processor\RetailerOrderController;
 use App\Http\Controllers\Processor\FarmerOrderController;
 use App\Http\Controllers\Processor\MessageController;
+use App\Http\Controllers\Processor\ReportController;
 use App\Http\Controllers\Processor\CompanyController;
 use App\Http\Controllers\Processor\AnalyticsController;
 use App\Http\Controllers\Processor\EmployeeController;
@@ -81,6 +82,9 @@ Route::prefix('processor')->group(function () {
     Route::get('/company', [CompanyController::class, 'index'])->name('processor.company.index');
     Route::post('/company/{companyId}/acceptance-status', [CompanyController::class, 'updateAcceptanceStatus'])->name('processor.company.updateAcceptanceStatus');
     Route::post('/company/user/{userId}/account-status', [CompanyController::class, 'updateAccountStatus'])->name('processor.company.updateAccountStatus');
+
+    // Report routes
+    Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
 });
 
 // Farmer Routes

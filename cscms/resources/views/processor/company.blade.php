@@ -60,7 +60,7 @@
                             <td>
                                 @if ($company->pdf_path)
                                     <a href="{{ '/storage' . str_replace(storage_path('app/public'), '', $company->pdf_path) }}"
-                                        target="_blank" class="pdf-badge">PDF</a>
+                                        target="_blank" class="pdf-badge"><i class="fas fa-file-pdf"></i> View PDF</a>
                                 @else
                                     <span class="status-badge status-inactive">N/A</span>
                                 @endif

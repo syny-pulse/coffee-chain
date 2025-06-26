@@ -143,6 +143,85 @@
             padding: 0.6rem;
         }
 
+        /* Reports Dropdown */
+        .reports-dropdown {
+            position: relative;
+        }
+
+        .reports-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .reports-btn:hover {
+            background: rgba(111, 78, 55, 0.1);
+            transform: translateX(3px);
+            color: var(--coffee-medium);
+        }
+
+        .reports-btn.active {
+            background: var(--coffee-medium);
+            color: white;
+            box-shadow: 0 2px 8px rgba(111, 78, 55, 0.2);
+        }
+
+        .reports-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            /* Position below the Reports button */
+            left: 0;
+            background: white;
+            width: 100%;
+            /* Match sidebar-menu item width */
+            box-shadow: 0 8px 16px rgba(111, 78, 55, 0.2);
+            border-radius: 8px;
+            z-index: 1001;
+            border: 1px solid rgba(111, 78, 55, 0.1);
+        }
+
+        .reports-dropdown-content.show {
+            display: block;
+        }
+
+        .reports-dropdown-content a {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+        }
+
+        .reports-dropdown-content a:hover {
+            background: var(--cream);
+            color: var(--coffee-medium);
+        }
+
+        .reports-dropdown-content a.active {
+            background: var(--coffee-medium);
+            color: white;
+        }
+
+        .sidebar.collapsed .reports-btn span,
+        .sidebar.collapsed .reports-btn i.fa-chevron-down {
+            display: none;
+        }
+
+        .sidebar.collapsed .reports-btn {
+            justify-content: center;
+            padding: 0.6rem;
+        }
+
         /* Sidebar Logo */
         .sidebar-logo {
             padding: 1rem;
@@ -477,6 +556,21 @@
             color: var(--success);
         }
 
+        .status-accepted {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .status-visit_scheduled {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
         /* Buttons */
         .btn {
             padding: 0.5rem 1rem;
@@ -596,26 +690,6 @@
             box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
         }
 
-        .status-accepted {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-        }
-
-        .status-rejected {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-
-        .status-visit_scheduled {
-            background: rgba(23, 162, 184, 0.1);
-            color: var(--info);
-        }
-
-        /* Fade Out Animation */
-        .fade-out {
-            animation: fadeOut 0.6s ease-in-out forwards;
-        }
-
         /* Custom CSS for PDF Badge */
         .pdf-badge {
             display: inline-block;
@@ -626,14 +700,17 @@
             text-decoration: none;
             color: #fff;
             background-color: #007bff;
-            /* Blue color to match a professional look */
             transition: background-color 0.2s ease;
         }
 
         .pdf-badge:hover {
             background-color: #0056b3;
-            /* Darker blue on hover */
             text-decoration: none;
+        }
+
+        /* Fade Out Animation */
+        .fade-out {
+            animation: fadeOut 0.6s ease-in-out forwards;
         }
 
         @keyframes fadeOut {
@@ -646,7 +723,6 @@
                 opacity: 0;
                 transform: translateY(-20px);
                 display: none;
-                /* Note: display won't animate, handled in JS */
             }
         }
     </style>
@@ -723,6 +799,21 @@
                     <span>Analytics</span>
                 </a>
             </li>
+            <li class="reports-dropdown">
+                <div class="reports-btn {{ request()->routeIs('processor.reports.*') ? 'active' : '' }}"
+                    onclick="toggleReportsDropdown()">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="reports-dropdown-content" id="reportsDropdown">
+                    <a href="{{ route('processor.reports.application') }}"
+                        class="{{ request()->routeIs('processor.reports.application') ? 'active' : '' }}">
+                        Application Report
+                    </a>
+                    <!-- Add more report options here as needed -->
+                </div>
+            </li>
         </ul>
 
         <div class="sidebar-profile">
@@ -762,15 +853,26 @@
             dropdown.classList.toggle('show');
         }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('profileDropdown');
-            const profileBtn = document.querySelector('.profile-btn');
+        function toggleReportsDropdown() {
+            const dropdown = document.getElementById('reportsDropdown');
+            dropdown.classList.toggle('show');
+        }
 
-            if (!profileBtn.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const profileBtn = document.querySelector('.profile-btn');
+            const reportsDropdown = document.getElementById('reportsDropdown');
+            const reportsBtn = document.querySelector('.reports-btn');
+
+            if (!profileBtn.contains(event.target) && !profileDropdown.contains(event.target)) {
+                profileDropdown.classList.remove('show');
+            }
+            if (!reportsBtn.contains(event.target) && !reportsDropdown.contains(event.target)) {
+                reportsDropdown.classList.remove('show');
             }
         });
+
         // Auto-hide success alert after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
             const successAlert = document.getElementById('success-alert');
