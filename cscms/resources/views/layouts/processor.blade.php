@@ -616,6 +616,26 @@
             animation: fadeOut 0.6s ease-in-out forwards;
         }
 
+        /* Custom CSS for PDF Badge */
+        .pdf-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: #fff;
+            background-color: #007bff;
+            /* Blue color to match a professional look */
+            transition: background-color 0.2s ease;
+        }
+
+        .pdf-badge:hover {
+            background-color: #0056b3;
+            /* Darker blue on hover */
+            text-decoration: none;
+        }
+
         @keyframes fadeOut {
             from {
                 opacity: 1;

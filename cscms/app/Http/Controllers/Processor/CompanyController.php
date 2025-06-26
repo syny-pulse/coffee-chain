@@ -23,6 +23,7 @@ class CompanyController extends Controller
                 'companies.phone',
                 'companies.address',
                 'companies.registration_number',
+                'companies.pdf_path',
                 'companies.acceptance_status',
                 'users.status as account_status',
                 'users.id as user_id' // Include user_id for account status updates

@@ -42,6 +42,7 @@
                         <th>Phone</th>
                         <th>Address</th>
                         <th>Registration Number</th>
+                        <th>Application</th>
                         <th>Acceptance Status</th>
                         <th>Account Status</th>
                         <th>Actions</th>
@@ -56,6 +57,14 @@
                             <td>{{ $company->phone }}</td>
                             <td>{{ $company->address }}</td>
                             <td>{{ $company->registration_number }}</td>
+                            <td>
+                                @if ($company->pdf_path)
+                                    <a href="{{ '/storage' . str_replace(storage_path('app/public'), '', $company->pdf_path) }}"
+                                        target="_blank" class="pdf-badge">PDF</a>
+                                @else
+                                    <span class="status-badge status-inactive">N/A</span>
+                                @endif
+                            </td>
                             <td>
                                 <span class="status-badge status-{{ $company->acceptance_status }}">
                                     {{ ucfirst($company->acceptance_status) }}
@@ -104,7 +113,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted">No companies found.</td>
+                            <td colspan="10" class="text-center text-muted">No companies found.</td>
                         </tr>
                     @endforelse
                 </tbody>
