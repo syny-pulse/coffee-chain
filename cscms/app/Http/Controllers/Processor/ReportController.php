@@ -118,6 +118,7 @@ class ReportController extends Controller
         $prevAcceptedApplications = $previousPeriod->where('acceptance_status', 'accepted')->count();
         $prevPendingApplications = $previousPeriod->where('acceptance_status', 'pending')->count();
         $prevRejectedApplications = $previousPeriod->where('acceptance_status', 'rejected')->count();
+        $prevVisitScheduledApplications = $previousPeriod->where('acceptance_status', 'visit_scheduled')->count();
 
         // Calculate acceptance rate
         $acceptanceRate = $totalApplications > 0 ? ($acceptedApplications / $totalApplications) * 100 : 0;
@@ -157,7 +158,7 @@ class ReportController extends Controller
             ],
             'visit_scheduled' => [
                 'value' => $visitScheduledApplications,
-                'change' => 0,
+            'change' => $this->calculatePercentageChange($visitScheduledApplications, $prevVisitScheduledApplications),
                 'icon' => 'fas fa-calendar-check',
                 'color' => 'var(--info)'
             ],

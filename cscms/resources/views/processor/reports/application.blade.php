@@ -89,6 +89,36 @@
 
         <div class="stat-card">
             <div class="stat-card-header">
+                <span class="stat-card-title">Rejected</span>
+                <div class="stat-card-icon" style="background: {{ $stats['rejected_applications']['color'] }}">
+                    <i class="{{ $stats['rejected_applications']['icon'] }}"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ number_format($stats['rejected_applications']['value']) }}</div>
+            <div
+                class="stat-card-change {{ $stats['rejected_applications']['change'] >= 0 ? 'change-positive' : 'change-negative' }}">
+                <i class="fas fa-{{ $stats['rejected_applications']['change'] >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                {{ abs($stats['rejected_applications']['change']) }}% from previous period
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Visit Scheduled</span>
+                <div class="stat-card-icon" style="background: {{ $stats['visit_scheduled']['color'] }}">
+                    <i class="{{ $stats['visit_scheduled']['icon'] }}"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">{{ number_format($stats['visit_scheduled']['value']) }}</div>
+            <div
+                class="stat-card-change {{ $stats['visit_scheduled']['change'] >= 0 ? 'change-positive' : 'change-negative' }}">
+                <i class="fas fa-{{ $stats['visit_scheduled']['change'] >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                {{ abs($stats['visit_scheduled']['change']) }}% from previous period
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
                 <span class="stat-card-title">Acceptance Rate</span>
                 <div class="stat-card-icon" style="background: {{ $stats['acceptance_rate']['color'] }}">
                     <i class="{{ $stats['acceptance_rate']['icon'] }}"></i>
