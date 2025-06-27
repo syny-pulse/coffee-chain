@@ -10,10 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch companies with related user account status
-        $companies = DB::table('companies')
+        // Get the search query from the request
+        $search = $request->query('search');
+
+        // Build the query to fetch companies with related user account status
+        $query = DB::table('companies')
             ->leftJoin('users', 'companies.company_id', '=', 'users.company_id')
             ->select(
                 'companies.company_id',
@@ -26,9 +29,16 @@ class CompanyController extends Controller
                 'companies.pdf_path',
                 'companies.acceptance_status',
                 'users.status as account_status',
-                'users.id as user_id' // Include user_id for account status updates
-            )
-            ->get();
+                'users.id as user_id'
+            );
+
+        // Apply search filter if provided
+        if ($search) {
+            $query->where('companies.company_name', 'LIKE', '%' . $search . '%');
+        }
+
+        // Execute the query and get the results
+        $companies = $query->get();
 
         return view('processor.company', compact('companies'));
     }
