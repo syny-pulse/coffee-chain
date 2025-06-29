@@ -480,7 +480,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('retailer.dashboard') }}" class="nav-link">
                         <span class="icon"><i class="fas fa-grid-2"></i></span>
                         Dashboard
                     </a>
@@ -490,25 +490,25 @@
             <div class="nav-section">
                 <div class="nav-section-title">Shop Management</div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('retailer.sales.index') }}" class="nav-link">
                         <span class="icon"><i class="fas fa-chart-bar"></i></span>
                         Sales Data
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('retailer.product_recipes.index') }}" class="nav-link">
                         <span class="icon"><i class="fas fa-utensils"></i></span>
                         Product Recipes
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('retailer.inventory.index') }}" class="nav-link">
                         <span class="icon"><i class="fas fa-warehouse"></i></span>
                         Inventory
                     </a>
                 </div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="{{ route('retailer.orders.index') }}" class="nav-link  active">
                         <span class="icon"><i class="fas fa-shopping-bag"></i></span>
                         Orders
                     </a>

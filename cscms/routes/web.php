@@ -253,6 +253,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Retailer inventory routes
         Route::get('/inventory', [\App\Http\Controllers\RetailerInventoryController::class, 'index'])->name('inventory.index');
+
+        // Retailer communication routes
+        Route::get('/communication', function () {
+            return view('retailers.communication.index');
+        })->name('communication.index');
     });
 
     // Admin routes (commented out)

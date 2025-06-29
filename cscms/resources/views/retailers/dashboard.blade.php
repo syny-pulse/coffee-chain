@@ -528,7 +528,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Communication</div>
                 <div class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('retailer.communication.index') }}" class="nav-link">
                         <span class="icon"><i class="fas fa-message"></i></span>
                         Messages
                     </a>
