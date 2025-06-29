@@ -1,5 +1,6 @@
-{{-- resources/views/auth/login.blade.php --}}
+{{-- resources/views/auth/reset-password.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Reset Password')
 
 @section('content')
     <div class="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -15,7 +16,7 @@
         </div>
 
         <div class="relative z-10 max-w-md w-full mx-4">
-            <!-- Login Card -->
+            <!-- Reset Password Card -->
             <div
                 class="bg-white bg-opacity-90 backdrop-blur-lg rounded-3xl shadow-2xl border border-coffee-light border-opacity-20 p-8 transform transition-all duration-300 hover:shadow-coffee-medium hover:shadow-opacity-20">
 
@@ -28,12 +29,12 @@
                         </div>
                     </div>
                     <h1 class="text-2xl font-bold text-coffee-dark mb-2">Coffee Supply Chain</h1>
-                    <h2 class="text-lg font-semibold text-coffee-medium">Welcome Back</h2>
-                    <p class="text-coffee-light text-sm mt-2">Sign in to your account to continue</p>
+                    <h2 class="text-lg font-semibold text-coffee-medium">Reset Your Password</h2>
+                    <p class="text-coffee-light text-sm mt-2">Enter your email to receive a password reset link</p>
                 </div>
 
-                <!-- Login Form -->
-                <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                <!-- Reset Password Form -->
+                <form method="POST" action="{{ route('password.send') }}" class="space-y-6">
                     @csrf
 
                     <!-- Status Message -->
@@ -62,61 +63,20 @@
                         @enderror
                     </div>
 
-                    <!-- Password Field -->
-                    <div class="form-group">
-                        <label for="password" class="block text-sm font-semibold text-coffee-dark mb-2">
-                            <i class="fas fa-lock mr-2 text-coffee-medium"></i>
-                            Password
-                        </label>
-                        <div class="relative">
-                            <input id="password" name="password" type="password"
-                                class="w-full px-4 py-3 bg-white bg-opacity-80 border-2 border-coffee-light border-opacity-30 rounded-xl text-coffee-dark placeholder-coffee-light placeholder-opacity-60 focus:outline-none focus:border-coffee-medium focus:bg-white focus:bg-opacity-100 transition-all duration-300 @error('password') border-red-400 @enderror"
-                                placeholder="Enter your password" required>
-                            <button type="button" onclick="togglePassword()"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-coffee-light hover:text-coffee-medium transition-colors duration-200">
-                                <i id="password-toggle-icon" class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        @error('password')
-                            <p class="mt-2 text-sm text-red-600 flex items-center">
-                                <i class="fas fa-exclamation-circle mr-1"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Remember Me & Forgot Password -->
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input id="remember_me" name="remember" type="checkbox"
-                                class="w-4 h-4 text-coffee-medium bg-white border-coffee-light rounded focus:ring-coffee-medium focus:ring-2">
-                            <label for="remember_me" class="ml-2 text-sm text-coffee-dark">
-                                Remember me
-                            </label>
-                        </div>
-
-                        <div class="text-sm">
-                            <a href="{{ route('password.request') }}"
-                                class="font-medium text-coffee-medium hover:text-coffee-dark transition-colors duration-200">
-                                Forgot password?
-                            </a>
-                        </div>
-                    </div>
-
                     <!-- Submit Button -->
                     <button type="submit"
                         class="w-full bg-gradient-to-r from-coffee-medium to-coffee-light text-black font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-coffee-medium focus:ring-opacity-50 flex items-center justify-center">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
-                        Sign In
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Send Reset Link
                     </button>
 
-                    <!-- Register Link -->
+                    <!-- Back to Login Link -->
                     <div class="text-center pt-4 border-t border-coffee-light border-opacity-20">
                         <p class="text-sm text-coffee-light">
-                            Don't have an account?
-                            <a href="{{ route('register') }}"
+                            Remember your password?
+                            <a href="{{ route('login') }}"
                                 class="font-semibold text-coffee-medium hover:text-coffee-dark transition-colors duration-200 ml-1">
-                                Create one here
+                                Back to Login
                             </a>
                         </p>
                     </div>
@@ -140,7 +100,7 @@
             <!-- Footer -->
             <div class="text-center mt-6">
                 <p class="text-sm text-coffee-medium opacity-80">
-                    &copy; 2024 Coffee Supply Chain Management - G-26
+                    © 2024 Coffee Supply Chain Management - G-26
                 </p>
             </div>
         </div>
@@ -151,22 +111,6 @@
     </style>
 
     <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('password-toggle-icon');
-
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        // Add floating animation to form elements
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input');
             inputs.forEach(input => {

@@ -29,9 +29,9 @@ class LoginController extends Controller
         // Attempt to log the user in
         if (Auth::attempt($this->credentials($request), $request->boolean('remember'))) {
             $request->session()->regenerate();
-            
+
             $user = Auth::user();
-            
+
             // Check if user account is active
             if (!$user->isActive()) {
                 Auth::logout();
@@ -70,7 +70,7 @@ class LoginController extends Controller
                 case 'admin':
                     return redirect()->route('admin.dashboard');
             }
-            
+
 
         }
 

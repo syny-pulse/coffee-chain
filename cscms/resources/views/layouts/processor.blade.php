@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,6 +143,85 @@
             padding: 0.6rem;
         }
 
+        /* Reports Dropdown */
+        .reports-dropdown {
+            position: relative;
+        }
+
+        .reports-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .reports-btn:hover {
+            background: rgba(111, 78, 55, 0.1);
+            transform: translateX(3px);
+            color: var(--coffee-medium);
+        }
+
+        .reports-btn.active {
+            background: var(--coffee-medium);
+            color: white;
+            box-shadow: 0 2px 8px rgba(111, 78, 55, 0.2);
+        }
+
+        .reports-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            /* Position below the Reports button */
+            left: 0;
+            background: white;
+            width: 100%;
+            /* Match sidebar-menu item width */
+            box-shadow: 0 8px 16px rgba(111, 78, 55, 0.2);
+            border-radius: 8px;
+            z-index: 1001;
+            border: 1px solid rgba(111, 78, 55, 0.1);
+        }
+
+        .reports-dropdown-content.show {
+            display: block;
+        }
+
+        .reports-dropdown-content a {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+        }
+
+        .reports-dropdown-content a:hover {
+            background: var(--cream);
+            color: var(--coffee-medium);
+        }
+
+        .reports-dropdown-content a.active {
+            background: var(--coffee-medium);
+            color: white;
+        }
+
+        .sidebar.collapsed .reports-btn span,
+        .sidebar.collapsed .reports-btn i.fa-chevron-down {
+            display: none;
+        }
+
+        .sidebar.collapsed .reports-btn {
+            justify-content: center;
+            padding: 0.6rem;
+        }
+
         /* Sidebar Logo */
         .sidebar-logo {
             padding: 1rem;
@@ -264,7 +344,7 @@
             min-height: 100vh;
         }
 
-        .sidebar.collapsed + .main-content {
+        .sidebar.collapsed+.main-content {
             margin-left: var(--sidebar-collapsed);
         }
 
@@ -476,6 +556,21 @@
             color: var(--success);
         }
 
+        .status-accepted {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .status-visit_scheduled {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
         /* Buttons */
         .btn {
             padding: 0.5rem 1rem;
@@ -535,6 +630,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -546,16 +642,16 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
-            
+
             .dashboard-header {
                 flex-direction: column;
                 gap: 1rem;
             }
-            
+
             .dashboard-actions {
                 width: 100%;
                 justify-content: flex-start;
@@ -570,8 +666,68 @@
         .text-muted {
             color: var(--text-light);
         }
+
+        /* Status Select */
+        .status-select {
+            padding: 0.5rem;
+            border: 1px solid rgba(111, 78, 55, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .status-select:hover {
+            border-color: var(--coffee-medium);
+            background: var(--cream);
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--coffee-light);
+            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+        }
+
+        /* Custom CSS for PDF Badge */
+        .pdf-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: #fff;
+            background-color: #007bff;
+            transition: background-color 0.2s ease;
+        }
+
+        .pdf-badge:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+        }
+
+        /* Fade Out Animation */
+        .fade-out {
+            animation: fadeOut 0.6s ease-in-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+                display: none;
+            }
+        }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
@@ -588,46 +744,75 @@
 
         <ul class="sidebar-menu">
             <li>
-                <a href="{{ route('processor.dashboard') }}" class="{{ request()->routeIs('processor.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('processor.dashboard') }}"
+                    class="{{ request()->routeIs('processor.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.employee.index') }}" class="{{ request()->routeIs('processor.employee.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.employee.index') }}"
+                    class="{{ request()->routeIs('processor.employee.*') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
                     <span>Employees</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.inventory.index') }}" class="{{ request()->routeIs('processor.inventory.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.company.index') }}"
+                    class="{{ request()->routeIs('processor.company.*') ? 'active' : '' }}">
+                    <i class="fas fa-building"></i>
+                    <span>Companies</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('processor.inventory.index') }}"
+                    class="{{ request()->routeIs('processor.inventory.*') ? 'active' : '' }}">
                     <i class="fas fa-warehouse"></i>
                     <span>Inventory</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.order.farmer_order.index') }}" class="{{ request()->routeIs('processor.order.farmer_order.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.order.farmer_order.index') }}"
+                    class="{{ request()->routeIs('processor.order.farmer_order.*') ? 'active' : '' }}">
                     <i class="fas fa-seedling"></i>
                     <span>Farmer Orders</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.order.retailer_order.index') }}" class="{{ request()->routeIs('processor.order.retailer_order.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.order.retailer_order.index') }}"
+                    class="{{ request()->routeIs('processor.order.retailer_order.*') ? 'active' : '' }}">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Retailer Orders</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.message.index') }}" class="{{ request()->routeIs('processor.message.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.message.index') }}"
+                    class="{{ request()->routeIs('processor.message.*') ? 'active' : '' }}">
                     <i class="fas fa-envelope"></i>
                     <span>Messages</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.analytics.index') }}" class="{{ request()->routeIs('processor.analytics.*') ? 'active' : '' }}">
+                <a href="{{ route('processor.analytics.index') }}"
+                    class="{{ request()->routeIs('processor.analytics.*') ? 'active' : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span>Analytics</span>
                 </a>
+            </li>
+            <li class="reports-dropdown">
+                <div class="reports-btn {{ request()->routeIs('processor.reports.*') ? 'active' : '' }}"
+                    onclick="toggleReportsDropdown()">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="reports-dropdown-content" id="reportsDropdown">
+                    <a href="{{ route('processor.reports.application') }}"
+                        class="{{ request()->routeIs('processor.reports.application') ? 'active' : '' }}">
+                        Application Report
+                    </a>
+                    <!-- Add more report options here as needed -->
+                </div>
             </li>
         </ul>
 
@@ -639,7 +824,8 @@
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="profile-dropdown-content" id="profileDropdown">
-                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
@@ -667,17 +853,42 @@
             dropdown.classList.toggle('show');
         }
 
-        // Close dropdown when clicking outside
+        function toggleReportsDropdown() {
+            const dropdown = document.getElementById('reportsDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('profileDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
             const profileBtn = document.querySelector('.profile-btn');
-            
-            if (!profileBtn.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
+            const reportsDropdown = document.getElementById('reportsDropdown');
+            const reportsBtn = document.querySelector('.reports-btn');
+
+            if (!profileBtn.contains(event.target) && !profileDropdown.contains(event.target)) {
+                profileDropdown.classList.remove('show');
+            }
+            if (!reportsBtn.contains(event.target) && !reportsDropdown.contains(event.target)) {
+                reportsDropdown.classList.remove('show');
+            }
+        });
+
+        // Auto-hide success alert after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const successAlert = document.getElementById('success-alert');
+            if (successAlert) {
+                setTimeout(() => {
+                    successAlert.classList.remove('fade-in');
+                    successAlert.classList.add('fade-out');
+                    setTimeout(() => {
+                        successAlert.style.display = 'none';
+                    }, 600); // Match the animation duration
+                }, 5000); // Show for 5 seconds
             }
         });
     </script>
 
     @yield('scripts')
 </body>
+
 </html>
