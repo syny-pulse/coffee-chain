@@ -10,6 +10,7 @@ class FarmerOrder extends Model
     protected $table = 'farmer_orders';
     protected $primaryKey = 'order_id';
     protected $fillable = [
+        'processor_company_id',
         'farmer_company_id',
         'coffee_variety',
         'processing_method',
@@ -38,5 +39,20 @@ class FarmerOrder extends Model
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'farmer_company_id', 'company_id');
+    }
+
+    public function processor(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'processor_company_id', 'company_id');
+    }
+
+    /**
+     * Get the route key name for Laravel.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'order_id';
     }
 }

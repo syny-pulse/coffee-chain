@@ -84,32 +84,24 @@ class InventoryController extends Controller
         return redirect()->route('processor.inventory.index')->with('success', 'Product added to inventory.');
     }
 
-    public function show(Product $product)
+    public function show($id)
     {
         $user = Auth::user();
-        if (!$user) {
-            return redirect()->route('login');
-        }
+        $item = Inventory::where('id', $id)
+            ->where('processor_company_id', $user->company_id)
+            ->firstOrFail();
 
-        if ($product->user_id !== $user->id) {
-            return abort(403, 'Unauthorized action.');
-        }
-
-        return view('processor.inventory.show', compact('product'));
+        return view('processor.inventory.show', compact('item'));
     }
 
-    public function edit(Product $product)
+    public function edit($id)
     {
         $user = Auth::user();
-        if (!$user) {
-            return redirect()->route('login');
-        }
+        $item = Inventory::where('id', $id)
+            ->where('processor_company_id', $user->company_id)
+            ->firstOrFail();
 
-        if ($product->user_id !== $user->id) {
-            return abort(403, 'Unauthorized action.');
-        }
-
-        return view('processor.inventory.edit', compact('product'));
+        return view('processor.inventory.edit', compact('item'));
     }
 
     public function update(Request $request, Product $product)

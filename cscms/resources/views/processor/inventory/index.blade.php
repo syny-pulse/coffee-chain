@@ -178,7 +178,7 @@
                             @endif
                         </td>
                         <td>
-                            <a href="#" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
+                            <a href="{{ route('processor.inventory.edit', $material->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>
@@ -243,7 +243,7 @@
                             @endif
                         </td>
                         <td>
-                            <a href="#" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
+                            <a href="{{ route('processor.inventory.edit', $product->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>
