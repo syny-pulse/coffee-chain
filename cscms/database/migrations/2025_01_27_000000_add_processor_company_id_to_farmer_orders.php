@@ -52,4 +52,4 @@ return new class extends Migration
             $table->dropColumn('processor_company_id');
         });
     }
-}; 
+};

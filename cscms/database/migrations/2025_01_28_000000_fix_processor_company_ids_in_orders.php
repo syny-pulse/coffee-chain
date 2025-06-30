@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 return new class extends Migration
 {
@@ -14,10 +15,10 @@ return new class extends Migration
     {
         // Fix farmer_orders table
         $this->fixProcessorCompanyIds('farmer_orders');
-        
+
         // Fix retailer_orders table
         $this->fixProcessorCompanyIds('retailer_orders');
-        
+
         // Fix employees table
         $this->fixProcessorCompanyIds('employees');
     }
@@ -60,10 +61,10 @@ return new class extends Migration
 
         // Fix records where processor_company_id contains user IDs
         $records = DB::table($tableName)->get();
-        
+
         foreach ($records as $record) {
             $processorCompanyId = $record->processor_company_id;
-            
+
             // Check if this ID exists in the companies table
             $companyExists = DB::table('companies')
                 ->where('company_id', $processorCompanyId)
@@ -76,16 +77,16 @@ return new class extends Migration
                 DB::table($tableName)
                     ->where('id', $record->id)
                     ->update(['processor_company_id' => $userToCompanyMap[$processorCompanyId]]);
-                
-                \Log::info("Fixed {$tableName} record {$record->id}: updated processor_company_id from user ID {$processorCompanyId} to company ID {$userToCompanyMap[$processorCompanyId]}");
+
+                Log::info("Fixed {$tableName} record {$record->id}: updated processor_company_id from user ID {$processorCompanyId} to company ID {$userToCompanyMap[$processorCompanyId]}");
             } elseif (!$companyExists) {
                 // If it's neither a valid company ID nor a user ID, set it to the default processor company
                 DB::table($tableName)
                     ->where('id', $record->id)
                     ->update(['processor_company_id' => $defaultProcessorCompany->company_id]);
-                
-                \Log::info("Fixed {$tableName} record {$record->id}: set processor_company_id to default processor company {$defaultProcessorCompany->company_id}");
+
+                Log::info("Fixed {$tableName} record {$record->id}: set processor_company_id to default processor company {$defaultProcessorCompany->company_id}");
             }
         }
     }
-}; 
+};
