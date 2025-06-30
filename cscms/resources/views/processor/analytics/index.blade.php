@@ -177,13 +177,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const ctx = document.getElementById('productionChart').getContext('2d');
+        
+        // Get real production data from PHP
+        const productionMonths = @json($productionTrends['months'] ?? []);
+        const productionData = @json($productionTrends['production'] ?? []);
+        
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: productionMonths,
                 datasets: [{
                     label: 'Production (kg)',
-                    data: [500, 600, 550, 700, 650, 800],
+                    data: productionData,
                     borderColor: 'var(--coffee-medium)',
                     backgroundColor: 'rgba(111, 78, 55, 0.2)',
                     fill: true,

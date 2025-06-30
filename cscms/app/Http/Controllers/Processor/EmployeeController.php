@@ -12,7 +12,8 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $companyId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
+        $user = Auth::user();
+        $companyId = $user->company_id;
         $employees = Employee::where('processor_company_id', $companyId)->get();
         return view('processor.employee.index', compact('employees'));
     }
@@ -36,7 +37,8 @@ class EmployeeController extends Controller
         ]);
 
         try {
-            $companyId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
+            $user = Auth::user();
+            $companyId = $user->company_id;
             Employee::create(array_merge($request->all(), [
                 'processor_company_id' => $companyId,
                 'status' => 'active',
@@ -52,14 +54,16 @@ class EmployeeController extends Controller
 
     public function show($id)
     {
-        $companyId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
+        $user = Auth::user();
+        $companyId = $user->company_id;
         $employee = Employee::where('processor_company_id', $companyId)->findOrFail($id);
         return view('processor.employee.show', compact('employee'));
     }
 
     public function edit($id)
     {
-        $companyId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
+        $user = Auth::user();
+        $companyId = $user->company_id;
         $employee = Employee::where('processor_company_id', $companyId)->findOrFail($id);
         return view('processor.employee.edit', compact('employee'));
     }
@@ -78,7 +82,8 @@ class EmployeeController extends Controller
         ]);
 
         try {
-            $companyId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
+            $user = Auth::user();
+            $companyId = $user->company_id;
             $employee = Employee::where('processor_company_id', $companyId)->findOrFail($id);
             $employee->update($request->all());
             return redirect()->route('processor.employee.index')
@@ -92,7 +97,8 @@ class EmployeeController extends Controller
     public function destroy($id)
     {
         try {
-            $companyId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
+            $user = Auth::user();
+            $companyId = $user->company_id;
             $employee = Employee::where('processor_company_id', $companyId)->findOrFail($id);
             $employee->delete();
             return redirect()->route('processor.employee.index')

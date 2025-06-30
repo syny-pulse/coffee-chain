@@ -13,7 +13,9 @@ class RetailerOrderController extends Controller
 {
     public function index()
     {
-        $orders = RetailerOrder::where('processor_company_id', Auth::id())->get();
+        $user = Auth::user();
+        $companyId = $user->company_id;
+        $orders = RetailerOrder::where('processor_company_id', $companyId)->get();
         return view('processor.order.retailer_order.index', compact('orders'));
     }
 
@@ -43,7 +45,7 @@ class RetailerOrderController extends Controller
 
         $order = RetailerOrder::create([
             'order_number' => $request->order_number,
-            'processor_company_id' => Auth::id(),
+            'processor_company_id' => Auth::user()->company_id,
             'total_amount' => $totalAmount,
             'expected_delivery_date' => $request->expected_delivery_date,
             'shipping_address' => $request->shipping_address,
@@ -68,16 +70,18 @@ class RetailerOrderController extends Controller
 
     public function show(RetailerOrder $order)
     {
-        if ($order->processor_company_id != Auth::id()) {
-            abort(403);
+        $user = Auth::user();
+        if ($order->processor_company_id != $user->company_id) {
+            abort(403, 'Unauthorized access to this order.');
         }
         return view('processor.order.retailer_order.show', compact('order'));
     }
 
     public function update(Request $request, RetailerOrder $order)
     {
-        if ($order->processor_company_id != Auth::id()) {
-            abort(403);
+        $user = Auth::user();
+        if ($order->processor_company_id != $user->company_id) {
+            abort(403, 'Unauthorized access to this order.');
         }
 
         $request->validate([

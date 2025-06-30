@@ -87,4 +87,28 @@ class MessageController extends Controller
         // Redirect back to message index with success message
         return redirect()->route('processor.message.index')->with('success', 'Message sent successfully!');
     }
+
+    /**
+     * Display a single message.
+     */
+    public function show(Message $message)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->company) {
+            return redirect()->route('login')->with('error', 'Please log in to view messages.');
+        }
+
+        // Ensure the authenticated user's company is either the sender or receiver
+        if ($message->sender_company_id !== $user->company->company_id &&
+            $message->receiver_company_id !== $user->company->company_id) {
+            abort(403, 'Unauthorized access to this message.');
+        }
+
+        // Mark the message as read if the user is the receiver
+        if ($message->receiver_company_id === $user->company->company_id && !$message->is_read) {
+            $message->update(['is_read' => true]);
+        }
+
+        return view('processor.message.show', compact('message'));
+    }
 }
