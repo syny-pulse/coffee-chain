@@ -87,6 +87,7 @@ Route::prefix('processor')->group(function () {
     Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
 });
 
+
 // Farmer Routes
 //Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
     Route::get('/farmer/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
