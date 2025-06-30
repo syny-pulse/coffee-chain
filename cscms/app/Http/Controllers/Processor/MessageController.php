@@ -40,11 +40,15 @@ class MessageController extends Controller
      */
     public function create()
     {
-        // Fetch companies of type farmer or retailer
-        $companies = Company::whereIn('company_type', ['farmer', 'retailer'])->get();
-        
-        // Fetch users who have associated companies
-        $users = User::has('company')->get();
+        // Fetch companies of type farmer or retailer with acceptance_status 'accepted'
+    $companies = Company::whereIn('company_type', ['farmer', 'retailer'])
+                        ->where('acceptance_status', 'accepted')
+                        ->get();
+
+    // Fetch users who have associated companies and have status 'active'
+    $users = User::has('company')
+                 ->where('status', 'active')
+                 ->get();
 
         return view('processor.message.create', compact('companies', 'users'));
     }
