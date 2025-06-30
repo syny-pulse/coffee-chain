@@ -33,7 +33,6 @@ class OrderSeeder extends Seeder
         $orders = [
             // Recent orders
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[0], // Green Valley Farms
                 'coffee_variety' => 'arabica',
                 'processing_method' => 'washed',
@@ -49,7 +48,6 @@ class OrderSeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(1),
             ],
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[0], // Green Valley Farms
                 'coffee_variety' => 'robusta',
                 'processing_method' => 'washed',
@@ -65,7 +63,6 @@ class OrderSeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(1),
             ],
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[1], // Sunrise Agricultural Co.
                 'coffee_variety' => 'arabica',
                 'processing_method' => 'honey',
@@ -81,7 +78,6 @@ class OrderSeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(1),
             ],
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[2], // Harvest Moon Organics
                 'coffee_variety' => 'arabica',
                 'processing_method' => 'washed',
@@ -98,7 +94,6 @@ class OrderSeeder extends Seeder
             ],
             // Completed orders
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[0], // Green Valley Farms
                 'coffee_variety' => 'arabica',
                 'processing_method' => 'natural',
@@ -114,7 +109,6 @@ class OrderSeeder extends Seeder
                 'updated_at' => Carbon::now()->subDays(4),
             ],
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[1], // Sunrise Agricultural Co.
                 'coffee_variety' => 'robusta',
                 'processing_method' => 'natural',
@@ -131,7 +125,6 @@ class OrderSeeder extends Seeder
             ],
             // Shipped orders
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[2], // Harvest Moon Organics
                 'coffee_variety' => 'arabica',
                 'processing_method' => 'washed',
@@ -148,7 +141,6 @@ class OrderSeeder extends Seeder
             ],
             // Cancelled order
             [
-                'processor_company_id' => $processorCompanyIds[0], // First processor company
                 'farmer_company_id' => $farmerCompanyIds[0], // Green Valley Farms
                 'coffee_variety' => 'robusta',
                 'processing_method' => 'washed',

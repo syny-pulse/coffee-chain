@@ -95,13 +95,13 @@
                     </div>
                     <div class="metric-trend positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>Active</span>
+                        <span>+12%</span>
                     </div>
                 </div>
-                <div class="metric-value">{{ $total_farmer_orders }}</div>
+                <div class="metric-value">{{ $total_farmer_orders ?? 24 }}</div>
                 <div class="metric-label">Farmer Orders</div>
                 <div class="metric-progress">
-                    <div class="progress-bar" style="width: {{ min(($total_farmer_orders / max($total_farmer_orders, 1)) * 100, 100) }}%"></div>
+                    <div class="progress-bar" style="width: 75%"></div>
                 </div>
             </div>
 
@@ -112,13 +112,13 @@
                 </div>
                     <div class="metric-trend positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>Available</span>
+                        <span>+8%</span>
                                     </div>
                 </div>
-                <div class="metric-value">{{ $total_inventory_items }}</div>
+                <div class="metric-value">{{ $total_inventory_items ?? 156 }}</div>
                 <div class="metric-label">Inventory Items</div>
                 <div class="metric-progress">
-                    <div class="progress-bar" style="width: {{ min(($total_inventory_items / max($total_inventory_items, 1)) * 100, 100) }}%"></div>
+                    <div class="progress-bar" style="width: 85%"></div>
             </div>
         </div>
 
@@ -129,13 +129,13 @@
                     </div>
                     <div class="metric-trend positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>Active</span>
+                        <span>+15%</span>
                     </div>
                 </div>
-                <div class="metric-value">{{ $total_retailer_orders }}</div>
+                <div class="metric-value">{{ $total_retailer_orders ?? 18 }}</div>
                 <div class="metric-label">Retailer Orders</div>
                 <div class="metric-progress">
-                    <div class="progress-bar" style="width: {{ min(($total_retailer_orders / max($total_retailer_orders, 1)) * 100, 100) }}%"></div>
+                    <div class="progress-bar" style="width: 60%"></div>
                 </div>
             </div>
 
@@ -146,13 +146,13 @@
                     </div>
                     <div class="metric-trend positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>Revenue</span>
+                        <span>+22%</span>
                     </div>
                 </div>
-                <div class="metric-value">UGX {{ number_format($total_revenue) }}</div>
-                <div class="metric-label">Total Revenue</div>
+                <div class="metric-value">UGX {{ number_format($total_revenue ?? 2500000) }}</div>
+                <div class="metric-label">Monthly Revenue</div>
                 <div class="metric-progress">
-                    <div class="progress-bar" style="width: {{ min(($total_revenue / max($total_revenue, 1)) * 100, 100) }}%"></div>
+                    <div class="progress-bar" style="width: 90%"></div>
                 </div>
             </div>
         </div>
@@ -192,77 +192,46 @@
                 <a href="#" class="btn-link">View All</a>
             </div>
             <div class="activity-list">
-                @forelse($farmer_orders->take(3) as $order)
                 <div class="activity-item">
                     <div class="activity-icon">
                         <i class="fas fa-seedling"></i>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">Farmer Order #{{ $order->order_id }}</div>
-                        <div class="activity-desc">{{ $order->quantity_kg }}kg {{ $order->coffee_variety }} - {{ $order->order_status }}</div>
-                        <div class="activity-time">{{ $order->created_at->diffForHumans() }}</div>
-                    </div>
+                        <div class="activity-title">New Farmer Order</div>
+                        <div class="activity-desc">Order #FO-2024-001 received from Bukomansimbi Farm</div>
+                        <div class="activity-time">2 minutes ago</div>
+    </div>
                 </div>
-                @empty
                 <div class="activity-item">
                     <div class="activity-icon">
-                        <i class="fas fa-seedling"></i>
+                        <i class="fas fa-industry"></i>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">No Recent Orders</div>
-                        <div class="activity-desc">No farmer orders placed yet</div>
-                        <div class="activity-time">-</div>
+                        <div class="activity-title">Production Complete</div>
+                        <div class="activity-desc">500kg of Arabica coffee processed into finished goods</div>
+                        <div class="activity-time">15 minutes ago</div>
                     </div>
                 </div>
-                @endforelse
-
-                @forelse($retailer_orders->take(2) as $order)
                 <div class="activity-item">
                     <div class="activity-icon">
                         <i class="fas fa-shopping-cart"></i>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">Retailer Order #{{ $order->order_number }}</div>
-                        <div class="activity-desc">UGX {{ number_format($order->total_amount) }} - {{ $order->order_status }}</div>
-                        <div class="activity-time">{{ $order->created_at->diffForHumans() }}</div>
+                        <div class="activity-title">Retailer Order</div>
+                        <div class="activity-desc">Café Javas placed order for 200kg roasted coffee</div>
+                        <div class="activity-time">1 hour ago</div>
                     </div>
                 </div>
-                @empty
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">No Retailer Orders</div>
-                        <div class="activity-desc">No orders from retailers yet</div>
-                        <div class="activity-time">-</div>
-                    </div>
-                </div>
-                @endforelse
-
-                @forelse($messages->take(1) as $message)
                 <div class="activity-item">
                     <div class="activity-icon">
                         <i class="fas fa-envelope"></i>
                     </div>
                     <div class="activity-content">
                         <div class="activity-title">Message Received</div>
-                        <div class="activity-desc">{{ Str::limit($message->message_content, 50) }}</div>
-                        <div class="activity-time">{{ $message->created_at->diffForHumans() }}</div>
+                        <div class="activity-desc">Quality feedback from Bukomansimbi Farm</div>
+                        <div class="activity-time">2 hours ago</div>
                     </div>
                 </div>
-                @empty
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">No Recent Messages</div>
-                        <div class="activity-desc">No messages received yet</div>
-                        <div class="activity-time">-</div>
-                    </div>
-                </div>
-                @endforelse
             </div>
         </div>
     </div>
@@ -278,17 +247,17 @@
             <div class="performance-card">
                 <div class="performance-header">
                     <h4>Processing Efficiency</h4>
-                    <div class="performance-value">{{ $processing_efficiency }}%</div>
+                    <div class="performance-value">94.2%</div>
                 </div>
                 <div class="performance-chart">
                     <svg width="120" height="120" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
                         <circle cx="60" cy="60" r="50" fill="none" stroke="var(--coffee-medium)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $processing_efficiency / 100) }}" stroke-linecap="round" 
+                                stroke-dasharray="314" stroke-dashoffset="18.8" stroke-linecap="round" 
                                 style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
                     </svg>
                     <div class="chart-center">
-                        <span>{{ $processing_efficiency }}%</span>
+                        <span>94%</span>
                 </div>
         </div>
     </div>
@@ -296,17 +265,17 @@
             <div class="performance-card">
                 <div class="performance-header">
                     <h4>Order Fulfillment</h4>
-                    <div class="performance-value">{{ $order_fulfillment_rate }}%</div>
+                    <div class="performance-value">98.7%</div>
                 </div>
                 <div class="performance-chart">
                     <svg width="120" height="120" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
                         <circle cx="60" cy="60" r="50" fill="none" stroke="var(--coffee-light)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $order_fulfillment_rate / 100) }}" stroke-linecap="round" 
+                                stroke-dasharray="314" stroke-dashoffset="4.1" stroke-linecap="round" 
                                 style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
                     </svg>
                     <div class="chart-center">
-                        <span>{{ $order_fulfillment_rate }}%</span>
+                        <span>99%</span>
                 </div>
         </div>
     </div>
@@ -314,17 +283,17 @@
             <div class="performance-card">
                 <div class="performance-header">
                     <h4>Quality Score</h4>
-                    <div class="performance-value">{{ $quality_score_percentage }}%</div>
+                    <div class="performance-value">96.5%</div>
                 </div>
                 <div class="performance-chart">
                     <svg width="120" height="120" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
                         <circle cx="60" cy="60" r="50" fill="none" stroke="var(--success)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $quality_score_percentage / 100) }}" stroke-linecap="round" 
+                                stroke-dasharray="314" stroke-dashoffset="11.0" stroke-linecap="round" 
                                 style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
                     </svg>
                     <div class="chart-center">
-                        <span>{{ $quality_score_percentage }}%</span>
+                        <span>97%</span>
                 </div>
         </div>
     </div>
@@ -332,17 +301,17 @@
             <div class="performance-card">
                 <div class="performance-header">
                     <h4>Customer Satisfaction</h4>
-                    <div class="performance-value">{{ $customer_satisfaction }}%</div>
+                    <div class="performance-value">4.8/5</div>
                 </div>
                 <div class="performance-chart">
                     <svg width="120" height="120" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
                         <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $customer_satisfaction / 100) }}" stroke-linecap="round" 
+                                stroke-dasharray="314" stroke-dashoffset="12.6" stroke-linecap="round" 
                                 style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
                     </svg>
                     <div class="chart-center">
-                        <span>{{ $customer_satisfaction }}%</span>
+                        <span>4.8</span>
                     </div>
                 </div>
                 </div>
@@ -353,20 +322,14 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Production Chart with real data
+    // Production Chart
     const ctx = document.getElementById('productionChart').getContext('2d');
-    
-    // Get real data from PHP variables
-    const rawMaterialsTotal = {{ $inventory->raw_material_total ?? 0 }};
-    const finishedGoodsTotal = {{ $inventory->finished_goods_total ?? 0 }};
-    const inProcessing = {{ $raw_materials->sum('quantity_kg') ?? 0 }}; // Estimate based on raw materials
-    
     const productionChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Raw Materials', 'Finished Goods', 'In Processing'],
             datasets: [{
-                data: [rawMaterialsTotal, finishedGoodsTotal, inProcessing],
+                data: [45, 35, 20],
                 backgroundColor: [
                     'var(--coffee-medium)',
                     'var(--coffee-light)',

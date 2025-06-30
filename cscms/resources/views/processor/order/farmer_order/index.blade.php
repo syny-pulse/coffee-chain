@@ -58,7 +58,7 @@
                             <a href="{{ route('processor.order.farmer_order.show', $order->order_id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--info); color: white;">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('processor.order.farmer_order.edit', $order->order_id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--warning); color: white;">
+                            <a href="{{ route('processor.order.farmer_order.update', $order->order_id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--warning); color: white;">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>

@@ -23,8 +23,6 @@ use App\Http\Controllers\Farmer\CommunicationController;
 use App\Http\Controllers\Farmer\FinancialController;
 use App\Http\Controllers\Farmer\AnalyticsController as FarmerAnalyticsController;
 
-<<<<<<< HEAD
-=======
 
 
 Route::prefix('processor')->group(function () {
@@ -89,8 +87,6 @@ Route::prefix('processor')->group(function () {
     Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
 });
 
-
->>>>>>> 4532407c5a9cf5dca25fa3ec748a17ac52077c3b
 // Farmer Routes
 //Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
     Route::get('/farmer/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
@@ -222,11 +218,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Retailer routes
-    Route::prefix('retailer')->middleware(['auth'])->name('retailer.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('retailers.dashboard');
-        })->name('dashboard');
-
+    Route::prefix('retailer')->name('retailer.')->group(function () {
         Route::get('/orders', function () {
             return view('retailer.orders');
         })->name('orders');
@@ -238,29 +230,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customers', function () {
             return view('retailer.customers');
         })->name('customers');
-
-        // Product recipes routes
-        Route::get('/product-recipes', [\App\Http\Controllers\RetailerProductRecipeController::class, 'index'])->name('product_recipes.index');
-        Route::get('/product-recipes/create', [\App\Http\Controllers\RetailerProductRecipeController::class, 'create'])->name('product_recipes.create');
-        Route::post('/product-recipes', [\App\Http\Controllers\RetailerProductRecipeController::class, 'store'])->name('product_recipes.store');
-
-        // Retailer sales routes
-        Route::get('/sales', [\App\Http\Controllers\RetailerSalesController::class, 'index'])->name('sales.index');
-        Route::post('/sales', [\App\Http\Controllers\RetailerSalesController::class, 'store'])->name('sales.store');
-        Route::get('/sales/create', [\App\Http\Controllers\RetailerSalesController::class, 'index'])->name('sales.create');
-
-        // Retailer orders routes
-        Route::get('/orders', [\App\Http\Controllers\RetailerOrderController::class, 'index'])->name('orders.index');
-        Route::post('/orders', [\App\Http\Controllers\RetailerOrderController::class, 'store'])->name('orders.store');
-        Route::put('/orders/{id}', [\App\Http\Controllers\RetailerOrderController::class, 'update'])->name('orders.update');
-
-        // Retailer inventory routes
-        Route::get('/inventory', [\App\Http\Controllers\RetailerInventoryController::class, 'index'])->name('inventory.index');
-
-        // Retailer communication routes
-        Route::get('/communication', function () {
-            return view('retailers.communication.index');
-        })->name('communication.index');
     });
 
     // Admin routes (commented out)
@@ -294,3 +263,4 @@ Route::middleware(['auth'])->group(function () {
     })->name('profile.show');
 
  });
+

@@ -32,19 +32,15 @@ class AnalyticsController extends Controller
         // Get customer segments
         $customerSegments = $this->segmentCustomers($retailerOrders);
 
-        // Calculate production trends (last 6 months)
-        $productionTrends = $this->calculateProductionTrends($processorCompanyId);
-
         // Log the data for debugging
         Log::info('Analytics Data', [
             'analytics' => $analytics,
             'customerSegments' => $customerSegments,
-            'productionTrends' => $productionTrends,
             'farmerOrdersCount' => $farmerOrders->count(),
             'retailerOrdersCount' => $retailerOrders->count()
         ]);
 
-        return view('processor.analytics.index', compact('analytics', 'customerSegments', 'productionTrends'));
+        return view('processor.analytics.index', compact('analytics', 'customerSegments'));
     }
 
     private function calculateAnalytics($farmerOrders, $retailerOrders)
@@ -115,43 +111,5 @@ class AnalyticsController extends Controller
         }
 
         return $segments;
-    }
-
-    private function calculateProductionTrends($processorCompanyId)
-    {
-        $trends = [];
-        $months = [];
-        $productionData = [];
-        
-        // Get last 6 months
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $months[] = $date->format('M');
-            
-            // Calculate production for this month based on finished goods inventory
-            // This is a simplified calculation - you might want to track actual production dates
-            $monthStart = $date->startOfMonth();
-            $monthEnd = $date->copy()->endOfMonth();
-            
-            // Get finished goods created in this month (if processing_date is available)
-            $monthlyProduction = \App\Models\Product::where('user_id', auth()->user()->id)
-                ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
-                ->whereBetween('processing_date', [$monthStart, $monthEnd])
-                ->sum('quantity_kg');
-            
-            // If no processing_date data, estimate based on current inventory
-            if ($monthlyProduction == 0) {
-                $monthlyProduction = \App\Models\Product::where('user_id', auth()->user()->id)
-                    ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
-                    ->sum('quantity_kg') / 6; // Distribute current inventory across 6 months
-            }
-            
-            $productionData[] = round($monthlyProduction, 0);
-        }
-        
-        return [
-            'months' => $months,
-            'production' => $productionData
-        ];
     }
 }

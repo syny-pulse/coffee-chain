@@ -53,45 +53,6 @@ class ProcessorDashboardController extends Controller
                 Log::error('Failed to fetch forecast: ' . $e->getMessage());
             }
 
-            // Calculate key metrics for dashboard
-            $total_farmer_orders = FarmerOrder::where('processor_company_id', $companyId)->count();
-            $total_retailer_orders = RetailerOrder::where('processor_company_id', $companyId)->count();
-            $total_inventory_items = Product::where('user_id', $user->id)->count();
-            
-            // Calculate total revenue from delivered retailer orders
-            $total_revenue = RetailerOrder::where('processor_company_id', $companyId)
-                ->where('order_status', 'delivered')
-                ->sum('total_amount');
-
-            // Calculate performance indicators
-            $delivered_retailer_orders = RetailerOrder::where('processor_company_id', $companyId)
-                ->where('order_status', 'delivered')
-                ->count();
-            $total_retailer_orders_count = RetailerOrder::where('processor_company_id', $companyId)->count();
-            
-            $order_fulfillment_rate = $total_retailer_orders_count > 0 ? 
-                round(($delivered_retailer_orders / $total_retailer_orders_count) * 100, 1) : 0;
-
-            // Calculate processing efficiency based on inventory turnover
-            $total_processed_kg = Product::where('user_id', $user->id)
-                ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
-                ->sum('quantity_kg');
-            $total_raw_kg = Product::where('user_id', $user->id)
-                ->where('product_type', 'green_beans')
-                ->sum('quantity_kg');
-            
-            $processing_efficiency = ($total_raw_kg + $total_processed_kg) > 0 ? 
-                round(($total_processed_kg / ($total_raw_kg + $total_processed_kg)) * 100, 1) : 0;
-
-            // Calculate average quality score
-            $avg_quality_score = Product::where('user_id', $user->id)
-                ->whereNotNull('quality_score')
-                ->avg('quality_score');
-            $quality_score_percentage = $avg_quality_score ? round(($avg_quality_score / 10) * 100, 1) : 0;
-
-            // Calculate customer satisfaction (simplified - based on order completion rate)
-            $customer_satisfaction = $order_fulfillment_rate; // Simplified metric
-
             // Inventory data
             $inventoryQuery = Product::where('user_id', $user->id)
                 ->selectRaw('SUM(CASE WHEN product_type = "green_beans" THEN quantity_kg ELSE 0 END) as raw_material_total')
@@ -121,7 +82,7 @@ class ProcessorDashboardController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            $farmer_orders = FarmerOrder::where('processor_company_id', $companyId)
+            $farmer_orders = FarmerOrder::where('farmer_company_id', $companyId)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -156,15 +117,7 @@ class ProcessorDashboardController extends Controller
                 'messages',
                 'employees',
                 'companies',
-                'customerSegments',
-                'total_farmer_orders',
-                'total_retailer_orders',
-                'total_inventory_items',
-                'total_revenue',
-                'order_fulfillment_rate',
-                'processing_efficiency',
-                'quality_score_percentage',
-                'customer_satisfaction'
+                'customerSegments'
             ));
 
         } catch (\Exception $e) {
