@@ -23,9 +23,6 @@ use App\Http\Controllers\Farmer\CommunicationController;
 use App\Http\Controllers\Farmer\FinancialController;
 use App\Http\Controllers\Farmer\AnalyticsController as FarmerAnalyticsController;
 
-<<<<<<< HEAD
-=======
-
 
 Route::prefix('processor')->group(function () {
     Route::get('/dashboard', [ProcessorDashboardController::class, 'index'])->name('processor.dashboard');
@@ -90,7 +87,6 @@ Route::prefix('processor')->group(function () {
 });
 
 
->>>>>>> 4532407c5a9cf5dca25fa3ec748a17ac52077c3b
 // Farmer Routes
 //Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
     Route::get('/farmer/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');

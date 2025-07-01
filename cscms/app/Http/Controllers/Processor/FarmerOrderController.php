@@ -7,11 +7,7 @@ use App\Models\FarmerOrder;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-<<<<<<< HEAD
-use Illuminate\Support\Facades\DB;
-=======
 use Illuminate\Support\Facades\Log;
->>>>>>> 4532407c5a9cf5dca25fa3ec748a17ac52077c3b
 
 class FarmerOrderController extends Controller
 {
