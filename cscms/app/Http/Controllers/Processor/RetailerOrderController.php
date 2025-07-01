@@ -28,7 +28,7 @@ class RetailerOrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'order_number' => 'required|string|unique:retailer_orders,order_number',
+            'order_number' => 'required|string|unique:processor_retailer_orders,order_number',
             'shipping_address' => 'required|string',
             'expected_delivery_date' => 'required|date',
             'notes' => 'nullable|string',
