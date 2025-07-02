@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\FarmerOrder;
+use App\Models\Company;
 
 class OrderController extends Controller
 {
@@ -19,7 +20,8 @@ class OrderController extends Controller
 
     public function create()
     {
-        return view('farmers.orders.create');
+        $processors = Company::where('company_type', 'processor')->pluck('company_name', 'company_id');
+        return view('farmers.orders.create', compact('processors'));
     }
 
     public function store(Request $request)
@@ -27,6 +29,7 @@ class OrderController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $request->validate([
+            'processor_company_id' => 'required|exists:companies,company_id',
             'coffee_variety' => 'required|string',
             'grade' => 'required|string',
             'quantity_kg' => 'required|numeric|min:0',
@@ -38,6 +41,7 @@ class OrderController extends Controller
         ]);
         FarmerOrder::create([
             'farmer_company_id' => $company->company_id,
+            'processor_company_id' => $request->processor_company_id,
             'coffee_variety' => $request->coffee_variety,
             'grade' => $request->grade,
             'quantity_kg' => $request->quantity_kg,
@@ -63,7 +67,8 @@ class OrderController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
-        return view('farmers.orders.edit', compact('order'));
+        $processors = Company::where('company_type', 'processor')->pluck('company_name', 'company_id');
+        return view('farmers.orders.edit', compact('order', 'processors'));
     }
 
     public function update(Request $request, $id)
@@ -71,6 +76,7 @@ class OrderController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $request->validate([
+            'processor_company_id' => 'required|exists:companies,company_id',
             'coffee_variety' => 'required|string',
             'grade' => 'required|string',
             'quantity_kg' => 'required|numeric|min:0',
@@ -83,6 +89,7 @@ class OrderController extends Controller
         ]);
         $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
         $order->update([
+            'processor_company_id' => $request->processor_company_id,
             'coffee_variety' => $request->coffee_variety,
             'grade' => $request->grade,
             'quantity_kg' => $request->quantity_kg,

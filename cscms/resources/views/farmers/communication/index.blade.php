@@ -1,21 +1,18 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Communication')
+@section('page-title', 'Communication Center')
+@section('page-subtitle', 'Connect with processors, send messages, and manage your business communications')
 
-@section('content')
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-comments"></i> Communication Center</h1>
-        <p class="page-subtitle">Connect with processors, send messages, and manage your business communications</p>
-        <div class="page-actions">
+@section('page-actions')
             <button class="btn btn-primary" onclick="openNewMessageModal()">
                 <i class="fas fa-plus"></i> New Message
             </button>
             <button class="btn btn-outline" onclick="refreshMessages()">
                 <i class="fas fa-sync-alt"></i> Refresh
             </button>
-        </div>
-    </div>
+@endsection
+@section('content')
 
     <!-- Stats Grid -->
     <div class="stats-grid">
@@ -147,7 +144,7 @@
                     <select name="processor_id" id="processor_id" class="form-control" required>
                         <option value="">Choose a processor...</option>
                         @foreach ($processors as $processor)
-                            <option value="{{ $processor['company_id'] }}">{{ $processor['name'] }}</option>
+                            <option value="{{ $processor['company_id'] }}">{{ $processor['company_name'] }}</option>
                         @endforeach
                     </select>
                 </div>

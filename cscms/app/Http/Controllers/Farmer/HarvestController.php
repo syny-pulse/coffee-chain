@@ -35,6 +35,10 @@ class HarvestController extends Controller
             'harvest_date' => 'required|date',
             'quality_notes' => 'nullable|string',
         ]);
+        if ($request->available_quantity_kg > $request->quantity_kg) {
+            return back()->withErrors(['available_quantity_kg' => 'Available quantity must be less than or equal to total quantity.'])->withInput();
+        }
+        $status = ($request->available_quantity_kg == 0) ? 'unavailable' : 'available';
         FarmerHarvest::create([
             'company_id' => $company->company_id,
             'coffee_variety' => $request->coffee_variety,
@@ -44,7 +48,7 @@ class HarvestController extends Controller
             'available_quantity_kg' => $request->available_quantity_kg,
             'harvest_date' => $request->harvest_date,
             'quality_notes' => $request->quality_notes,
-            'availability_status' => 'available',
+            'availability_status' => $status,
         ]);
         return redirect()->route('farmers.harvests.index')->with('success', 'Harvest recorded successfully.');
     }
@@ -70,7 +74,11 @@ class HarvestController extends Controller
             'harvest_date' => 'required|date',
             'quality_notes' => 'nullable|string',
         ]);
+        if ($request->available_quantity_kg > $request->quantity_kg) {
+            return back()->withErrors(['available_quantity_kg' => 'Available quantity must be less than or equal to total quantity.'])->withInput();
+        }
         $harvest = FarmerHarvest::where('company_id', $company->company_id)->findOrFail($id);
+        $status = ($request->available_quantity_kg == 0) ? 'unavailable' : 'available';
         $harvest->update([
             'coffee_variety' => $request->coffee_variety,
             'processing_method' => $request->processing_method,
@@ -79,6 +87,7 @@ class HarvestController extends Controller
             'available_quantity_kg' => $request->available_quantity_kg,
             'harvest_date' => $request->harvest_date,
             'quality_notes' => $request->quality_notes,
+            'availability_status' => $status,
         ]);
         return redirect()->route('farmers.harvests.index')->with('success', 'Harvest updated successfully.');
     }

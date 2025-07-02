@@ -102,4 +102,29 @@ class InventoryController extends Controller
             'trends'
         ));
     }
+
+    public function show($id)
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $item = FarmerHarvest::where('company_id', $company->company_id)->findOrFail($id);
+        return view('farmers.inventory.show', compact('item'));
+    }
+
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $item = FarmerHarvest::where('company_id', $company->company_id)->findOrFail($id);
+        return view('farmers.inventory.edit', compact('item'));
+    }
+
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $item = FarmerHarvest::where('company_id', $company->company_id)->findOrFail($id);
+        $item->delete();
+        return redirect()->route('farmers.inventory.index')->with('success', 'Inventory item deleted successfully.');
+    }
 } 

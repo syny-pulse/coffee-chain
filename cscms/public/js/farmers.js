@@ -258,3 +258,63 @@ function updateStats() {
 if (window.location.pathname === '/farmer/dashboard') {
     updateStats();
 }
+
+// Quick Actions Dropdown logic
+function toggleQuickActionsDropdown(event) {
+    event.stopPropagation();
+    const dropdown = event.currentTarget.parentElement;
+    const menu = dropdown.querySelector('.quick-actions-menu');
+    const btn = dropdown.querySelector('.quick-actions-btn');
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    if (expanded) {
+        menu.style.display = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+    } else {
+        // Close any other open dropdowns
+        document.querySelectorAll('.quick-actions-menu').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('.quick-actions-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        menu.style.display = 'block';
+        btn.setAttribute('aria-expanded', 'true');
+        // Focus first link for accessibility
+        setTimeout(() => {
+            const firstLink = menu.querySelector('a');
+            if (firstLink) firstLink.focus();
+        }, 100);
+    }
+}
+
+// Close dropdown on outside click or escape
+window.addEventListener('click', function(e) {
+    document.querySelectorAll('.quick-actions-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
+    document.querySelectorAll('.quick-actions-btn').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+});
+
+document.querySelectorAll('.quick-actions-dropdown').forEach(dropdown => {
+    dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+    dropdown.addEventListener('keydown', function(e) {
+        const menu = dropdown.querySelector('.quick-actions-menu');
+        const btn = dropdown.querySelector('.quick-actions-btn');
+        if (e.key === 'Escape') {
+            menu.style.display = 'none';
+            btn.setAttribute('aria-expanded', 'false');
+            btn.focus();
+        }
+        if (e.key === 'Tab' && menu.style.display === 'block') {
+            // Trap focus inside dropdown
+            const focusable = menu.querySelectorAll('a');
+            if (focusable.length) {
+                if (e.shiftKey && document.activeElement === focusable[0]) {
+                    e.preventDefault();
+                    focusable[focusable.length - 1].focus();
+                } else if (!e.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
+                    e.preventDefault();
+                    focusable[0].focus();
+                }
+            }
+        }
+    });
+});

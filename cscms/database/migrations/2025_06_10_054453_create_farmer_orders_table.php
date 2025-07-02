@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('farmer_orders', function (Blueprint $table) {
             $table->id('order_id');
             $table->unsignedBigInteger('farmer_company_id');
+            $table->unsignedBigInteger('processor_company_id')->nullable();
             $table->enum('coffee_variety', ['arabica', 'robusta']);
             $table->enum('processing_method', ['natural', 'washed', 'honey']);
             $table->enum('grade', ['grade_1', 'grade_2', 'grade_3', 'grade_4', 'grade_5']);
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('farmer_company_id')->references('company_id')->on('companies')->onDelete('cascade');
+            $table->foreign('processor_company_id')->references('company_id')->on('companies')->onDelete('set null');
         });
     }
 

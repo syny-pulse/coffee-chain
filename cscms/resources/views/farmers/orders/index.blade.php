@@ -32,6 +32,7 @@
                             <th>Unit Price</th>
                             <th>Total Amount</th>
                             <th>Status</th>
+                            <th>Processor</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -46,7 +47,8 @@
                                     ['field' => 'quantity_kg', 'type' => 'number'],
                                     ['field' => 'unit_price', 'type' => 'currency'],
                                     ['field' => 'total_amount', 'type' => 'currency'],
-                                    ['field' => 'order_status', 'type' => 'status']
+                                    ['field' => 'order_status', 'type' => 'status'],
+                                    ['field' => 'processor_company_id', 'type' => 'processor']
                                 ],
                                 'actions' => [
                                     ['type' => 'link', 'url' => route('farmers.orders.show', $order['order_id']), 'icon' => 'eye', 'style' => 'outline', 'title' => 'View'],

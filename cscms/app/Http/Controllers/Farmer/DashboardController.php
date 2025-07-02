@@ -138,6 +138,7 @@ class DashboardController extends Controller
         });
         $recent_activity = array_slice($recent_activity, 0, 4);
 
-        return view('dashboard.farmer', compact('user', 'stats', 'trends', 'recent_activity'));
+        // Only use the new dashboard view and pass all required data
+        return view('farmers.dashboard', compact('user', 'stats', 'trends', 'recent_activity'));
     }
 }

@@ -17,6 +17,15 @@
             @csrf
             
             @include('farmers.partials.form-field', [
+                'name' => 'processor_company_id',
+                'label' => 'Processor',
+                'type' => 'select',
+                'required' => true,
+                'options' => ['' => 'Select Processor'] + ($processors ?? collect())->pluck('name', 'company_id')->toArray(),
+                'value' => old('processor_company_id')
+            ])
+            
+            @include('farmers.partials.form-field', [
                 'name' => 'coffee_variety',
                 'label' => 'Coffee Variety',
                 'type' => 'select',
@@ -78,10 +87,10 @@
             ])
             
             @include('farmers.partials.form-field', [
-                'name' => 'delivery_date',
+                'name' => 'expected_delivery_date',
                 'label' => 'Expected Delivery Date',
                 'type' => 'date',
-                'value' => old('delivery_date'),
+                'value' => old('expected_delivery_date'),
                 'required' => true
             ])
             

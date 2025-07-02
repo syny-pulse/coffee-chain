@@ -1,22 +1,19 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Inventory Management')
+@section('page-title', 'Inventory Management')
+@section('page-subtitle', 'Track your coffee stock levels, reserved quantities, and available inventory')
 
-@section('content')
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-boxes-stacked"></i> Inventory Management</h1>
-        <p class="page-subtitle">Track your coffee stock levels, reserved quantities, and available inventory</p>
-        <div class="page-actions">
-            <a href="{{ route('farmers.harvests.create') }}" class="btn btn-primary">
+@section('page-actions')
+<a href="{{ route('farmers.harvests.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add Harvest
             </a>
             <a href="{{ route('farmers.orders.index') }}" class="btn btn-outline">
                 <i class="fas fa-clipboard-list"></i> View Orders
             </a>
-        </div>
-    </div>
+@endsection
 
+@section('content')
     <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
@@ -87,12 +84,12 @@
             </div>
         </div>
         
-        <div class="table-container">
+        <div class="table-container" style="overflow-x: auto; overflow-y: auto; max-height: 400px; scrollbar-width: none; -ms-overflow-style: none;">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Coffee Variety</th>
-                        <th>Grade</th>
+                        <th style="min-width: 120px;">Grade</th>
                         <th>Processing Method</th>
                         <th>Total Quantity (kg)</th>
                         <th>Reserved (kg)</th>
@@ -109,7 +106,7 @@
                                 <strong>{{ $item['coffee_variety'] }}</strong>
                             </td>
                             <td>
-                                <span class="status-badge {{ $item['grade'] === 'grade_1' ? 'completed' : 'processing' }}">
+                                <span class="status-badge {{ $item['grade'] === 'grade_1' ? 'completed' : 'processing' }}" style="min-width: 100px; display: inline-block; text-align: center;">
                                     {{ ucfirst(str_replace('_', ' ', $item['grade'])) }}
                                 </span>
                             </td>
@@ -123,12 +120,19 @@
                             <td>{{ $item['storage_location'] }}</td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="#" class="btn btn-sm btn-outline" title="View Details">
+                                    <a href="{{ route('farmers.inventory.show', $item['harvest_id']) }}" class="btn btn-sm btn-outline" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="#" class="btn btn-sm btn-outline" title="Edit">
+                                    <a href="{{ route('farmers.inventory.edit', $item['harvest_id']) }}" class="btn btn-sm btn-outline" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <form action="{{ route('farmers.inventory.destroy', $item['harvest_id']) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline" title="Delete" onclick="return confirm('Are you sure you want to delete this inventory item?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -190,8 +194,27 @@
 @push('scripts')
 <script>
 function exportInventory() {
-    // Simulate export functionality
-    alert('Export functionality will be implemented here');
+    const table = document.querySelector('.table');
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+    for (let row of rows) {
+        let cols = row.querySelectorAll('th, td');
+        let rowData = [];
+        for (let col of cols) {
+            rowData.push('"' + col.innerText.replace(/"/g, '""') + '"');
+        }
+        csv.push(rowData.join(','));
+    }
+    const csvString = csv.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'inventory.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 // Add inventory-specific JavaScript

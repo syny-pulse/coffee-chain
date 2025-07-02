@@ -43,4 +43,9 @@ class FarmerOrder extends Model
     {
         return $this->belongsTo(Company::class, 'farmer_company_id', 'company_id');
     }
+
+    public function processor()
+    {
+        return $this->belongsTo(Company::class, 'processor_company_id', 'company_id');
+    }
 }

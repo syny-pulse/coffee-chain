@@ -18,6 +18,21 @@
             Farmer Dashboard
         </a>
         <div class="header-actions">
+            <!-- Quick Actions Dropdown -->
+            <div class="quick-actions-dropdown" tabindex="0">
+                <button class="quick-actions-btn" aria-haspopup="true" aria-expanded="false" onclick="toggleQuickActionsDropdown(event)">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </button>
+                <div class="quick-actions-menu" style="display: none;">
+                    <a href="{{ route('farmers.harvests.create') }}"><i class="fas fa-plus"></i> Add Harvest</a>
+                    <a href="{{ route('farmers.orders.index') }}"><i class="fas fa-clipboard-list"></i> View Orders</a>
+                    <a href="{{ route('farmers.inventory.index') }}"><i class="fas fa-boxes-stacked"></i> Inventory</a>
+                    <a href="{{ route('farmers.financials.pricing') }}"><i class="fas fa-tags"></i> Pricing</a>
+                    <a href="{{ route('farmers.analytics.reports') }}"><i class="fas fa-chart-line"></i> Reports</a>
+                    <a href="{{ route('farmers.communication.index') }}"><i class="fas fa-comments"></i> Messages</a>
+                </div>
+            </div>
+            <!-- End Quick Actions Dropdown -->
             <div class="user-profile">
                 <div class="user-avatar">{{ substr(auth()->user()->name ?? 'F', 0, 1) }}</div>
                 <div class="user-info">
@@ -39,15 +54,7 @@
     <div class="content-wrapper">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>
-                    <i class="fas fa-seedling"></i>
-                    Coffee Farm
-                </h1>
-                <div class="user-info">
-                    Welcome back, {{ auth()->user()->name ?? 'Farmer' }}! 🌱
-                </div>
-            </div>
+            
             
             <nav class="sidebar-nav">
                 <div class="nav-section">

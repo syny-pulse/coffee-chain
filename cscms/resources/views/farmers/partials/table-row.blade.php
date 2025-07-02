@@ -42,6 +42,11 @@
                 {{ number_format($value) }}
             @elseif(isset($column['type']) && $column['type'] === 'boolean')
                 <i class="fas fa-{{ $value ? 'check text-success' : 'times text-danger' }}"></i>
+            @elseif(isset($column['type']) && $column['type'] === 'processor')
+                @php
+                    $processor = is_array($item) ? ($item['processor'] ?? null) : ($item->processor ?? null);
+                @endphp
+                {{ $processor ? $processor->company_name : '-' }}
             @else
                 {{ $value ?? 'N/A' }}
             @endif

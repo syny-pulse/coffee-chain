@@ -55,6 +55,10 @@
                 <span class="detail-label">Actual Delivery:</span>
                 <span class="detail-value">{{ $order['actual_delivery_date'] ? \Carbon\Carbon::parse($order['actual_delivery_date'])->format('M d, Y') : 'N/A' }}</span>
             </div>
+            <div class="detail-item">
+                <span class="detail-label">Processor:</span>
+                <span class="detail-value">{{ $order->processor ? $order->processor->company_name : '-' }}</span>
+            </div>
         </div>
         <div class="detail-section">
             <h3>Notes</h3>

@@ -78,9 +78,12 @@ Route::prefix('processor')->group(function () {
 
 // Farmer Routes
 //Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
-    Route::get('/farmer/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
+    Route::get('/farmers/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
     Route::resource('harvests', HarvestController::class)->names('farmers.harvests')->except(['show']);
     Route::get('/inventory', [FarmerInventoryController::class, 'index'])->name('farmers.inventory.index');
+    Route::get('/inventory/{id}', [FarmerInventoryController::class, 'show'])->name('farmers.inventory.show');
+    Route::get('/inventory/{id}/edit', [FarmerInventoryController::class, 'edit'])->name('farmers.inventory.edit');
+    Route::delete('/inventory/{id}', [FarmerInventoryController::class, 'destroy'])->name('farmers.inventory.destroy');
     Route::resource('orders', OrderController::class)->names('farmers.orders');
     Route::get('/communication', [CommunicationController::class, 'index'])->name('farmers.communication.index');
     Route::post('/communication/send', [CommunicationController::class, 'send'])->name('farmers.communication.send');

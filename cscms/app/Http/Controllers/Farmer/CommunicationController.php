@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Company;
 use App\Models\Message;
+use App\Models\FarmerOrder;
 
 class CommunicationController extends Controller
 {
@@ -14,8 +15,26 @@ class CommunicationController extends Controller
     {
         $user = Auth::user();
         $company = $user->company;
-        // Get all processors
-        $processors = Company::where('company_type', 'processor')->get();
+        // Get processors the farmer has worked with (via messages or orders)
+        $processorIdsFromMessages = Message::where('sender_company_id', $company->company_id)
+            ->orWhere('receiver_company_id', $company->company_id)
+            ->pluck('receiver_company_id')
+            ->merge(
+                Message::where('sender_company_id', $company->company_id)
+                    ->orWhere('receiver_company_id', $company->company_id)
+                    ->pluck('sender_company_id')
+            )
+            ->unique()
+            ->filter(fn($id) => $id !== $company->company_id)
+            ->values();
+        $processorIdsFromOrders = FarmerOrder::where('farmer_company_id', $company->company_id)
+            ->pluck('processor_company_id')
+            ->unique()
+            ->filter();
+        $processorIds = $processorIdsFromMessages->merge($processorIdsFromOrders)->unique();
+        $processors = Company::where('company_type', 'processor')
+            ->whereIn('company_id', $processorIds)
+            ->get();
         // Get all messages where this farmer is sender or receiver
         $messages = Message::where(function($q) use ($company) {
             $q->where('sender_company_id', $company->company_id)

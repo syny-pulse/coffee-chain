@@ -1,22 +1,18 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Analytics & Reports')
+@section('page-title', 'Analytics & Reports')
+@section('page-subtitle', 'Comprehensive insights into your farm performance, harvest trends, and business metrics')
 
-@section('content')
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-chart-line"></i> Analytics & Reports</h1>
-        <p class="page-subtitle">Comprehensive insights into your farm performance, harvest trends, and business metrics</p>
-        <div class="page-actions">
+@section('page-actions')
             <button class="btn btn-primary" onclick="exportReport()">
                 <i class="fas fa-download"></i> Export Report
             </button>
             <button class="btn btn-outline" onclick="refreshData()">
                 <i class="fas fa-sync-alt"></i> Refresh Data
             </button>
-        </div>
-    </div>
-
+@endsection
+@section('content')
     <!-- Key Metrics Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">

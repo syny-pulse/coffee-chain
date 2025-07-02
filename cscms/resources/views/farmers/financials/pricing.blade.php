@@ -1,22 +1,18 @@
 @extends('farmers.layouts.app')
 
 @section('title', 'Pricing Management')
+@section('page-title', 'Pricing Management')
+@section('page-subtitle', 'Set and manage your coffee prices based on market trends and quality grades')
 
-@section('content')
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-tags"></i> Pricing Management</h1>
-        <p class="page-subtitle">Set and manage your coffee prices based on market trends and quality grades</p>
-        <div class="page-actions">
+@section('page-actions')
             <button class="btn btn-primary" onclick="savePricing()">
                 <i class="fas fa-save"></i> Save Changes
             </button>
             <button class="btn btn-outline" onclick="resetPricing()">
                 <i class="fas fa-undo"></i> Reset
             </button>
-        </div>
-    </div>
-
+@endsection
+@section('content')
     <!-- Market Trends Stats -->
     <div class="stats-grid">
         <div class="stat-card">
