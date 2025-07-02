@@ -30,6 +30,14 @@ class RegisterController extends Controller
 
     public function store(Request $request)
     {
+        // Check if someone tries to register as processor
+        if ($request->input('user_type') === 'processor') {
+            return response()->json([
+                'message' => 'Processor registration is not allowed.',
+                'errors' => ['user_type' => ['Processor accounts are managed by the system administrator.']],
+            ], 403);
+        }
+
         // Validate the request
         $validated = $request->validate([
             // Personal Information
@@ -126,11 +134,18 @@ class RegisterController extends Controller
 
     protected function validator(array $data)
     {
+        // Check if someone tries to register as processor
+        if (isset($data['user_type']) && $data['user_type'] === 'processor') {
+            throw ValidationException::withMessages([
+                'user_type' => ['Processor accounts are managed by the system administrator.']
+            ]);
+        }
+
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'user_type' => ['required', 'in:farmer,processor,retailer'],
+            'user_type' => ['required', 'in:farmer,retailer'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
 

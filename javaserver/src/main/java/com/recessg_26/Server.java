@@ -427,7 +427,7 @@ class Server {
             endOfDay = endOfDay.plusDays(1);
         }
         
-        return ChronoUnit.MINUTES.between(now, endOfDay);
+        return ChronoUnit.SECONDS.between(now, endOfDay);
     }
     
     // Method to schedule the task
@@ -446,10 +446,10 @@ class Server {
         long initialDelay = getDelayUntilEndOfDay();
         
         // Schedule the task to run at end of day, then repeat every 24 hours
-        scheduler.scheduleAtFixedRate(task, initialDelay, 24 * 60, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(task, initialDelay, 24 * 60 *60, TimeUnit.SECONDS);
         
         System.out.println("Database task scheduled to run at end of day (11:59 PM)");
-        System.out.println("Initial delay: " + initialDelay + " minutes");
+        System.out.println("Initial delay: " + initialDelay + " seconds");
     }
 
 	// Method to schedule the task to run every 5 minutes
@@ -466,7 +466,7 @@ class Server {
         
         long initialDelay = 2; // 5 minutes from now
         long period = 2; // Repeat every 5 minutes
-        scheduler.scheduleAtFixedRate(task, initialDelay, period, TimeUnit.MINUTES);
+        scheduler.scheduleWithFixedDelay(task, initialDelay, period, TimeUnit.MINUTES);
 
         System.out.println("Database task scheduled to run every 5 minutes");
         System.out.println("Initial delay: " + initialDelay + " minutes");

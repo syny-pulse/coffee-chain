@@ -9,128 +9,204 @@ use App\Models\FarmerOrder;
 use App\Models\Message;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ProcessorDashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index(Request $request)
     {
-        // Default forecast value
-        $forecast = ['error' => 'Unable to fetch forecast data'];
-        try {
-            $mlServerUrl = config('services.ml_server.url', 'http://localhost:5000');
-            $response = Http::timeout(5)->get("{$mlServerUrl}/api/predict-demand", [
-                'product_name' => 'espresso_blend',
-                'period' => 'monthly',
-            ]);
-            $response->throw();
-            $forecast = $response->json();
-            $forecast['predicted_demand'] = $forecast['predicted_demand'] ?? 1200; // Fallback
-        } catch (RequestException | \Exception $e) {
-            \Log::error('Failed to fetch forecast: ' . $e->getMessage());
-            $forecast['predicted_demand'] = 1200; // Fallback value
+        $user = Auth::user();
+        if (!$user || !$user->company) {
+            return redirect()->route('login')->with('error', 'Please log in to access the processor dashboard.');
         }
 
-        // Inventory data
-        $userId = Auth::check() ? Auth::id() : 0; // Default to 0 for testing
-        $inventoryQuery = Product::where('user_id', $userId)
-            ->selectRaw('SUM(CASE WHEN product_type = "green_beans" THEN quantity_kg ELSE 0 END) as raw_material_total')
-            ->selectRaw('SUM(CASE WHEN product_type IN ("roasted_beans", "ground_coffee") THEN quantity_kg ELSE 0 END) as finished_goods_total')
-            ->selectRaw('AVG(price_per_kg) as avg_cost_per_kg')
-            ->selectRaw('AVG(price_per_kg * 1.2) as avg_production_cost')
-            ->first();
+        if ($user->user_type !== 'processor') {
+            return redirect()->route('login')->with('error', 'Access denied. This dashboard is for processors only.');
+        }
 
-        $inventory = (object) [
-            'raw_material_total' => $inventoryQuery->raw_material_total ?? 1000,
-            'finished_goods_total' => $inventoryQuery->finished_goods_total ?? 0,
-            'avg_cost_per_kg' => $inventoryQuery->avg_cost_per_kg ?? 0,
-            'avg_production_cost' => $inventoryQuery->avg_production_cost ?? 0,
-        ];
+        $companyId = $user->company_id;
 
-        // Raw materials and finished goods
-        $raw_materials = Auth::check()
-            ? Product::where('user_id', Auth::id())->where('product_type', 'green_beans')->get()
-            : collect([(object) ['name' => 'Sample Arabica', 'product_type' => 'green_beans', 'quantity_kg' => 500, 'price_per_kg' => 5.0]]);
+        try {
+            // Default forecast value
+            $forecast = ['predicted_demand' => 1200]; // Fallback value
+            try {
+                $mlServerUrl = config('services.ml_server.url', 'http://localhost:5000');
+                $response = Http::timeout(5)->get("{$mlServerUrl}/api/predict-demand", [
+                    'product_name' => 'espresso_blend',
+                    'period' => 'monthly',
+                ]);
+                if ($response->successful()) {
+                    $forecast = $response->json();
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch forecast: ' . $e->getMessage());
+            }
 
-        $finished_goods = Auth::check()
-            ? Product::where('user_id', Auth::id())->whereIn('product_type', ['roasted_beans', 'ground_coffee'])->get()
-            : collect([(object) ['name' => 'Sample Roasted', 'product_type' => 'roasted_beans', 'quantity_kg' => 200, 'price_per_kg' => 10.0]]);
+            // Calculate key metrics for dashboard
+            $total_farmer_orders = FarmerOrder::where('processor_company_id', $companyId)->count();
+            $total_retailer_orders = RetailerOrder::where('processor_company_id', $companyId)->count();
+            $total_inventory_items = Product::where('user_id', $user->id)->count();
+            
+            // Calculate total revenue from delivered retailer orders
+            $total_revenue = RetailerOrder::where('processor_company_id', $companyId)
+                ->where('order_status', 'delivered')
+                ->sum('total_amount');
 
-        // Retailer and Farmer Orders
-        $retailer_orders = Auth::check()
-            ? RetailerOrder::where('seller_id', Auth::id())->orWhere('buyer_id', Auth::id())->get()
-            : collect([(object) ['order_number' => 'RET001', 'total_amount' => 1000, 'status' => 'pending']]);
+            // Calculate performance indicators
+            $delivered_retailer_orders = RetailerOrder::where('processor_company_id', $companyId)
+                ->where('order_status', 'delivered')
+                ->count();
+            $total_retailer_orders_count = RetailerOrder::where('processor_company_id', $companyId)->count();
+            
+            $order_fulfillment_rate = $total_retailer_orders_count > 0 ? 
+                round(($delivered_retailer_orders / $total_retailer_orders_count) * 100, 1) : 0;
 
-        $farmer_orders = Auth::check()
-            ? FarmerOrder::where('seller_id', Auth::id())->orWhere('buyer_id', Auth::id())->get()
-            : collect([(object) ['order_number' => 'FARM001', 'total_amount' => 500, 'status' => 'pending']]);
+            // Calculate processing efficiency based on inventory turnover
+            $total_processed_kg = Product::where('user_id', $user->id)
+                ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
+                ->sum('quantity_kg');
+            $total_raw_kg = Product::where('user_id', $user->id)
+                ->where('product_type', 'green_beans')
+                ->sum('quantity_kg');
+            
+            $processing_efficiency = ($total_raw_kg + $total_processed_kg) > 0 ? 
+                round(($total_processed_kg / ($total_raw_kg + $total_processed_kg)) * 100, 1) : 0;
 
-        // Full customer segmentation (using retailer orders for simplicity)
-        $segmentDetails = $this->segmentCustomers($retailer_orders);
+            // Calculate average quality score
+            $avg_quality_score = Product::where('user_id', $user->id)
+                ->whereNotNull('quality_score')
+                ->avg('quality_score');
+            $quality_score_percentage = $avg_quality_score ? round(($avg_quality_score / 10) * 100, 1) : 0;
 
-        // Simplified names for view display
-        $customerSegments = array_keys($segmentDetails);
+            // Calculate customer satisfaction (simplified - based on order completion rate)
+            $customer_satisfaction = $order_fulfillment_rate; // Simplified metric
 
-        // Messages
-        $messages = Auth::check()
-            ? Message::where('receiver_id', Auth::id())->orWhere('sender_id', Auth::id())->latest()->get()
-            : collect([(object) ['subject' => 'Sample Message', 'sender_id' => 0, 'is_read' => false]]);
+            // Inventory data
+            $inventoryQuery = Product::where('user_id', $user->id)
+                ->selectRaw('SUM(CASE WHEN product_type = "green_beans" THEN quantity_kg ELSE 0 END) as raw_material_total')
+                ->selectRaw('SUM(CASE WHEN product_type IN ("roasted_beans", "ground_coffee") THEN quantity_kg ELSE 0 END) as finished_goods_total')
+                ->selectRaw('AVG(price_per_kg) as avg_cost_per_kg')
+                ->selectRaw('AVG(price_per_kg * 1.2) as avg_production_cost')
+                ->first();
 
-        // Employees
-        $employees = Auth::check()
-            ? Employee::where('processor_company_id', Auth::id())->get()
-            : collect([
-                (object) [
-                    'name' => 'John Doe',
-                    'employee_id' => 'EMP001',
-                    'position' => 'Grading',
-                    'shift' => 'Morning',
-                    'status' => 'active'
-                ]
-            ]);
+            $inventory = (object) [
+                'raw_material_total' => $inventoryQuery->raw_material_total ?? 0,
+                'finished_goods_total' => $inventoryQuery->finished_goods_total ?? 0,
+                'avg_cost_per_kg' => $inventoryQuery->avg_cost_per_kg ?? 0,
+                'avg_production_cost' => $inventoryQuery->avg_production_cost ?? 0,
+            ];
 
-        // Users for messages
-        $users = Auth::check()
-            ? User::where('id', '!=', Auth::id())->get(['id', 'name'])
-            : collect([(object) ['id' => 1, 'name' => 'Sample User']]);
+            // Raw materials and finished goods
+            $raw_materials = Product::where('user_id', $user->id)
+                ->where('product_type', 'green_beans')
+                ->get();
 
-        return view('processor.dashboard', compact(
-            'forecast', 'inventory', 'raw_materials', 'finished_goods',
-            'retailer_orders', 'farmer_orders', 'messages', 'employees', 'users', 'customerSegments'
-        ));
+            $finished_goods = Product::where('user_id', $user->id)
+                ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
+                ->get();
+
+            // Retailer and Farmer Orders
+            $retailer_orders = RetailerOrder::where('processor_company_id', $companyId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $farmer_orders = FarmerOrder::where('processor_company_id', $companyId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Messages
+            $messages = Message::where(function($query) use ($companyId) {
+                $query->where('receiver_company_id', $companyId)
+                      ->orWhere('sender_company_id', $companyId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // Employees
+            $employees = Employee::where('processor_company_id', $companyId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Get companies for messaging (farmers and retailers only)
+            $companies = Company::whereIn('company_type', ['farmer', 'retailer'])
+                ->where('acceptance_status', 'accepted')
+                ->get(['company_id', 'company_name', 'company_type']);
+
+            // Customer segmentation based on retailer orders
+            $customerSegments = $this->segmentCustomers($retailer_orders);
+
+            return view('processor.dashboard', compact(
+                'forecast',
+                'inventory',
+                'raw_materials',
+                'finished_goods',
+                'retailer_orders',
+                'farmer_orders',
+                'messages',
+                'employees',
+                'companies',
+                'customerSegments',
+                'total_farmer_orders',
+                'total_retailer_orders',
+                'total_inventory_items',
+                'total_revenue',
+                'order_fulfillment_rate',
+                'processing_efficiency',
+                'quality_score_percentage',
+                'customer_satisfaction'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('ProcessorDashboard Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while loading the dashboard. Please try again.');
+        }
     }
 
     protected function segmentCustomers(Collection $orders)
     {
-        $segments = [];
         if ($orders->isEmpty()) {
-            return $segments;
+            return [
+                'New' => [
+                    'description' => 'No orders yet',
+                    'recommendation' => 'Start building relationships with retailers'
+                ]
+            ];
         }
 
-        // Simple segmentation based on total amount spent
-        $totalSpent = $orders->groupBy('buyer_id')->map(function ($group) {
-            return $group->sum('total_amount');
-        });
+        $segments = [];
+        
+        // Group by company and calculate total amount
+        $ordersByCompany = $orders->groupBy('processor_company_id')
+            ->map(function ($companyOrders) {
+                return $companyOrders->sum('total_amount');
+            });
 
-        foreach ($totalSpent as $buyerId => $amount) {
-            if ($amount < 500) {
-                $segments["Low Spenders (ID: $buyerId)"] = [
-                    'description' => 'Customers spending less than $500',
-                    'recommendation' => 'Offer discounts or introductory bundles',
+        foreach ($ordersByCompany as $companyId => $totalAmount) {
+            if ($totalAmount < 500) {
+                $segments["Small Volume"] = [
+                    'description' => 'Orders under $500',
+                    'recommendation' => 'Offer volume discounts and introductory packages'
                 ];
-            } elseif ($amount >= 500 && $amount < 2000) {
-                $segments["Medium Spenders (ID: $buyerId)"] = [
-                    'description' => 'Customers spending $500-$2000',
-                    'recommendation' => 'Suggest premium products or loyalty rewards',
+            } elseif ($totalAmount < 2000) {
+                $segments["Medium Volume"] = [
+                    'description' => 'Orders between $500-$2000',
+                    'recommendation' => 'Provide loyalty rewards and premium products'
                 ];
             } else {
-                $segments["High Spenders (ID: $buyerId)"] = [
-                    'description' => 'Customers spending over $2000',
-                    'recommendation' => 'Provide exclusive offers or personalized support',
+                $segments["High Volume"] = [
+                    'description' => 'Orders over $2000',
+                    'recommendation' => 'Offer VIP services and priority processing'
                 ];
             }
         }

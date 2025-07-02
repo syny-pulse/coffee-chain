@@ -29,9 +29,9 @@ class LoginController extends Controller
         // Attempt to log the user in
         if (Auth::attempt($this->credentials($request), $request->boolean('remember'))) {
             $request->session()->regenerate();
-            
+
             $user = Auth::user();
-            
+
             // Check if user account is active
             if (!$user->isActive()) {
                 Auth::logout();
@@ -40,13 +40,25 @@ class LoginController extends Controller
                 ]);
             }
 
-            // Check if company is accepted
-            if ($user->company && !$user->company->isAccepted()) {
+            // For processor, we don't need to check company acceptance status
+            if ($user->user_type !== 'processor' && $user->company && !$user->company->isAccepted()) {
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Your company registration is still pending approval.',
                 ]);
             }
+
+
+            // Redirect based on user type
+            if ($user->user_type === 'processor') {
+                return redirect()->intended('/processor/dashboard');
+            } elseif ($user->user_type === 'farmer') {
+                return redirect()->intended('/farmer/dashboard');
+            } elseif ($user->user_type === 'retailer') {
+                return redirect()->intended('/retailer/dashboard');
+            }
+
+            return redirect()->intended('/dashboard');
 
             switch ($user->user_type) {
                 case 'farmer':
@@ -58,7 +70,8 @@ class LoginController extends Controller
                 case 'admin':
                     return redirect()->route('admin.dashboard');
             }
-            
+
+
         }
 
         // If login fails, increment login attempts

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('line_total', 12, 2);
             $table->timestamps();
 
-            $table->foreign('order_id')->references('order_id')->on('retailer_orders')->onDelete('cascade');
+            $table->foreign('order_id')->references('order_id')->on('processor_retailer_orders')->onDelete('cascade');
             $table->foreign('recipe_id')->references('recipe_id')->on('product_recipes')->onDelete('cascade');
         });
     }

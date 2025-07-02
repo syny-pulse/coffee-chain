@@ -23,5 +23,9 @@ class DatabaseSeeder extends Seeder
             EmployeeSeeder::class,
             InventorySeeder::class,
         ]);
+
+        $this->call([
+            ProcessorSeeder::class,
+        ]);
     }
 }
