@@ -76,7 +76,7 @@
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Coffee Pricing Configuration</h2>
-            <div class="card-actions">
+            <div class="card-actions right-actions">
                 <button class="btn btn-sm btn-outline" onclick="applyMarketPrices()">
                     <i class="fas fa-sync-alt"></i> Apply Market Prices
                 </button>
@@ -102,7 +102,7 @@
                         <div class="pricing-details">
                             <div class="detail-item">
                                 <span class="detail-label">Current Market Price:</span>
-                                <span class="detail-value">UGX {{ number_format($price['current_market_price'], 2) }}</span>
+                                <span class="detail-value">UGX {{ is_numeric($price['current_market_price']) ? number_format($price['current_market_price'], 2) : '0.00' }}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Last Updated:</span>
@@ -128,8 +128,8 @@
                                            required>
                                 </div>
                                 <div class="form-text">
-                                    Market: UGX {{ number_format($price['current_market_price'], 2) }} | 
-                                    Difference: UGX {{ number_format($price['unit_price'] - $price['current_market_price'], 2) }}
+                                    Market: UGX {{ is_numeric($price['current_market_price']) ? number_format($price['current_market_price'], 2) : '0.00' }} |
+                                    Difference: UGX {{ (is_numeric($price['unit_price']) && is_numeric($price['current_market_price'])) ? number_format($price['unit_price'] - $price['current_market_price'], 2) : '0.00' }}
                                 </div>
                             </div>
                         </div>
@@ -200,9 +200,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const priceInputs = document.querySelectorAll('input[name*="[unit_price]"]');
     
     priceInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            updatePriceDifference(this);
-        });
+        const prefix = input.parentElement.querySelector('.input-prefix');
+        function togglePrefix() {
+            if (input.value && input.value.length > 0) {
+                prefix.style.display = 'none';
+            } else {
+                prefix.style.display = '';
+            }
+        }
+        input.addEventListener('input', togglePrefix);
+        // Set initial state
+        togglePrefix();
     });
     
     function updatePriceDifference(input) {
@@ -403,5 +411,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .recommendation-details {
         align-items: center;
     }
+}
+
+.right-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
 }
 </style>

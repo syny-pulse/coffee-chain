@@ -100,4 +100,12 @@ class HarvestController extends Controller
         $harvest->delete();
         return redirect()->route('farmers.harvests.index')->with('success', 'Harvest deleted successfully.');
     }
+
+    public function show($id)
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $harvest = FarmerHarvest::where('company_id', $company->company_id)->findOrFail($id);
+        return view('farmers.harvests.show', compact('harvest'));
+    }
 }

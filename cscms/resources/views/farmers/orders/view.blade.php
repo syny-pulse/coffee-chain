@@ -7,7 +7,7 @@
 @section('page-actions')
     <a href="{{ route('farmers.orders.edit', $order->order_id) }}" class="btn btn-primary">
         <i class="fas fa-edit"></i>
-        Edit Order
+        Update Order Status
     </a>
     <a href="{{ route('farmers.orders.index') }}" class="btn btn-outline">
         <i class="fas fa-arrow-left"></i>

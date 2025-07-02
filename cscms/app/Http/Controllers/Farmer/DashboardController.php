@@ -92,51 +92,61 @@ class DashboardController extends Controller
             'pending_orders' => $pending_trend
         ];
 
-        // Recent activity (last 4 events)
-        $recent_orders = FarmerOrder::where('farmer_company_id', $company->company_id)
-            ->orderByDesc('created_at')->take(1)->get();
-        $recent_harvests = FarmerHarvest::where('company_id', $company->company_id)
-            ->orderByDesc('created_at')->take(1)->get();
-        $recent_payments = FarmerOrder::where('farmer_company_id', $company->company_id)
-            ->where('order_status', 'delivered')
-            ->orderByDesc('updated_at')->take(1)->get();
-        $recent_messages = Message::where('receiver_company_id', $company->company_id)
-            ->orderByDesc('created_at')->take(1)->get();
+        // Recent activity (last 4 events, any type)
+        $activities = [];
 
-        $recent_activity = [];
-        foreach ($recent_orders as $order) {
-            $recent_activity[] = [
+        // Fetch latest 4 orders
+        foreach (FarmerOrder::where('farmer_company_id', $company->company_id)->orderByDesc('created_at')->take(4)->get() as $order) {
+            if (!$order->id) continue;
+            $activities[] = [
                 'type' => 'order',
-                'title' => 'New order received from ' . ($order->notes ?? 'a buyer'),
-                'time' => $order->created_at->diffForHumans()
+                'title' => 'Order from ' . ($order->notes ?? 'a buyer'),
+                'time' => $order->created_at,
+                'human_time' => $order->created_at->diffForHumans(),
+                'id' => $order->id,
+                'link' => route('farmers.orders.show', ['order' => $order->id])
             ];
         }
-        foreach ($recent_harvests as $harvest) {
-            $recent_activity[] = [
+        // Fetch latest 4 harvests
+        foreach (FarmerHarvest::where('company_id', $company->company_id)->orderByDesc('created_at')->take(4)->get() as $harvest) {
+            if (!$harvest->id) continue;
+            $activities[] = [
                 'type' => 'harvest',
-                'title' => 'Harvest recorded: ' . $harvest->quantity_kg . 'kg ' . ucfirst($harvest->coffee_variety) . ' beans',
-                'time' => $harvest->created_at->diffForHumans()
+                'title' => 'Harvest: ' . $harvest->quantity_kg . 'kg ' . ucfirst($harvest->coffee_variety),
+                'time' => $harvest->created_at,
+                'human_time' => $harvest->created_at->diffForHumans(),
+                'id' => $harvest->id,
+                'link' => route('farmers.harvests.show', ['id' => $harvest->id])
             ];
         }
-        foreach ($recent_payments as $order) {
-            $recent_activity[] = [
+        // Fetch latest 4 payments (delivered orders)
+        foreach (FarmerOrder::where('farmer_company_id', $company->company_id)->where('order_status', 'delivered')->orderByDesc('updated_at')->take(4)->get() as $order) {
+            if (!$order->id) continue;
+            $activities[] = [
                 'type' => 'payment',
-                'title' => 'Payment received: $' . number_format($order->total_amount) . ' from last shipment',
-                'time' => $order->updated_at->diffForHumans()
+                'title' => 'Payment received: UGX ' . number_format($order->total_amount) . ' from last shipment',
+                'time' => $order->updated_at,
+                'human_time' => $order->updated_at->diffForHumans(),
+                'id' => $order->id,
+                'link' => route('farmers.orders.show', ['order' => $order->id])
             ];
         }
-        foreach ($recent_messages as $msg) {
-            $recent_activity[] = [
+        // Fetch latest 4 messages
+        foreach (Message::where('receiver_company_id', $company->company_id)->orderByDesc('created_at')->take(4)->get() as $msg) {
+            $activities[] = [
                 'type' => 'message',
-                'title' => 'New message from ' . ($msg->senderCompany->company_name ?? 'a partner'),
-                'time' => $msg->created_at->diffForHumans()
+                'title' => 'Message from ' . ($msg->senderCompany->company_name ?? 'a partner'),
+                'time' => $msg->created_at,
+                'human_time' => $msg->created_at->diffForHumans(),
+                'id' => $msg->id,
+                'link' => route('farmers.communication.index') . '#msg-' . $msg->id
             ];
         }
-        // Sort by time desc
-        usort($recent_activity, function($a, $b) {
-            return strtotime($b['time']) <=> strtotime($a['time']);
+        // Sort all activities by actual timestamp desc
+        usort($activities, function($a, $b) {
+            return $b['time']->timestamp <=> $a['time']->timestamp;
         });
-        $recent_activity = array_slice($recent_activity, 0, 4);
+        $recent_activity = array_slice($activities, 0, 4);
 
         // Only use the new dashboard view and pass all required data
         return view('farmers.dashboard', compact('user', 'stats', 'trends', 'recent_activity'));

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\FarmerOrder;
+use App\Models\Pricing;
 
 class FinancialController extends Controller
 {
@@ -67,21 +68,35 @@ class FinancialController extends Controller
     {
         $user = Auth::user();
         $company = $user->company;
-        // Use FarmerOrder to get unique pricing for each variety/grade
-        $orders = FarmerOrder::where('farmer_company_id', $company->company_id)->get();
-        $pricing = $orders->groupBy(function($order) {
-            return $order->coffee_variety . '-' . $order->grade;
-        })->map(function($group) {
-            $order = $group->sortByDesc('created_at')->first();
+        $pricing = Pricing::where('company_id', $company->company_id)->get()->map(function($price) {
             return [
-                'coffee_variety' => ucfirst($order->coffee_variety),
-                'grade' => ucfirst(str_replace('_', ' ', $order->grade)),
-                'unit_price' => $order->unit_price,
-                'current_market_price' => $order->unit_price * (rand(95, 105) / 100), // Simulate market price
-                'last_updated' => $order->updated_at->format('Y-m-d'),
-                'description' => 'Latest price for ' . ucfirst($order->coffee_variety) . ' ' . ucfirst(str_replace('_', ' ', $order->grade)),
+                'coffee_variety' => ucfirst($price->coffee_variety),
+                'grade' => ucfirst(str_replace('_', ' ', $price->grade)),
+                'unit_price' => $price->unit_price,
+                'current_market_price' => $price->unit_price,
+                'last_updated' => $price->updated_at->format('Y-m-d'),
+                'description' => 'Latest price for ' . ucfirst($price->coffee_variety) . ' ' . ucfirst(str_replace('_', ' ', $price->grade)),
             ];
         })->values();
+
+        if ($pricing->isEmpty()) {
+            $defaultVarieties = [
+                ['coffee_variety' => 'Arabica', 'grade' => 'Grade 1'],
+                ['coffee_variety' => 'Arabica', 'grade' => 'Grade 2'],
+                ['coffee_variety' => 'Robusta', 'grade' => 'Grade 1'],
+                ['coffee_variety' => 'Robusta', 'grade' => 'Grade 2'],
+            ];
+            $pricing = collect($defaultVarieties)->map(function($item) {
+                return [
+                    'coffee_variety' => $item['coffee_variety'],
+                    'grade' => $item['grade'],
+                    'unit_price' => '',
+                    'current_market_price' => '',
+                    'last_updated' => now()->format('Y-m-d'),
+                    'description' => 'Set price for ' . $item['coffee_variety'] . ' ' . $item['grade'],
+                ];
+            });
+        }
 
         // Mock market trends (could be calculated from order history)
         $marketTrends = [
@@ -96,12 +111,24 @@ class FinancialController extends Controller
 
     public function updatePricing(Request $request)
     {
+        $user = Auth::user();
+        $company = $user->company;
         $request->validate([
+            'prices' => 'required|array|min:1',
             'prices.*.unit_price' => 'required|numeric|min:0',
         ]);
-
-        // In a real application, you would update the database here
-        // For now, just redirect with success message
+        foreach ($request->prices as $price) {
+            Pricing::updateOrCreate(
+                [
+                    'company_id' => $company->company_id,
+                    'coffee_variety' => strtolower($price['coffee_variety']),
+                    'grade' => strtolower(str_replace(' ', '_', $price['grade'])),
+                ],
+                [
+                    'unit_price' => $price['unit_price'],
+                ]
+            );
+        }
         return redirect()->route('farmers.financials.pricing')
             ->with('success', 'Pricing updated successfully. Your new prices are now active.');
     }

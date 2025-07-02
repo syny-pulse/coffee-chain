@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\FarmerOrder;
 use App\Models\Company;
+use App\Models\Pricing;
 
 class OrderController extends Controller
 {
@@ -14,7 +15,7 @@ class OrderController extends Controller
     {
         $user = Auth::user();
         $company = $user->company;
-        $orders = FarmerOrder::where('farmer_company_id', $company->company_id)->orderByDesc('created_at')->get();
+        $orders = FarmerOrder::with('processor')->where('farmer_company_id', $company->company_id)->orderByDesc('created_at')->get();
         return view('farmers.orders.index', compact('orders'));
     }
 
@@ -33,20 +34,25 @@ class OrderController extends Controller
             'coffee_variety' => 'required|string',
             'grade' => 'required|string',
             'quantity_kg' => 'required|numeric|min:0',
-            'unit_price' => 'required|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
             'expected_delivery_date' => 'required|date',
             'order_status' => 'required|string',
             'notes' => 'nullable|string',
         ]);
+        // Fetch the latest price from the Pricing table
+        $pricing = Pricing::where('company_id', $company->company_id)
+            ->where('coffee_variety', strtolower($request->coffee_variety))
+            ->where('grade', strtolower(str_replace(' ', '_', $request->grade)))
+            ->first();
+        $unit_price = $pricing ? $pricing->unit_price : 0;
+        $total_amount = $unit_price * $request->quantity_kg;
         FarmerOrder::create([
             'farmer_company_id' => $company->company_id,
             'processor_company_id' => $request->processor_company_id,
             'coffee_variety' => $request->coffee_variety,
             'grade' => $request->grade,
             'quantity_kg' => $request->quantity_kg,
-            'unit_price' => $request->unit_price,
-            'total_amount' => $request->total_amount,
+            'unit_price' => $unit_price,
+            'total_amount' => $total_amount,
             'expected_delivery_date' => $request->expected_delivery_date,
             'order_status' => $request->order_status,
             'notes' => $request->notes,
@@ -76,31 +82,15 @@ class OrderController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $request->validate([
-            'processor_company_id' => 'required|exists:companies,company_id',
-            'coffee_variety' => 'required|string',
-            'grade' => 'required|string',
-            'quantity_kg' => 'required|numeric|min:0',
-            'unit_price' => 'required|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
-            'expected_delivery_date' => 'required|date',
-            'actual_delivery_date' => 'nullable|date',
             'order_status' => 'required|string',
-            'notes' => 'nullable|string',
+            'actual_delivery_date' => 'nullable|date',
         ]);
         $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
         $order->update([
-            'processor_company_id' => $request->processor_company_id,
-            'coffee_variety' => $request->coffee_variety,
-            'grade' => $request->grade,
-            'quantity_kg' => $request->quantity_kg,
-            'unit_price' => $request->unit_price,
-            'total_amount' => $request->total_amount,
-            'expected_delivery_date' => $request->expected_delivery_date,
-            'actual_delivery_date' => $request->actual_delivery_date,
             'order_status' => $request->order_status,
-            'notes' => $request->notes,
+            'actual_delivery_date' => $request->actual_delivery_date,
         ]);
-        return redirect()->route('farmers.orders.index')->with('success', 'Order updated successfully.');
+        return redirect()->route('farmers.orders.index')->with('success', 'Order status updated successfully.');
     }
 
     public function destroy($id)

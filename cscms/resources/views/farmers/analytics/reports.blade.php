@@ -120,7 +120,7 @@
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Harvest Performance Reports</h2>
-            <div class="card-actions">
+            <div class="card-actions right-actions">
                 <button class="btn btn-sm btn-outline" onclick="filterReports()">
                     <i class="fas fa-filter"></i> Filter
                 </button>
@@ -410,5 +410,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .details-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.right-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
 }
 </style>

@@ -91,6 +91,7 @@ Route::prefix('processor')->group(function () {
 //Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
     Route::get('/farmers/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
     Route::resource('harvests', HarvestController::class)->names('farmers.harvests')->except(['show']);
+    Route::get('/harvests/{id}', [HarvestController::class, 'show'])->name('farmers.harvests.show');
     Route::get('/inventory', [FarmerInventoryController::class, 'index'])->name('farmers.inventory.index');
     Route::get('/inventory/{id}', [FarmerInventoryController::class, 'show'])->name('farmers.inventory.show');
     Route::get('/inventory/{id}/edit', [FarmerInventoryController::class, 'edit'])->name('farmers.inventory.edit');

@@ -77,7 +77,7 @@
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Recent Messages</h2>
-            <div class="card-actions">
+            <div class="card-actions right-actions">
                 <button class="btn btn-sm btn-outline" onclick="markAllAsRead()">
                     <i class="fas fa-check-double"></i> Mark All Read
                 </button>
@@ -403,5 +403,12 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 100%;
         justify-content: center;
     }
+}
+
+.right-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
 }
 </style>

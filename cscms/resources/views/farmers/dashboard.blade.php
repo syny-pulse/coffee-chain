@@ -79,7 +79,7 @@
         <div class="section-title">Recent Activity</div>
         @if(isset($recent_activity) && count($recent_activity) > 0)
             @foreach($recent_activity as $activity)
-                <div class="activity-item">
+                <a href="{{ $activity['link'] }}" class="activity-item" style="text-decoration: none; color: inherit;">
                     <div class="activity-icon">
                         @if($activity['type'] === 'order')
                             <i class="fas fa-clipboard-list"></i>
@@ -93,9 +93,9 @@
                     </div>
                     <div class="activity-content">
                         <div class="activity-title">{{ $activity['title'] }}</div>
-                        <div class="activity-time">{{ $activity['time'] }}</div>
+                        <div class="activity-time">{{ $activity['human_time'] }}</div>
                     </div>
-                </div>
+                </a>
             @endforeach
         @else
             <div class="empty-state">

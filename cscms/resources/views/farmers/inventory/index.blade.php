@@ -77,7 +77,7 @@
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Current Inventory</h2>
-            <div class="card-actions">
+            <div class="card-actions right-actions">
                 <button class="btn btn-sm btn-outline" onclick="exportInventory()">
                     <i class="fas fa-download"></i> Export
                 </button>
@@ -95,7 +95,6 @@
                         <th>Reserved (kg)</th>
                         <th>Available (kg)</th>
                         <th>Harvest Date</th>
-                        <th>Storage Location</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -117,7 +116,6 @@
                                 <strong>{{ number_format($item['available_quantity_kg'], 1) }}</strong>
                             </td>
                             <td>{{ \Carbon\Carbon::parse($item['harvest_date'])->format('M d, Y') }}</td>
-                            <td>{{ $item['storage_location'] }}</td>
                             <td>
                                 <div class="table-actions">
                                     <a href="{{ route('farmers.inventory.show', $item['harvest_id']) }}" class="btn btn-sm btn-outline" title="View Details">
@@ -240,3 +238,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
+<style>
+.right-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+</style>

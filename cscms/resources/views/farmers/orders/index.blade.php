@@ -5,10 +5,12 @@
 @section('page-subtitle', 'Manage and track your coffee orders')
 
 @section('page-actions')
-    <a href="{{ route('farmers.orders.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i>
-        Add New Order
-    </a>
+    @if(isset($orders) && count($orders) > 0)
+        <a href="{{ route('farmers.orders.edit', $orders->first()->order_id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i>
+            Update Order Status
+        </a>
+    @endif
 @endsection
 
 @section('content')
@@ -66,11 +68,7 @@
             <div class="empty-state">
                 <i class="fas fa-clipboard-list"></i>
                 <h3>No Orders Yet</h3>
-                <p>You haven't created any orders yet. Start by creating your first order.</p>
-                <a href="{{ route('farmers.orders.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Create Your First Order
-                </a>
+                <p>You haven't created any orders yet. Orders will appear here when a processor makes one for you.</p>
             </div>
         </div>
     @endif
