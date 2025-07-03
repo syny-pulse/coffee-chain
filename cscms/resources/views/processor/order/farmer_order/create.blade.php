@@ -42,7 +42,7 @@
             </div>
         @endif
 
-        <form action="{{ route('processor.order.farmer_order.store') }}" method="POST" class="form-container">
+        <form action="{{ route('processor.order.farmer_order.store') }}" method="POST" class="form-container" id="farmerOrderForm">
             @csrf
 
             <div class="form-group">
@@ -100,8 +100,8 @@
                 <label for="unit_price">Unit Price per kg (UGX)</label>
                 <input type="number" name="unit_price" id="unit_price" class="form-control" required 
                        min="0.01" step="0.01" value="{{ old('unit_price') }}"
-                       placeholder="Enter price per kilogram"
-                       onchange="calculateTotal()">
+                       placeholder="Unit price will be auto-filled" readonly>
+                <small id="unit_price_error" class="text-danger" style="display:none;"></small>
             </div>
 
             <div class="form-group">
@@ -158,8 +158,62 @@
         document.getElementById('total_amount').value = total;
     }
 
-    // Calculate initial total if values exist
+    // Fetch price when farmer, variety, or grade changes
+    function fetchUnitPrice() {
+        const farmerId = document.getElementById('farmer_company_id').value;
+        const variety = document.getElementById('coffee_variety').value;
+        const grade = document.getElementById('grade').value;
+        const unitPriceInput = document.getElementById('unit_price');
+        const errorElem = document.getElementById('unit_price_error');
+
+        if (farmerId && variety && grade) {
+            fetch(`{{ route('processor.order.farmer_order.getPrice') }}?farmer_company_id=${farmerId}&coffee_variety=${variety}&grade=${grade}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unit_price) {
+                        unitPriceInput.value = data.unit_price;
+                        errorElem.style.display = 'none';
+                        calculateTotal();
+                    } else {
+                        unitPriceInput.value = '';
+                        errorElem.textContent = data.error || 'No price found.';
+                        errorElem.style.display = 'block';
+                        calculateTotal();
+                    }
+                })
+                .catch(() => {
+                    unitPriceInput.value = '';
+                    errorElem.textContent = 'Error fetching price.';
+                    errorElem.style.display = 'block';
+                    calculateTotal();
+                });
+        } else {
+            unitPriceInput.value = '';
+            errorElem.style.display = 'none';
+            calculateTotal();
+        }
+    }
+
+    document.getElementById('farmer_company_id').addEventListener('change', fetchUnitPrice);
+    document.getElementById('coffee_variety').addEventListener('change', fetchUnitPrice);
+    document.getElementById('grade').addEventListener('change', fetchUnitPrice);
+    document.getElementById('quantity_kg').addEventListener('input', calculateTotal);
+
+    // Initial fetch if values exist
+    fetchUnitPrice();
     calculateTotal();
+
+    // Prevent form submission if unit price is empty or invalid
+    document.getElementById('farmerOrderForm').addEventListener('submit', function(e) {
+        const unitPriceInput = document.getElementById('unit_price');
+        const errorElem = document.getElementById('unit_price_error');
+        if (!unitPriceInput.value || isNaN(unitPriceInput.value) || parseFloat(unitPriceInput.value) <= 0) {
+            e.preventDefault();
+            errorElem.textContent = 'A valid unit price must be available before submitting.';
+            errorElem.style.display = 'block';
+            unitPriceInput.focus();
+        }
+    });
 </script>
 
 <style>

@@ -13,6 +13,9 @@
 <body>
     <!-- Top Header -->
     <header class="top-header">
+        <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
         <a href="{{ route('farmers.dashboard') }}" class="header-brand">
             <i class="fas fa-leaf"></i>
             Farmer Dashboard
@@ -139,7 +142,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/farmers.js') }}"></script>
+    @vite('resources/js/app.js')
     @stack('scripts')
 </body>
 </html>

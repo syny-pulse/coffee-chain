@@ -20,7 +20,6 @@ class ProcessorSeeder extends Seeder
             'address' => 'Kampala, Uganda',
             'registration_number' => 'PROC001',
             'acceptance_status' => 'accepted',
-            'pdf_path' => 'documents/processor/registration.pdf',
             'financial_risk_rating' => 0.0,
             'reputational_risk_rating' => 0.0,
             'compliance_risk_rating' => 0.0,

@@ -84,6 +84,9 @@ Route::prefix('processor')->group(function () {
 
     // Report routes
     Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
+
+    // AJAX: Get price for selected farmer, variety, and grade
+    Route::get('farmer_order/get-price', [FarmerOrderController::class, 'getPrice'])->name('processor.order.farmer_order.getPrice');
 });
 
 
@@ -99,6 +102,8 @@ Route::prefix('processor')->group(function () {
     Route::resource('orders', OrderController::class)->names('farmers.orders');
     Route::get('/communication', [CommunicationController::class, 'index'])->name('farmers.communication.index');
     Route::post('/communication/send', [CommunicationController::class, 'send'])->name('farmers.communication.send');
+    Route::get('/communication/message/{id}', [CommunicationController::class, 'show'])->name('farmers.communication.show');
+    Route::get('/communication/message/{id}/reply', [CommunicationController::class, 'replyForm'])->name('farmers.communication.reply');
     Route::get('/financials', [FinancialController::class, 'index'])->name('farmers.financials.index');
     Route::get('/financials/pricing', [FinancialController::class, 'pricing'])->name('farmers.financials.pricing');
     Route::post('/financials/pricing', [FinancialController::class, 'updatePricing'])->name('farmers.financials.pricing.update');

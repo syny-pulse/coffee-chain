@@ -26,7 +26,7 @@
                     +5
                 </div>
             </div>
-            <div class="stat-value">{{ $messages->count() }}</div>
+            <div class="stat-value">{{ $inboxMessages->count() + $sentMessages->count() }}</div>
             <div class="stat-label">Total Messages</div>
         </div>
         
@@ -40,7 +40,7 @@
                     +2
                 </div>
             </div>
-            <div class="stat-value">{{ $messages->where('is_read', true)->count() }}</div>
+            <div class="stat-value">{{ $inboxMessages->where('is_read', true)->count() }}</div>
             <div class="stat-label">Read Messages</div>
         </div>
         
@@ -54,7 +54,7 @@
                     -1
                 </div>
             </div>
-            <div class="stat-value">{{ $messages->where('is_read', false)->count() }}</div>
+            <div class="stat-value">{{ $inboxMessages->where('is_read', false)->count() }}</div>
             <div class="stat-label">Unread Messages</div>
         </div>
         
@@ -83,9 +83,12 @@
                 </button>
             </div>
         </div>
-        
-        <div class="messages-container">
-            @forelse ($messages as $message)
+        <div class="message-tabs" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                <button class="btn btn-tab active" id="inboxTab" onclick="showMessagesTab('inbox')"><i class="fas fa-inbox"></i> Inbox</button>
+                <button class="btn btn-tab" id="sentTab" onclick="showMessagesTab('sent')"><i class="fas fa-paper-plane"></i> Sent</button>
+            </div>
+        <div class="messages-container" id="inboxMessages">
+            @forelse ($inboxMessages as $message)
                 <div class="message-item {{ $message->is_read ? 'read' : 'unread' }}">
                     <div class="message-header">
                         <div class="message-sender">
@@ -117,11 +120,40 @@
             @empty
                 <div class="empty-state">
                     <i class="fas fa-envelope-open"></i>
-                    <h3>No Messages Yet</h3>
-                    <p>Start communicating with processors to see messages here.</p>
-                    <button class="btn btn-primary" onclick="openNewMessageModal()">
-                        <i class="fas fa-plus"></i> Send First Message
-                    </button>
+                    <h3>No Inbox Messages</h3>
+                    <p>Your inbox is empty.</p>
+                </div>
+            @endforelse
+        </div>
+        <div class="messages-container" id="sentMessages" style="display:none;">
+            @forelse ($sentMessages as $message)
+                <div class="message-item read">
+                    <div class="message-header">
+                        <div class="message-sender">
+                            <strong>To: {{ optional($message->receiverCompany)->company_name ?? 'Unknown' }}</strong>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-date">{{ $message->created_at->format('M d, Y H:i') }}</span>
+                            <span class="message-type">{{ ucfirst($message->message_type) }}</span>
+                        </div>
+                    </div>
+                    <div class="message-subject">
+                        <strong>{{ $message->subject }}</strong>
+                    </div>
+                    <div class="message-content">
+                        {{ Str::limit($message->message_body, 150) }}
+                    </div>
+                    <div class="message-actions">
+                        <button class="btn btn-sm btn-outline" onclick="viewMessage({{ $message->message_id }})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <i class="fas fa-paper-plane"></i>
+                    <h3>No Sent Messages</h3>
+                    <p>You haven't sent any messages yet.</p>
                 </div>
             @endforelse
         </div>
@@ -167,6 +199,38 @@
             </form>
         </div>
     </div>
+
+    <!-- View Message Modal -->
+    <div id="viewMessageModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-eye"></i> View Message</h3>
+                <button class="modal-close" onclick="closeViewMessageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="viewMessageBody">
+                <!-- Message details will be loaded here -->
+                <div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply Message Modal -->
+    <div id="replyMessageModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-reply"></i> Reply to Message</h3>
+                <button class="modal-close" onclick="closeReplyMessageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="replyMessageBody">
+                <!-- Reply form will be loaded here -->
+                <div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -180,15 +244,84 @@ function closeNewMessageModal() {
     document.getElementById('newMessageModal').style.display = 'none';
 }
 
-// Message functions
-function viewMessage(messageId) {
-    // In a real app, this would open a detailed view
-    alert('Viewing message ' + messageId + ' - This would open a detailed view');
+function openViewMessageModal() {
+    document.getElementById('viewMessageModal').style.display = 'flex';
 }
 
+function closeViewMessageModal() {
+    document.getElementById('viewMessageModal').style.display = 'none';
+}
+
+function openReplyMessageModal() {
+    document.getElementById('replyMessageModal').style.display = 'flex';
+}
+
+function closeReplyMessageModal() {
+    document.getElementById('replyMessageModal').style.display = 'none';
+}
+
+// AJAX: View Message
+function viewMessage(messageId) {
+    openViewMessageModal();
+    const body = document.getElementById('viewMessageBody');
+    body.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    fetch(`/communication/message/${messageId}`)
+        .then(response => response.json())
+        .then(data => {
+            const msg = data.message;
+            body.innerHTML = `
+                <div><strong>From:</strong> ${data.sender || 'Unknown'}</div>
+                <div><strong>To:</strong> ${data.receiver || 'Unknown'}</div>
+                <div><strong>Date:</strong> ${msg.created_at ? new Date(msg.created_at).toLocaleString() : ''}</div>
+                <div><strong>Subject:</strong> ${msg.subject || ''}</div>
+                <hr/>
+                <div style="white-space: pre-line;">${msg.message_body || ''}</div>
+            `;
+        })
+        .catch(() => {
+            body.innerHTML = '<div class="text-danger">Failed to load message.</div>';
+        });
+}
+
+// AJAX: Reply to Message
 function replyToMessage(messageId) {
-    // In a real app, this would open reply form
-    alert('Replying to message ' + messageId + ' - This would open reply form');
+    openReplyMessageModal();
+    const body = document.getElementById('replyMessageBody');
+    body.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    fetch(`/communication/message/${messageId}/reply`)
+        .then(response => response.json())
+        .then(data => {
+            const processor = data.processor;
+            const original = data.original_message;
+            body.innerHTML = `
+                <form action=\"{{ route('farmers.communication.send') }}\" method=\"POST\" class=\"form-container\">
+                    @csrf
+                    <input type=\"hidden\" name=\"processor_id\" value=\"${processor.company_id}\">
+                    <div class=\"form-group\">
+                        <label class=\"form-label\">To</label>
+                        <input type=\"text\" class=\"form-control\" value=\"${processor.company_name}\" readonly>
+                    </div>
+                    <div class=\"form-group\">
+                        <label class=\"form-label\">Subject</label>
+                        <input type=\"text\" name=\"subject\" class=\"form-control\" value=\"Re: ${original.subject || ''}\" required>
+                    </div>
+                    <div class=\"form-group\">
+                        <label class=\"form-label\">Message</label>
+                        <textarea name=\"content\" class=\"form-control\" rows=\"6\" placeholder=\"Type your reply here...\" required></textarea>
+                        <div class=\"form-text\">Maximum 1000 characters</div>
+                    </div>
+                    <div class=\"form-actions\">
+                        <button type=\"button\" class=\"btn btn-outline\" onclick=\"closeReplyMessageModal()\"><i class=\"fas fa-times\"></i> Cancel</button>
+                        <button type=\"submit\" class=\"btn btn-primary\"><i class=\"fas fa-paper-plane\"></i> Send Reply</button>
+                    </div>
+                </form>
+                <hr/>
+                <div class=\"mt-2\"><strong>Original Message:</strong><br><div style=\"white-space: pre-line; color: #888;\">${original.message_body || ''}</div></div>
+            `;
+        })
+        .catch(() => {
+            body.innerHTML = '<div class="text-danger">Failed to load reply form.</div>';
+        });
 }
 
 function markAllAsRead() {
@@ -203,10 +336,12 @@ function refreshMessages() {
 
 // Close modal when clicking outside
 window.onclick = function(event) {
-    const modal = document.getElementById('newMessageModal');
-    if (event.target === modal) {
-        closeNewMessageModal();
-    }
+    const newMsgModal = document.getElementById('newMessageModal');
+    const viewMsgModal = document.getElementById('viewMessageModal');
+    const replyMsgModal = document.getElementById('replyMessageModal');
+    if (event.target === newMsgModal) closeNewMessageModal();
+    if (event.target === viewMsgModal) closeViewMessageModal();
+    if (event.target === replyMsgModal) closeReplyMessageModal();
 }
 
 // Initialize communication page
@@ -230,6 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function showMessagesTab(tab) {
+    document.getElementById('inboxMessages').style.display = (tab === 'inbox') ? '' : 'none';
+    document.getElementById('sentMessages').style.display = (tab === 'sent') ? '' : 'none';
+    document.getElementById('inboxTab').classList.toggle('active', tab === 'inbox');
+    document.getElementById('sentTab').classList.toggle('active', tab === 'sent');
+}
 </script>
 @endpush
 
@@ -410,5 +552,30 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: flex-end;
     align-items: center;
     width: 100%;
+}
+
+.btn-tab {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.btn-tab.active, .btn-tab:focus {
+    background: var(--coffee-medium);
+    color: #fff;
+    border-color: var(--coffee-medium);
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    z-index: 1;
+}
+.btn-tab:not(.active):hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--coffee-medium);
 }
 </style>

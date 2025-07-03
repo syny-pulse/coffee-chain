@@ -35,12 +35,12 @@ class CommunicationController extends Controller
         $processors = Company::where('company_type', 'processor')
             ->whereIn('company_id', $processorIds)
             ->get();
-        // Get all messages where this farmer is sender or receiver
-        $messages = Message::where(function($q) use ($company) {
-            $q->where('sender_company_id', $company->company_id)
-              ->orWhere('receiver_company_id', $company->company_id);
-        })->orderByDesc('created_at')->get();
-        return view('farmers.communication.index', compact('messages', 'processors'));
+        // Split messages into inbox and sent
+        $inboxMessages = Message::where('receiver_company_id', $company->company_id)
+            ->orderByDesc('created_at')->get();
+        $sentMessages = Message::where('sender_company_id', $company->company_id)
+            ->orderByDesc('created_at')->get();
+        return view('farmers.communication.index', compact('inboxMessages', 'sentMessages', 'processors'));
     }
 
     public function send(Request $request)
@@ -63,5 +63,46 @@ class CommunicationController extends Controller
         ]);
         return redirect()->route('farmers.communication.index')
             ->with('success', 'Message sent successfully to the processor.');
+    }
+
+    public function show($id)
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $message = Message::where('message_id', $id)
+            ->where(function($q) use ($company) {
+                $q->where('sender_company_id', $company->company_id)
+                  ->orWhere('receiver_company_id', $company->company_id);
+            })->firstOrFail();
+
+        // Mark as read if receiver is the current company
+        if ($message->receiver_company_id == $company->company_id && !$message->is_read) {
+            $message->is_read = true;
+            $message->save();
+        }
+
+        return response()->json([
+            'message' => $message,
+            'sender' => optional($message->senderCompany)->company_name,
+            'receiver' => optional($message->receiverCompany)->company_name,
+        ]);
+    }
+
+    public function replyForm($id)
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $message = Message::where('message_id', $id)
+            ->where(function($q) use ($company) {
+                $q->where('sender_company_id', $company->company_id)
+                  ->orWhere('receiver_company_id', $company->company_id);
+            })->firstOrFail();
+
+        $processor = Company::find($message->sender_company_id == $company->company_id ? $message->receiver_company_id : $message->sender_company_id);
+
+        return response()->json([
+            'processor' => $processor,
+            'original_message' => $message,
+        ]);
     }
 }

@@ -1,4 +1,7 @@
+console.log('farmers.js loaded');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded');
     // Initialize active navigation
     setActiveNavigation();
     
@@ -13,7 +16,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-calculate total amount in order forms
     initializeOrderCalculations();
+    
+    // Restore sidebar state
+    if (window.localStorage && localStorage.getItem('sidebarHidden') === '1') {
+        document.body.classList.add('sidebar-hidden');
+    }
+    
+    // Attach sidebar toggle event
+    const btn = document.querySelector('.sidebar-toggle-btn');
+    console.log('Sidebar toggle button:', btn);
+    if (btn) {
+        btn.addEventListener('click', function() {
+            console.log('Sidebar toggle clicked');
+            toggleSidebar();
+        });
+    }
 });
+
+function toggleSidebar() {
+    document.body.classList.toggle('sidebar-hidden');
+    console.log('sidebar-hidden class toggled:', document.body.classList.contains('sidebar-hidden'));
+    // Optionally persist state
+    if (window.localStorage) {
+        localStorage.setItem('sidebarHidden', document.body.classList.contains('sidebar-hidden') ? '1' : '');
+    }
+}
 
 // Set active navigation based on current route
 function setActiveNavigation() {

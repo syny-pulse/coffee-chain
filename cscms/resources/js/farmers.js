@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-calculate total amount in order forms
     initializeOrderCalculations();
+    
+    if (window.localStorage && localStorage.getItem('sidebarHidden') === '1') {
+        document.body.classList.add('sidebar-hidden');
+    }
 });
 
 // Set active navigation based on current route
@@ -258,3 +262,13 @@ function updateStats() {
 if (window.location.pathname === '/farmer/dashboard') {
     updateStats();
 }
+
+function toggleSidebar() {
+    document.body.classList.toggle('sidebar-hidden');
+    // Optionally persist state
+    if (window.localStorage) {
+        localStorage.setItem('sidebarHidden', document.body.classList.contains('sidebar-hidden') ? '1' : '');
+    }
+}
+
+window.toggleSidebar = toggleSidebar;

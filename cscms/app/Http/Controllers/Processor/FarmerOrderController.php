@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Processor;
 use App\Http\Controllers\Controller;
 use App\Models\FarmerOrder;
 use App\Models\Company;
+use App\Models\Pricing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -113,5 +114,28 @@ class FarmerOrderController extends Controller
         ]);
 
         return redirect()->route('processor.order.farmer_order.index')->with('success', 'Farmer order updated successfully.');
+    }
+
+    public function getPrice(Request $request)
+    {
+        $request->validate([
+            'farmer_company_id' => 'required|exists:companies,company_id',
+            'coffee_variety' => 'required',
+            'grade' => 'required',
+        ]);
+
+        $coffee_variety = strtolower($request->coffee_variety);
+        $grade = strtolower(str_replace(' ', '_', $request->grade));
+
+        $pricing = Pricing::where('company_id', $request->farmer_company_id)
+            ->where('coffee_variety', $coffee_variety)
+            ->where('grade', $grade)
+            ->first();
+
+        if ($pricing) {
+            return response()->json(['unit_price' => $pricing->unit_price]);
+        } else {
+            return response()->json(['error' => 'No pricing found for the selected options.'], 404);
+        }
     }
 }
