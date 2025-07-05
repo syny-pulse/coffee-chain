@@ -166,10 +166,29 @@
         const unitPriceInput = document.getElementById('unit_price');
         const errorElem = document.getElementById('unit_price_error');
 
+        console.log('Fetching price for:', { farmerId, variety, grade });
+
         if (farmerId && variety && grade) {
-            fetch(`{{ route('processor.order.farmer_order.getPrice') }}?farmer_company_id=${farmerId}&coffee_variety=${variety}&grade=${grade}`)
-                .then(response => response.json())
+            const url = `{{ route('processor.order.farmer_order.getPrice') }}?farmer_company_id=${farmerId}&coffee_variety=${variety}&grade=${grade}`;
+            console.log('Fetching from URL:', url);
+            console.log('Base route:', '{{ route("processor.order.farmer_order.getPrice") }}');
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Response data:', data);
                     if (data.unit_price) {
                         unitPriceInput.value = data.unit_price;
                         errorElem.style.display = 'none';
@@ -181,9 +200,10 @@
                         calculateTotal();
                     }
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.error('Error fetching price:', error);
                     unitPriceInput.value = '';
-                    errorElem.textContent = 'Error fetching price.';
+                    errorElem.textContent = 'Error fetching price. Please try again.';
                     errorElem.style.display = 'block';
                     calculateTotal();
                 });
@@ -202,6 +222,8 @@
     // Initial fetch if values exist
     fetchUnitPrice();
     calculateTotal();
+
+
 
     // Prevent form submission if unit price is empty or invalid
     document.getElementById('farmerOrderForm').addEventListener('submit', function(e) {

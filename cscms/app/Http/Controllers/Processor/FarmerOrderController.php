@@ -118,24 +118,44 @@ class FarmerOrderController extends Controller
 
     public function getPrice(Request $request)
     {
-        $request->validate([
-            'farmer_company_id' => 'required|exists:companies,company_id',
-            'coffee_variety' => 'required',
-            'grade' => 'required',
-        ]);
+        try {
+            \Log::info('getPrice method called without auth');
 
-        $coffee_variety = strtolower($request->coffee_variety);
-        $grade = strtolower(str_replace(' ', '_', $request->grade));
+            $request->validate([
+                'farmer_company_id' => 'required|exists:companies,company_id',
+                'coffee_variety' => 'required|in:arabica,robusta',
+                'grade' => 'required|in:grade_1,grade_2,grade_3,grade_4,grade_5',
+            ]);
 
-        $pricing = Pricing::where('company_id', $request->farmer_company_id)
-            ->where('coffee_variety', $coffee_variety)
-            ->where('grade', $grade)
-            ->first();
+            $coffee_variety = strtolower($request->coffee_variety);
+            $grade = strtolower($request->grade);
 
-        if ($pricing) {
-            return response()->json(['unit_price' => $pricing->unit_price]);
-        } else {
-            return response()->json(['error' => 'No pricing found for the selected options.'], 404);
+            // Log the search parameters for debugging
+            \Log::info('Searching for pricing:', [
+                'company_id' => $request->farmer_company_id,
+                'coffee_variety' => $coffee_variety,
+                'grade' => $grade
+            ]);
+
+            $pricing = Pricing::where('company_id', $request->farmer_company_id)
+                ->where('coffee_variety', $coffee_variety)
+                ->where('grade', $grade)
+                ->first();
+
+            if ($pricing) {
+                \Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
+                return response()->json(['unit_price' => $pricing->unit_price]);
+            } else {
+                \Log::warning('No pricing found for:', [
+                    'company_id' => $request->farmer_company_id,
+                    'coffee_variety' => $coffee_variety,
+                    'grade' => $grade
+                ]);
+                return response()->json(['error' => 'No pricing found for the selected options.'], 404);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'An error occurred while fetching the price.'], 500);
         }
     }
 }

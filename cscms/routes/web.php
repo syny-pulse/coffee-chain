@@ -57,6 +57,10 @@ Route::prefix('processor')->group(function () {
         'destroy' => 'processor.order.retailer_order.destroy',
     ]);
 
+    // Custom routes must come BEFORE the resource route to avoid conflicts
+    // AJAX: Get price for selected farmer, variety, and grade
+    Route::get('farmer_order/get-price', [FarmerOrderController::class, 'getPrice'])->name('processor.order.farmer_order.getPrice');
+
     Route::resource('farmer_order', FarmerOrderController::class)->names([
         'index' => 'processor.order.farmer_order.index',
         'create' => 'processor.order.farmer_order.create',
@@ -83,11 +87,8 @@ Route::prefix('processor')->group(function () {
     Route::post('/company/user/{userId}/account-status', [CompanyController::class, 'updateAccountStatus'])->name('processor.company.updateAccountStatus');
 
     // Report routes
-    Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
-
-    // AJAX: Get price for selected farmer, variety, and grade
-    Route::get('farmer_order/get-price', [FarmerOrderController::class, 'getPrice'])->name('processor.order.farmer_order.getPrice');
-});
+            Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
+    });
 
 
 // Farmer Routes
@@ -118,6 +119,33 @@ Route::prefix('processor')->group(function () {
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
+
+// Simple test route outside middleware
+Route::get('/test-route', function() {
+    return response()->json(['message' => 'Test route working outside middleware']);
+})->name('test.route');
+
+// Test route inside processor prefix but outside auth middleware
+Route::prefix('processor')->group(function () {
+    Route::get('/test-no-auth', function() {
+        return response()->json(['message' => 'Processor route without auth middleware']);
+    })->name('processor.test.no.auth');
+});
+
+// Debug route to list all routes
+Route::get('/debug-routes', function() {
+    $routes = collect(\Route::getRoutes())->map(function($route) {
+        return [
+            'method' => $route->methods()[0],
+            'uri' => $route->uri(),
+            'name' => $route->getName(),
+        ];
+    })->filter(function($route) {
+        return str_contains($route['uri'], 'farmer_order') || str_contains($route['uri'], 'processor');
+    })->values();
+    
+    return response()->json($routes);
+})->name('debug.routes');
 
 // Authentication Routes
 Route::middleware(['guest'])->group(function () {
@@ -178,6 +206,8 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'processor.order.retailer_order.update',
             'destroy' => 'processor.order.retailer_order.destroy',
         ]);
+
+
 
         Route::resource('farmer_order', FarmerOrderController::class)->names([
             'index' => 'processor.order.farmer_order.index',

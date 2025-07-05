@@ -13,7 +13,7 @@
 <body>
     <!-- Top Header -->
     <header class="top-header">
-        <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+        <button class="sidebar-toggle-btn" aria-label="Toggle sidebar" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
         <a href="{{ route('farmers.dashboard') }}" class="header-brand">
@@ -143,6 +143,7 @@
     </div>
 
     @vite('resources/js/app.js')
+    <script src="{{ asset('js/farmers.js') }}"></script>
     @stack('scripts')
 </body>
 </html>
