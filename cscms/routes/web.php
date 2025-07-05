@@ -151,6 +151,30 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/financials/cashflow', [FinancialController::class, 'cashflow'])->name('farmers.financials.cashflow');
         Route::get('/financials/forecasting', [FinancialController::class, 'forecasting'])->name('farmers.financials.forecasting');
         Route::get('/analytics/reports', [FarmerAnalyticsController::class, 'reports'])->name('farmers.analytics.reports');
+        
+        // Notification routes
+        Route::post('/notifications/mark-read', function () {
+            $user = Auth::user();
+            if ($user && $user->role === 'farmer' && $user->company) {
+                // Mark recent messages as read
+                \App\Models\Message::where('receiver_company_id', $user->company->company_id)
+                    ->where('is_read', false)
+                    ->where('created_at', '>=', \Carbon\Carbon::now()->subDay())
+                    ->update(['is_read' => true]);
+                
+                // Get updated counts
+                $notificationService = new \App\Services\NotificationService();
+                $pendingOrdersCount = $notificationService->getPendingOrdersCount($user->company);
+                $unreadMessagesCount = $notificationService->getUnreadMessagesCount($user->company);
+                
+                return response()->json([
+                    'success' => true,
+                    'pendingOrdersCount' => $pendingOrdersCount,
+                    'unreadMessagesCount' => $unreadMessagesCount
+                ]);
+            }
+            return response()->json(['success' => false], 403);
+        })->name('farmers.notifications.mark-read');
     });
 
     // Retailer routes
@@ -201,4 +225,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', function () {
         return view('profile.show');
     })->name('profile.show');
-});
+ });
