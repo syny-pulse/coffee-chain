@@ -24,128 +24,17 @@ use App\Http\Controllers\Farmer\FinancialController;
 use App\Http\Controllers\Farmer\AnalyticsController as FarmerAnalyticsController;
 
 
-Route::prefix('processor')->group(function () {
-    Route::get('/dashboard', [ProcessorDashboardController::class, 'index'])->name('processor.dashboard');
-
-    Route::resource('employee', EmployeeController::class)->names([
-        'index' => 'processor.employee.index',
-        'create' => 'processor.employee.create',
-        'store' => 'processor.employee.store',
-        'show' => 'processor.employee.show',
-        'edit' => 'processor.employee.edit',
-        'update' => 'processor.employee.update',
-        'destroy' => 'processor.employee.destroy',
-    ]);
-
-    Route::resource('inventory', InventoryController::class)->names([
-        'index' => 'processor.inventory.index',
-        'create' => 'processor.inventory.create',
-        'store' => 'processor.inventory.store',
-        'show' => 'processor.inventory.show',
-        'edit' => 'processor.inventory.edit',
-        'update' => 'processor.inventory.update',
-        'destroy' => 'processor.inventory.destroy',
-    ]);
-
-    Route::resource('retailer_order', RetailerOrderController::class)->names([
-        'index' => 'processor.order.retailer_order.index',
-        'create' => 'processor.order.retailer_order.create',
-        'store' => 'processor.order.retailer_order.store',
-        'show' => 'processor.order.retailer_order.show',
-        'edit' => 'processor.order.retailer_order.edit',
-        'update' => 'processor.order.retailer_order.update',
-        'destroy' => 'processor.order.retailer_order.destroy',
-    ]);
-
-    // Custom routes must come BEFORE the resource route to avoid conflicts
-    // AJAX: Get price for selected farmer, variety, and grade
-    Route::get('farmer_order/get-price', [FarmerOrderController::class, 'getPrice'])->name('processor.order.farmer_order.getPrice');
-
-    Route::resource('farmer_order', FarmerOrderController::class)->names([
-        'index' => 'processor.order.farmer_order.index',
-        'create' => 'processor.order.farmer_order.create',
-        'store' => 'processor.order.farmer_order.store',
-        'show' => 'processor.order.farmer_order.show',
-        'edit' => 'processor.order.farmer_order.edit',
-        'update' => 'processor.order.farmer_order.update',
-        'destroy' => 'processor.order.farmer_order.destroy',
-    ]);
-
-    Route::resource('message', MessageController::class)->names([
-        'index' => 'processor.message.index',
-        'create' => 'processor.message.create',
-        'store' => 'processor.message.store',
-        'show' => 'processor.message.show',
-        'edit' => 'processor.message.edit',
-        'update' => 'processor.message.update',
-        'destroy' => 'processor.message.destroy',
-    ]);
-
-    Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
-    Route::get('/company', [CompanyController::class, 'index'])->name('processor.company.index');
-    Route::post('/company/{companyId}/acceptance-status', [CompanyController::class, 'updateAcceptanceStatus'])->name('processor.company.updateAcceptanceStatus');
-    Route::post('/company/user/{userId}/account-status', [CompanyController::class, 'updateAccountStatus'])->name('processor.company.updateAccountStatus');
-
-    // Report routes
-            Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
-    });
 
 
-// Farmer Routes
-//Route::prefix('farmers')->middleware(['auth', 'role:farmer'])->group(function () {
-    Route::get('/farmers/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
-    Route::resource('harvests', HarvestController::class)->names('farmers.harvests')->except(['show']);
-    Route::get('/harvests/{id}', [HarvestController::class, 'show'])->name('farmers.harvests.show');
-    Route::get('/inventory', [FarmerInventoryController::class, 'index'])->name('farmers.inventory.index');
-    Route::get('/inventory/{id}', [FarmerInventoryController::class, 'show'])->name('farmers.inventory.show');
-    Route::get('/inventory/{id}/edit', [FarmerInventoryController::class, 'edit'])->name('farmers.inventory.edit');
-    Route::delete('/inventory/{id}', [FarmerInventoryController::class, 'destroy'])->name('farmers.inventory.destroy');
-    Route::resource('orders', OrderController::class)->names('farmers.orders');
-    Route::get('/communication', [CommunicationController::class, 'index'])->name('farmers.communication.index');
-    Route::post('/communication/send', [CommunicationController::class, 'send'])->name('farmers.communication.send');
-    Route::get('/communication/message/{id}', [CommunicationController::class, 'show'])->name('farmers.communication.show');
-    Route::get('/communication/message/{id}/reply', [CommunicationController::class, 'replyForm'])->name('farmers.communication.reply');
-    Route::get('/financials', [FinancialController::class, 'index'])->name('farmers.financials.index');
-    Route::get('/financials/pricing', [FinancialController::class, 'pricing'])->name('farmers.financials.pricing');
-    Route::post('/financials/pricing', [FinancialController::class, 'updatePricing'])->name('farmers.financials.pricing.update');
-    Route::get('/financials/reports', [FinancialController::class, 'reports'])->name('farmers.financials.reports');
-    Route::get('/financials/expenses', [FinancialController::class, 'expenses'])->name('farmers.financials.expenses');
-    Route::get('/financials/cashflow', [FinancialController::class, 'cashflow'])->name('farmers.financials.cashflow');
-    Route::get('/financials/forecasting', [FinancialController::class, 'forecasting'])->name('farmers.financials.forecasting');
-    Route::get('/analytics/reports', [FarmerAnalyticsController::class, 'reports'])->name('farmers.analytics.reports');
-//});
+
+
 
 
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Simple test route outside middleware
-Route::get('/test-route', function() {
-    return response()->json(['message' => 'Test route working outside middleware']);
-})->name('test.route');
 
-// Test route inside processor prefix but outside auth middleware
-Route::prefix('processor')->group(function () {
-    Route::get('/test-no-auth', function() {
-        return response()->json(['message' => 'Processor route without auth middleware']);
-    })->name('processor.test.no.auth');
-});
-
-// Debug route to list all routes
-Route::get('/debug-routes', function() {
-    $routes = collect(\Route::getRoutes())->map(function($route) {
-        return [
-            'method' => $route->methods()[0],
-            'uri' => $route->uri(),
-            'name' => $route->getName(),
-        ];
-    })->filter(function($route) {
-        return str_contains($route['uri'], 'farmer_order') || str_contains($route['uri'], 'processor');
-    })->values();
-    
-    return response()->json($routes);
-})->name('debug.routes');
 
 // Authentication Routes
 Route::middleware(['guest'])->group(function () {
@@ -207,7 +96,9 @@ Route::middleware(['auth'])->group(function () {
             'destroy' => 'processor.order.retailer_order.destroy',
         ]);
 
-
+        // Custom routes must come BEFORE the resource route to avoid conflicts
+        // AJAX: Get price for selected farmer, variety, and grade
+        Route::get('farmer_order/get-price', [FarmerOrderController::class, 'getPrice'])->name('processor.order.farmer_order.getPrice');
 
         Route::resource('farmer_order', FarmerOrderController::class)->names([
             'index' => 'processor.order.farmer_order.index',
@@ -230,102 +121,84 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
         Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
+        Route::get('/company', [CompanyController::class, 'index'])->name('processor.company.index');
+        Route::post('/company/{companyId}/acceptance-status', [CompanyController::class, 'updateAcceptanceStatus'])->name('processor.company.updateAcceptanceStatus');
+        Route::post('/company/user/{userId}/account-status', [CompanyController::class, 'updateAccountStatus'])->name('processor.company.updateAccountStatus');
+
+        // Report routes
+        Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
     });
 
     // Farmer routes
-    Route::prefix('farmer')->name('farmer.')->group(function () {
-
-        Route::get('/inventory', function () {
-            return view('farmer.inventory');
-        })->name('inventory');
-
-        Route::get('/orders', function () {
-            return view('farmer.orders');
-        })->name('orders');
-
-        Route::get('/analytics', function () {
-            return view('farmer.analytics');
-        })->name('analytics');
-    });
-
-    // Processor extra routes
-    Route::prefix('processor')->name('processor.')->group(function () {
-        Route::get('/production', function () {
-            return view('processor.production');
-        })->name('production');
-
+    Route::prefix('farmers')->group(function () {
+        Route::get('/dashboard', [FarmerDashboardController::class, 'index'])->name('farmers.dashboard');
+        Route::resource('harvests', HarvestController::class)->names('farmers.harvests')->except(['show']);
+        Route::get('/harvests/{id}', [HarvestController::class, 'show'])->name('farmers.harvests.show');
+        Route::get('/inventory', [FarmerInventoryController::class, 'index'])->name('farmers.inventory.index');
+        Route::get('/inventory/{id}', [FarmerInventoryController::class, 'show'])->name('farmers.inventory.show');
+        Route::get('/inventory/{id}/edit', [FarmerInventoryController::class, 'edit'])->name('farmers.inventory.edit');
+        Route::delete('/inventory/{id}', [FarmerInventoryController::class, 'destroy'])->name('farmers.inventory.destroy');
+        Route::resource('orders', OrderController::class)->names('farmers.orders');
+        Route::get('/communication', [CommunicationController::class, 'index'])->name('farmers.communication.index');
+        Route::post('/communication/send', [CommunicationController::class, 'send'])->name('farmers.communication.send');
+        Route::get('/communication/message/{id}', [CommunicationController::class, 'show'])->name('farmers.communication.show');
+        Route::get('/communication/message/{id}/reply', [CommunicationController::class, 'replyForm'])->name('farmers.communication.reply');
+        Route::get('/financials', [FinancialController::class, 'index'])->name('farmers.financials.index');
+        Route::get('/financials/pricing', [FinancialController::class, 'pricing'])->name('farmers.financials.pricing');
+        Route::post('/financials/pricing', [FinancialController::class, 'updatePricing'])->name('farmers.financials.pricing.update');
+        Route::get('/financials/reports', [FinancialController::class, 'reports'])->name('farmers.financials.reports');
+        Route::get('/financials/expenses', [FinancialController::class, 'expenses'])->name('farmers.financials.expenses');
+        Route::get('/financials/cashflow', [FinancialController::class, 'cashflow'])->name('farmers.financials.cashflow');
+        Route::get('/financials/forecasting', [FinancialController::class, 'forecasting'])->name('farmers.financials.forecasting');
+        Route::get('/analytics/reports', [FarmerAnalyticsController::class, 'reports'])->name('farmers.analytics.reports');
     });
 
     // Retailer routes
-    Route::prefix('retailer')->middleware(['auth'])->name('retailer.')->group(function () {
+    Route::prefix('retailer')->group(function () {
         Route::get('/dashboard', function () {
             return view('retailers.dashboard');
-        })->name('dashboard');
+        })->name('retailer.dashboard');
 
         Route::get('/orders', function () {
             return view('retailer.orders');
-        })->name('orders');
+        })->name('retailer.orders');
 
         Route::get('/inventory', function () {
             return view('retailer.inventory');
-        })->name('inventory');
+        })->name('retailer.inventory');
 
         Route::get('/customers', function () {
             return view('retailer.customers');
-        })->name('customers');
+        })->name('retailer.customers');
 
         // Product recipes routes
-        Route::get('/product-recipes', [\App\Http\Controllers\RetailerProductRecipeController::class, 'index'])->name('product_recipes.index');
-        Route::get('/product-recipes/create', [\App\Http\Controllers\RetailerProductRecipeController::class, 'create'])->name('product_recipes.create');
-        Route::post('/product-recipes', [\App\Http\Controllers\RetailerProductRecipeController::class, 'store'])->name('product_recipes.store');
+        Route::get('/product-recipes', [\App\Http\Controllers\RetailerProductRecipeController::class, 'index'])->name('retailer.product_recipes.index');
+        Route::get('/product-recipes/create', [\App\Http\Controllers\RetailerProductRecipeController::class, 'create'])->name('retailer.product_recipes.create');
+        Route::post('/product-recipes', [\App\Http\Controllers\RetailerProductRecipeController::class, 'store'])->name('retailer.product_recipes.store');
 
         // Retailer sales routes
-        Route::get('/sales', [\App\Http\Controllers\RetailerSalesController::class, 'index'])->name('sales.index');
-        Route::post('/sales', [\App\Http\Controllers\RetailerSalesController::class, 'store'])->name('sales.store');
-        Route::get('/sales/create', [\App\Http\Controllers\RetailerSalesController::class, 'index'])->name('sales.create');
+        Route::get('/sales', [\App\Http\Controllers\RetailerSalesController::class, 'index'])->name('retailer.sales.index');
+        Route::post('/sales', [\App\Http\Controllers\RetailerSalesController::class, 'store'])->name('retailer.sales.store');
+        Route::get('/sales/create', [\App\Http\Controllers\RetailerSalesController::class, 'index'])->name('retailer.sales.create');
 
         // Retailer orders routes
-        Route::get('/orders', [\App\Http\Controllers\RetailerOrderController::class, 'index'])->name('orders.index');
-        Route::post('/orders', [\App\Http\Controllers\RetailerOrderController::class, 'store'])->name('orders.store');
-        Route::put('/orders/{id}', [\App\Http\Controllers\RetailerOrderController::class, 'update'])->name('orders.update');
+        Route::get('/orders', [\App\Http\Controllers\RetailerOrderController::class, 'index'])->name('retailer.orders.index');
+        Route::post('/orders', [\App\Http\Controllers\RetailerOrderController::class, 'store'])->name('retailer.orders.store');
+        Route::put('/orders/{id}', [\App\Http\Controllers\RetailerOrderController::class, 'update'])->name('retailer.orders.update');
 
         // Retailer inventory routes
-        Route::get('/inventory', [\App\Http\Controllers\RetailerInventoryController::class, 'index'])->name('inventory.index');
+        Route::get('/inventory', [\App\Http\Controllers\RetailerInventoryController::class, 'index'])->name('retailer.inventory.index');
 
         // Retailer communication routes
         Route::get('/communication', function () {
             return view('retailers.communication.index');
-        })->name('communication.index');
+        })->name('retailer.communication.index');
     });
 
-    // Admin routes (commented out)
-
-    Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/users', function () {
-            return view('admin.users');
-        })->name('users');
-
-
-        Route::get('/companies', function () {
-
-            return view('admin.companies');
-        })->name('companies');
-
-        Route::get('/analytics', function () {
-            return view('admin.analytics');
-        })->name('analytics');
-
-
-        Route::get('/settings', function() {
-            return view('admin.settings');
-        })->name('settings');
-    });
 
 
     // Profile route
-
     Route::get('/profile', function () {
         return view('profile.show');
     })->name('profile.show');
-
- });
+});

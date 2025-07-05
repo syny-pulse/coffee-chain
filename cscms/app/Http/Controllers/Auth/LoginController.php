@@ -40,7 +40,7 @@ class LoginController extends Controller
                 ]);
             }
 
-            // For processor, we don't need to check company acceptance status
+            // Check company acceptance status for non-processor users
             if ($user->user_type !== 'processor' && $user->company && !$user->company->isAccepted()) {
                 Auth::logout();
                 return back()->withErrors([
@@ -48,30 +48,19 @@ class LoginController extends Controller
                 ]);
             }
 
-
             // Redirect based on user type
-            if ($user->user_type === 'processor') {
-                return redirect()->intended('/processor/dashboard');
-            } elseif ($user->user_type === 'farmer') {
-                return redirect()->intended('/farmer/dashboard');
-            } elseif ($user->user_type === 'retailer') {
-                return redirect()->intended('/retailer/dashboard');
-            }
-
-            return redirect()->intended('/dashboard');
-
             switch ($user->user_type) {
                 case 'farmer':
-                    return redirect()->route('farmers.dashboard');
+                    return redirect()->intended('/farmers/dashboard');
                 case 'processor':
-                    return redirect()->route('processors.dashboard');
+                    return redirect()->intended('/processor/dashboard');
                 case 'retailer':
-                    return redirect()->route('retailer.dashboard');
+                    return redirect()->intended('/retailer/dashboard');
                 case 'admin':
-                    return redirect()->route('admin.dashboard');
+                    return redirect()->intended('/admin/dashboard');
+                default:
+                    return redirect()->intended('/dashboard');
             }
-
-
         }
 
         // If login fails, increment login attempts

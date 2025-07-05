@@ -119,7 +119,13 @@ class FarmerOrderController extends Controller
     public function getPrice(Request $request)
     {
         try {
-            \Log::info('getPrice method called without auth');
+            // Check if user is authenticated
+            if (!Auth::check()) {
+                \Log::error('User not authenticated for getPrice request');
+                return response()->json(['error' => 'Authentication required.'], 401);
+            }
+
+            \Log::info('getPrice method called by user:', ['user_id' => Auth::id(), 'user_type' => Auth::user()->user_type]);
 
             $request->validate([
                 'farmer_company_id' => 'required|exists:companies,company_id',
