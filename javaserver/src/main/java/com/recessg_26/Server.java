@@ -232,9 +232,9 @@ class Server {
         double score = 0.0;
         
         // References
-        if (company.reference2Name != null && !company.reference2Name.isEmpty() && 
-            !company.reference2Name.equalsIgnoreCase("Not found") &&
-             !company.reference2Name.equalsIgnoreCase("Not provided"))score += 3.0;
+        if (company.reference1Name != null && !company.reference1Name.isEmpty() && 
+            !company.reference1Name.equalsIgnoreCase("Not found") &&
+             !company.reference1Name.equalsIgnoreCase("Not provided"))score += 3.0;
         if (company.reference2Name != null && !company.reference2Name.isEmpty() && 
             !company.reference2Name.equalsIgnoreCase("Not found") &&
              !company.reference2Name.equalsIgnoreCase("Not provided")) score += 2.0;

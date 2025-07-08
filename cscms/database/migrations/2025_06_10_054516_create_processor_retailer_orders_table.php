@@ -30,4 +30,4 @@ class CreateProcessorRetailerOrdersTable extends Migration
     {
         Schema::dropIfExists('processor_retailer_orders');
     }
-} 
+}
