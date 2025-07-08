@@ -121,8 +121,8 @@ class FinancialController extends Controller
             Pricing::updateOrCreate(
                 [
                     'company_id' => $company->company_id,
-                    'coffee_variety' => strtolower($price['coffee_variety']),
-                    'grade' => strtolower(str_replace(' ', '_', $price['grade'])),
+                    'coffee_variety' => strtolower(trim($price['coffee_variety'])),
+                    'grade' => strtolower(str_replace(' ', '_', trim($price['grade']))),
                 ],
                 [
                     'unit_price' => $price['unit_price'],

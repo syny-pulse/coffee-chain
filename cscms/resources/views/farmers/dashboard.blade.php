@@ -5,6 +5,9 @@
 @section('page-subtitle', 'Monitor your coffee production, track orders, and manage your business efficiently')
 
 @section('content')
+    <!-- Notifications -->
+    @include('farmers.partials.notifications')
+    
     <!-- Stats Grid -->
     <div class="stats-grid">
         @include('farmers.partials.stat-card', [

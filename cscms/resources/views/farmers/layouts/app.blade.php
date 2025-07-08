@@ -8,12 +8,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/farmers.css') }}" rel="stylesheet">
+    <style>
+        .notification-badge {
+            background: #8B4513;
+            color: white;
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
     @stack('styles')
 </head>
 <body>
     <!-- Top Header -->
     <header class="top-header">
-        <button class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+        <button class="sidebar-toggle-btn" aria-label="Toggle sidebar" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
         <a href="{{ route('farmers.dashboard') }}" class="header-brand">
@@ -92,6 +116,9 @@
                         <a href="{{ route('farmers.orders.index') }}" class="nav-link {{ request()->routeIs('farmers.orders.*') ? 'active' : '' }}">
                             <span class="icon"><i class="fas fa-clipboard-list"></i></span>
                             Orders
+                            @if(isset($pendingOrdersCount) && $pendingOrdersCount > 0)
+                                <span class="notification-badge">{{ $pendingOrdersCount }}</span>
+                            @endif
                         </a>
                     </div>
                     <div class="nav-item">
@@ -114,6 +141,9 @@
                         <a href="{{ route('farmers.communication.index') }}" class="nav-link {{ request()->routeIs('farmers.communication.*') ? 'active' : '' }}">
                             <span class="icon"><i class="fas fa-comments"></i></span>
                             Messages
+                            @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
+                                <span class="notification-badge">{{ $unreadMessagesCount }}</span>
+                            @endif
                         </a>
                     </div>
                 </div>
@@ -143,6 +173,7 @@
     </div>
 
     @vite('resources/js/app.js')
+    <script src="{{ asset('js/farmers.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

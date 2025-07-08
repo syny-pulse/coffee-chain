@@ -265,7 +265,7 @@ function viewMessage(messageId) {
     openViewMessageModal();
     const body = document.getElementById('viewMessageBody');
     body.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-    fetch(`/communication/message/${messageId}`)
+    fetch(`/farmers/communication/message/${messageId}`)
         .then(response => response.json())
         .then(data => {
             const msg = data.message;
@@ -288,7 +288,7 @@ function replyToMessage(messageId) {
     openReplyMessageModal();
     const body = document.getElementById('replyMessageBody');
     body.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-    fetch(`/communication/message/${messageId}/reply`)
+    fetch(`/farmers/communication/message/${messageId}/reply`)
         .then(response => response.json())
         .then(data => {
             const processor = data.processor;
@@ -311,8 +311,8 @@ function replyToMessage(messageId) {
                         <div class=\"form-text\">Maximum 1000 characters</div>
                     </div>
                     <div class=\"form-actions\">
-                        <button type=\"button\" class=\"btn btn-outline\" onclick=\"closeReplyMessageModal()\"><i class=\"fas fa-times\"></i> Cancel</button>
-                        <button type=\"submit\" class=\"btn btn-primary\"><i class=\"fas fa-paper-plane\"></i> Send Reply</button>
+                        <button type=\"button\" class=\"btn btn-outline\" onclick=\"closeReplyMessageModal()\"><i class="fas fa-times"></i> Cancel</button>
+                        <button type=\"submit\" class=\"btn btn-primary\"><i class="fas fa-paper-plane"></i> Send Reply</button>
                     </div>
                 </form>
                 <hr/>

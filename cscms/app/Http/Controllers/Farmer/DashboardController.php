@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\FarmerOrder;
 use App\Models\Farmer\FarmerHarvest;
 use App\Models\Message;
+use App\Services\NotificationService;
 
 class DashboardController extends Controller
 {
@@ -148,7 +149,14 @@ class DashboardController extends Controller
         });
         $recent_activity = array_slice($activities, 0, 4);
 
+        // Get notifications
+        $notificationService = new NotificationService();
+        $notifications = $notificationService->getFarmerNotifications($company);
+        $notificationCount = $notificationService->getNotificationCount($company);
+        $pendingOrdersCount = $notificationService->getPendingOrdersCount($company);
+        $unreadMessagesCount = $notificationService->getUnreadMessagesCount($company);
+
         // Only use the new dashboard view and pass all required data
-        return view('farmers.dashboard', compact('user', 'stats', 'trends', 'recent_activity'));
+        return view('farmers.dashboard', compact('user', 'stats', 'trends', 'recent_activity', 'notifications', 'notificationCount', 'pendingOrdersCount', 'unreadMessagesCount'));
     }
 }

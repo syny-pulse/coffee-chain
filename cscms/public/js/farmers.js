@@ -2,6 +2,10 @@ console.log('farmers.js loaded');
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded');
+    
+    // Test if toggleSidebar is accessible
+    console.log('toggleSidebar function available:', typeof window.toggleSidebar);
+    
     // Initialize active navigation
     setActiveNavigation();
     
@@ -22,25 +26,36 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('sidebar-hidden');
     }
     
-    // Attach sidebar toggle event
-    const btn = document.querySelector('.sidebar-toggle-btn');
-    console.log('Sidebar toggle button:', btn);
-    if (btn) {
-        btn.addEventListener('click', function() {
-            console.log('Sidebar toggle clicked');
-            toggleSidebar();
-        });
-    }
+    // Sidebar toggle is handled by onclick attribute
+    // No need for additional event listener
 });
 
 function toggleSidebar() {
-    document.body.classList.toggle('sidebar-hidden');
-    console.log('sidebar-hidden class toggled:', document.body.classList.contains('sidebar-hidden'));
-    // Optionally persist state
-    if (window.localStorage) {
-        localStorage.setItem('sidebarHidden', document.body.classList.contains('sidebar-hidden') ? '1' : '');
+    console.log('toggleSidebar function called');
+    try {
+        document.body.classList.toggle('sidebar-hidden');
+        console.log('sidebar-hidden class toggled:', document.body.classList.contains('sidebar-hidden'));
+        
+        // Optionally persist state
+        if (window.localStorage) {
+            localStorage.setItem('sidebarHidden', document.body.classList.contains('sidebar-hidden') ? '1' : '');
+        }
+        
+        // Visual feedback for debugging
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        console.log('Sidebar element:', sidebar);
+        console.log('Main content element:', mainContent);
+        console.log('Sidebar transform:', sidebar ? getComputedStyle(sidebar).transform : 'N/A');
+        console.log('Main content margin-left:', mainContent ? getComputedStyle(mainContent).marginLeft : 'N/A');
+        
+    } catch (error) {
+        console.error('Error in toggleSidebar:', error);
     }
 }
+
+// Make toggleSidebar globally accessible
+window.toggleSidebar = toggleSidebar;
 
 // Set active navigation based on current route
 function setActiveNavigation() {

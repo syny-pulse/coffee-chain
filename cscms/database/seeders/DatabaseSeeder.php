@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             MessageSeeder::class,
             EmployeeSeeder::class,
             InventorySeeder::class,
+            PricingSeeder::class,
         ]);
 
         $this->call([
