@@ -50,4 +50,12 @@ class Company extends Model
     {
         return $this->acceptance_status === 'pending';
     }
+
+    /**
+     * Get the pricings for the company.
+     */
+    public function pricings()
+    {
+        return $this->hasMany(\App\Models\Pricing::class, 'company_id');
+    }
 }
