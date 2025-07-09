@@ -118,6 +118,7 @@ class FarmerOrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $previous_status = $order->order_status;
         $order->update([
             'quantity_kg' => $request->quantity_kg,
             'unit_price' => $request->unit_price,
@@ -127,6 +128,35 @@ class FarmerOrderController extends Controller
             'actual_delivery_date' => $request->actual_delivery_date,
             'notes' => $request->notes,
         ]);
+
+        // If status changed to confirmed, update processor raw material inventory
+        if ($previous_status !== 'confirmed' && $request->order_status === 'confirmed') {
+            $inventory = \App\Models\ProcessorRawMaterialInventory::where([
+                'processor_company_id' => $order->processor_company_id,
+                'coffee_variety' => $order->coffee_variety,
+                'processing_method' => $order->processing_method,
+                'grade' => $order->grade,
+            ])->first();
+            if ($inventory) {
+                $inventory->current_stock_kg += $order->quantity_kg;
+                $inventory->reserved_stock_kg += $order->quantity_kg;
+                $inventory->available_stock_kg += $order->quantity_kg;
+                $inventory->last_updated = now();
+                $inventory->save();
+            } else {
+                \App\Models\ProcessorRawMaterialInventory::create([
+                    'processor_company_id' => $order->processor_company_id,
+                    'coffee_variety' => $order->coffee_variety,
+                    'processing_method' => $order->processing_method,
+                    'grade' => $order->grade,
+                    'current_stock_kg' => $order->quantity_kg,
+                    'reserved_stock_kg' => $order->quantity_kg,
+                    'available_stock_kg' => $order->quantity_kg,
+                    'average_cost_per_kg' => $order->unit_price,
+                    'last_updated' => now(),
+                ]);
+            }
+        }
 
         return redirect()->route('processor.order.farmer_order.index')->with('success', 'Farmer order updated successfully.');
     }
