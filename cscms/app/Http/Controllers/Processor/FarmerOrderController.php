@@ -22,11 +22,27 @@ class FarmerOrderController extends Controller
 
     public function create()
     {
-        // Get available farmers for the processor to order from
-        $farmers = Company::where('company_type', 'farmer')
+        // No need to pass farmers here, will be loaded via AJAX
+        return view('processor.order.farmer_order.create');
+    }
+
+    // Add this method to fetch farmers by coffee variety
+    public function getFarmersByVariety(Request $request)
+    {
+        $request->validate([
+            'coffee_variety' => 'required|in:arabica,robusta',
+        ]);
+
+        // Find farmers who have pricing for the selected variety
+        $farmers = \App\Models\Company::where('company_type', 'farmer')
             ->where('acceptance_status', 'accepted')
+            ->whereHas('pricings', function($q) use ($request) {
+                $q->where('coffee_variety', $request->coffee_variety);
+            })
+            ->select('company_id', 'company_name')
             ->get();
-        return view('processor.order.farmer_order.create', compact('farmers'));
+
+        return response()->json(['farmers' => $farmers]);
     }
 
     public function store(Request $request)
@@ -45,7 +61,6 @@ class FarmerOrderController extends Controller
             'quantity_kg' => 'required|numeric|min:1',
             'unit_price' => 'required|numeric|min:0',
             'expected_delivery_date' => 'required|date',
-            'order_status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
             'notes' => 'nullable|string',
         ]);
 
@@ -59,7 +74,7 @@ class FarmerOrderController extends Controller
             'unit_price' => $request->unit_price,
             'total_amount' => $request->quantity_kg * $request->unit_price,
             'expected_delivery_date' => $request->expected_delivery_date,
-            'order_status' => $request->order_status,
+            'order_status' => 'pending', // Always set to pending
             'notes' => $request->notes,
         ]);
 

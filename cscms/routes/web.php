@@ -100,6 +100,9 @@ Route::middleware(['auth'])->group(function () {
         // AJAX: Get price for selected farmer, variety, and grade
         Route::get('farmer_order/get-price', [FarmerOrderController::class, 'getPrice'])->name('processor.order.farmer_order.getPrice');
 
+        // AJAX: Get farmers by coffee variety
+        Route::get('farmer_order/get-farmers-by-variety', [FarmerOrderController::class, 'getFarmersByVariety'])->name('processor.order.farmer_order.getFarmersByVariety');
+
         Route::resource('farmer_order', FarmerOrderController::class)->names([
             'index' => 'processor.order.farmer_order.index',
             'create' => 'processor.order.farmer_order.create',

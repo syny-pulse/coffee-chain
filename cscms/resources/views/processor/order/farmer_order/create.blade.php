@@ -46,23 +46,18 @@
             @csrf
 
             <div class="form-group">
-                <label for="farmer_company_id">Select Farmer</label>
-                <select name="farmer_company_id" id="farmer_company_id" class="form-control" required>
-                    <option value="">Select a Farmer</option>
-                    @foreach($farmers as $farmer)
-                        <option value="{{ $farmer->company_id }}" {{ old('farmer_company_id') == $farmer->company_id ? 'selected' : '' }}>
-                            {{ $farmer->company_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
                 <label for="coffee_variety">Coffee Variety</label>
                 <select name="coffee_variety" id="coffee_variety" class="form-control" required>
                     <option value="">Select Variety</option>
                     <option value="arabica" {{ old('coffee_variety') == 'arabica' ? 'selected' : '' }}>Arabica</option>
                     <option value="robusta" {{ old('coffee_variety') == 'robusta' ? 'selected' : '' }}>Robusta</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="farmer_company_id">Select Farmer Company</label>
+                <select name="farmer_company_id" id="farmer_company_id" class="form-control" required disabled>
+                    <option value="">Select a Farmer Company</option>
                 </select>
             </div>
 
@@ -117,17 +112,8 @@
                        class="form-control" required value="{{ old('expected_delivery_date') }}">
             </div>
 
-            <div class="form-group">
-                <label for="order_status">Order Status</label>
-                <select name="order_status" id="order_status" class="form-control" required>
-                    <option value="pending" {{ old('order_status', 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="confirmed" {{ old('order_status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                    <option value="processing" {{ old('order_status') == 'processing' ? 'selected' : '' }}>Processing</option>
-                    <option value="shipped" {{ old('order_status') == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                    <option value="delivered" {{ old('order_status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                    <option value="cancelled" {{ old('order_status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                </select>
-            </div>
+            <!-- Remove the order status dropdown and add a hidden input for order_status -->
+            <input type="hidden" name="order_status" value="pending">
 
             <div class="form-group">
                 <label for="notes">Notes</label>
@@ -215,6 +201,43 @@
             calculateTotal();
         }
     }
+
+    document.getElementById('coffee_variety').addEventListener('change', function() {
+        const variety = this.value;
+        const farmerSelect = document.getElementById('farmer_company_id');
+        farmerSelect.innerHTML = '<option value="">Select a Farmer Company</option>';
+        farmerSelect.disabled = true;
+        if (variety) {
+            fetch(`{{ route('processor.order.farmer_order.getFarmersByVariety') }}?coffee_variety=${variety}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.farmers && data.farmers.length > 0) {
+                    data.farmers.forEach(farmer => {
+                        const option = document.createElement('option');
+                        option.value = farmer.company_id;
+                        option.textContent = farmer.company_name;
+                        farmerSelect.appendChild(option);
+                    });
+                    farmerSelect.disabled = false;
+                } else {
+                    farmerSelect.innerHTML = '<option value="">No farmer companies found for this variety</option>';
+                    farmerSelect.disabled = true;
+                }
+            })
+            .catch(() => {
+                farmerSelect.innerHTML = '<option value="">Error loading farmer companies</option>';
+                farmerSelect.disabled = true;
+            });
+        }
+    });
 
     document.getElementById('farmer_company_id').addEventListener('change', fetchUnitPrice);
     document.getElementById('coffee_variety').addEventListener('change', fetchUnitPrice);
