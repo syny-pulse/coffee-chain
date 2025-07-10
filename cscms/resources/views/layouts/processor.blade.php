@@ -764,6 +764,37 @@
         .align-items-center {
             align-items: center;
         }
+        /* CSS for Alerts */
+        .alert {
+            position: relative;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-success {
+            background-color: rgba(46, 125, 50, 0.1); /* Light green background */
+            border-color: rgba(46, 125, 50, 0.2); /* Green border */
+            color: #2e7d32; /* Dark green text */
+        }
+
+        .status-error {
+            background-color: rgba(211, 47, 47, 0.1); /* Light red background */
+            border-color: rgba(211, 47, 47, 0.2); /* Red border */
+            color: #d32f2f; /* Dark red text */
+        }
+
+        .auto-dismiss {
+            animation: fadeIn 0.5s ease-in, autoDismiss 5s ease-in-out forwards;
+        }
+
+        @keyframes autoDismiss {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
     </style>
 </head>
 
@@ -912,18 +943,14 @@
             }
         });
 
-        // Auto-hide success alert after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const successAlert = document.getElementById('success-alert');
-            if (successAlert) {
+        // Auto-hide  alert after 5 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.auto-dismiss');
+            alerts.forEach(alert => {
                 setTimeout(() => {
-                    successAlert.classList.remove('fade-in');
-                    successAlert.classList.add('fade-out');
-                    setTimeout(() => {
-                        successAlert.style.display = 'none';
-                    }, 600); // Match the animation duration
-                }, 5000); // Show for 5 seconds
-            }
+                    alert.style.display = 'none';
+                }, 5000); // 5000ms = 5 seconds
+            });
         });
     </script>
 

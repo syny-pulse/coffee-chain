@@ -51,10 +51,19 @@
             </div>
         </div>
 
+        <!-- Success Message -->
         @if (session('success'))
-            <div class="alert status-success fade-in alert-dismissible" id="success-alert"
+            <div class="alert status-success fade-in auto-dismiss"
                 style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Error Message -->
+        @if (session('error'))
+            <div class="alert status-error fade-in auto-dismiss"
+                style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+                {{ session('error') }}
             </div>
         @endif
 
