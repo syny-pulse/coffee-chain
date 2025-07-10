@@ -725,6 +725,45 @@
                 display: none;
             }
         }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(111, 78, 55, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+            font-size: 0.85rem;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:hover {
+            border-color: var(--coffee-medium);
+            background: var(--cream);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--coffee-light);
+            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+        }
+
+        .ms-2 {
+            margin-left: 0.5rem;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
     </style>
 </head>
 
