@@ -16,14 +16,10 @@ class CommunicationController extends Controller
         $user = Auth::user();
         $company = $user->company;
         // Get processors the farmer has worked with (via messages or orders)
-        $processorIdsFromMessages = Message::where('sender_company_id', $company->company_id)
+       $processorIdsFromMessages = Message::where('sender_company_id', $company->company_id)
             ->orWhere('receiver_company_id', $company->company_id)
-            ->pluck('receiver_company_id')
-            ->merge(
-                Message::where('sender_company_id', $company->company_id)
-                    ->orWhere('receiver_company_id', $company->company_id)
-                    ->pluck('sender_company_id')
-            )
+            ->pluck('sender_company_id', 'receiver_company_id')
+            ->flatten()
             ->unique()
             ->filter(fn($id) => $id !== $company->company_id)
             ->values();
