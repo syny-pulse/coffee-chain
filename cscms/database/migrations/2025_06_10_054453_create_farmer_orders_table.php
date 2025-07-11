@@ -27,7 +27,6 @@ return new class extends Migration
 
             $table->foreign('processor_company_id')->references('company_id')->on('companies')->onDelete('cascade');
             $table->foreign('farmer_company_id')->references('company_id')->on('companies')->onDelete('cascade');
-            $table->foreign('processor_company_id')->references('company_id')->on('companies')->onDelete('set null');
         });
     }
 
