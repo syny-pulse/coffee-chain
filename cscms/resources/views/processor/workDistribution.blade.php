@@ -2,20 +2,20 @@
 
 @section('title', 'Work Distribution')
 
-
-<!-- Dashboard Header -->
-<div class="dashboard-header fade-in">
-    <div class="dashboard-title">
-        <i class="fas fa-cogs"></i>
-        <div>
-            <h1>Work Distribution</h1>
-            <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
-                View assigned farmer and retailer orders
-            </p>
+@section('content')
+    <!-- Dashboard Header -->
+    <div class="dashboard-header fade-in">
+        <div class="dashboard-title">
+            <i class="fas fa-cogs"></i>
+            <div>
+                <h1>Work Distribution</h1>
+                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
+                    View assigned farmer and retailer orders
+                </p>
+            </div>
         </div>
     </div>
-</div>
-@section('content')
+
     <!-- Alerts -->
     @if (session('success'))
         <div class="alert status-success auto-dismiss">
@@ -54,7 +54,7 @@
                     @forelse ($farmerOrders as $order)
                         <tr>
                             <td>{{ $order->employee_name }}</td>
-                            <td>{{ $order->order_number }}</td>
+                            <td>{{ $order->order_id }}</td>
                             <td>{{ $order->company_name }}</td>
                         </tr>
                     @empty
@@ -88,7 +88,7 @@
                     @forelse ($retailerOrders as $order)
                         <tr>
                             <td>{{ $order->employee_name }}</td>
-                            <td>{{ $order->order_number }}</td>
+                            <td>{{ $order->order_id }}</td>
                             <td>{{ $order->company_name }}</td>
                         </tr>
                     @empty
