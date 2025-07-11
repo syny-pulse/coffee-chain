@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
@@ -60,32 +61,50 @@ class MessageController extends Controller
     {
         $user = Auth::user();
         if (!$user || !$user->company) {
+            Log::warning('Unauthenticated attempt to send message');
             return redirect()->route('login')->with('error', 'Please log in to send messages.');
         }
 
         // Validate the request
         $validated = $request->validate([
             'receiver_company_id' => 'required|exists:companies,company_id',
-            'receiver_user_id' => 'nullable|exists:users,id',
             'subject' => 'nullable|string|max:200',
             'message_body' => 'required|string',
             'message_type' => 'required|in:general,order_inquiry,quality_feedback,delivery_update,system_notification',
         ]);
 
-        // Create the message
-        Message::create([
-            'sender_company_id' => $user->company->company_id,
-            'sender_user_id' => $user->id,
-            'receiver_company_id' => $validated['receiver_company_id'],
-            'receiver_user_id' => $validated['receiver_user_id'] ?? null,
-            'subject' => $validated['subject'],
-            'message_body' => $validated['message_body'],
-            'message_type' => $validated['message_type'],
-            'is_read' => false,
-        ]);
+        try {
+            // Find an active user for the receiver company
+            $receiverUser = User::where('company_id', $validated['receiver_company_id'])
+                ->where('status', 'active')
+                ->first();
 
-        // Redirect back to message index with success message
-        return redirect()->route('processor.message.index')->with('success', 'Message sent successfully!');
+            if (!$receiverUser) {
+                Log::warning('No active user found for receiver_company_id: ' . $validated['receiver_company_id']);
+                return redirect()->route('processor.message.index')
+                    ->with('error', 'Cannot send message: No active user found for the selected company.');
+            }
+
+            // Create the message
+            Message::create([
+                'sender_company_id' => $user->company->company_id,
+                'sender_user_id' => $user->id,
+                'receiver_company_id' => $validated['receiver_company_id'],
+                'receiver_user_id' => $receiverUser->id,
+                'subject' => $validated['subject'],
+                'message_body' => $validated['message_body'],
+                'message_type' => $validated['message_type'],
+                'is_read' => false,
+            ]);
+
+            Log::info('Message sent from user ID: ' . $user->id . ' to company ID: ' . $validated['receiver_company_id']);
+            return redirect()->route('processor.message.index')
+                ->with('success', 'Message sent successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to send message: ' . $e->getMessage());
+            return redirect()->route('processor.message.index')
+                ->with('error', 'Failed to send message.');
+        }
     }
 
     /**
