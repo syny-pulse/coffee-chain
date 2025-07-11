@@ -764,6 +764,7 @@
         .align-items-center {
             align-items: center;
         }
+
         /* CSS for Alerts */
         .alert {
             position: relative;
@@ -775,15 +776,30 @@
         }
 
         .status-success {
-            background-color: rgba(46, 125, 50, 0.1); /* Light green background */
-            border-color: rgba(46, 125, 50, 0.2); /* Green border */
-            color: #2e7d32; /* Dark green text */
+            background-color: rgba(46, 125, 50, 0.1);
+            /* Light green background */
+            border-color: rgba(46, 125, 50, 0.2);
+            /* Green border */
+            color: #2e7d32;
+            /* Dark green text */
         }
 
         .status-error {
-            background-color: rgba(211, 47, 47, 0.1); /* Light red background */
-            border-color: rgba(211, 47, 47, 0.2); /* Red border */
-            color: #d32f2f; /* Dark red text */
+            background-color: rgba(211, 47, 47, 0.1);
+            /* Light red background */
+            border-color: rgba(211, 47, 47, 0.2);
+            /* Red border */
+            color: #d32f2f;
+            /* Dark red text */
+        }
+
+        .status-warning {
+            background-color: rgba(255, 152, 0, 0.1);
+            /* Light orange background */
+            border-color: rgba(255, 152, 0, 0.2);
+            /* Orange border */
+            color: #ff9800;
+            /* Dark orange text */
         }
 
         .auto-dismiss {
@@ -791,9 +807,18 @@
         }
 
         @keyframes autoDismiss {
-            0% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; display: none; }
+            0% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                display: none;
+            }
         }
     </style>
 </head>
@@ -825,6 +850,13 @@
                     class="{{ request()->routeIs('processor.employee.*') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
                     <span>Employees</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('processor.work.index') }}"
+                    class="{{ request()->routeIs('processor.work.*') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i>
+                    <span>Work Distribution</span>
                 </a>
             </li>
             <li>
@@ -944,7 +976,7 @@
         });
 
         // Auto-hide  alert after 5 seconds
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const alerts = document.querySelectorAll('.auto-dismiss');
             alerts.forEach(alert => {
                 setTimeout(() => {

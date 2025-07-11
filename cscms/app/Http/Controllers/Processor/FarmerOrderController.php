@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\FarmerOrder;
 use App\Models\ProcessorRawMaterialInventory;
 use App\Models\Company;
+use App\Models\Employee;
+use Illuminate\Support\Facades\DB;
 use App\Models\Pricing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +51,7 @@ class FarmerOrderController extends Controller
     public function store(Request $request)
     {
         Log::info('Store method hit with data: ', $request->all());
+
         if (!Auth::check()) {
             Log::warning('Unauthenticated attempt to create farmer order');
             return redirect()->route('login')->with('error', 'Please log in as a processor to create orders.');
@@ -65,22 +68,83 @@ class FarmerOrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $order = FarmerOrder::create([
-            'processor_company_id' => Auth::user()->company_id,
-            'farmer_company_id' => $request->farmer_company_id,
-            'coffee_variety' => $request->coffee_variety,
-            'processing_method' => $request->processing_method,
-            'grade' => $request->grade,
-            'quantity_kg' => $request->quantity_kg,
-            'unit_price' => $request->unit_price,
-            'total_amount' => $request->quantity_kg * $request->unit_price,
-            'expected_delivery_date' => $request->expected_delivery_date,
-            'order_status' => 'pending', // Always set to pending
-            'notes' => $request->notes,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        Log::info('Order created with ID: ' . $order->order_id);
-        return redirect()->route('processor.order.farmer_order.index')->with('success', 'Farmer order created successfully.');
+            // Create the farmer order
+            $order = FarmerOrder::create([
+                'processor_company_id' => Auth::user()->company_id,
+                'farmer_company_id' => $request->farmer_company_id,
+                'coffee_variety' => $request->coffee_variety,
+                'processing_method' => $request->processing_method,
+                'grade' => $request->grade,
+                'quantity_kg' => $request->quantity_kg,
+                'unit_price' => $request->unit_price,
+                'total_amount' => $request->quantity_kg * $request->unit_price,
+                'expected_delivery_date' => $request->expected_delivery_date,
+                'order_status' => 'pending',
+                'notes' => $request->notes,
+            ]);
+
+            // Query eligible employees (primary_station: grading or roasting, status: active, availability_status: not on_leave)
+            $eligibleEmployees = Employee::where('processor_company_id', Auth::user()->company_id)
+                ->where('status', 'active')
+                ->whereNotIn('availability_status', ['on_leave'])
+                ->whereIn('primary_station', ['grading', 'roasting'])
+                ->get();
+
+            if ($eligibleEmployees->isEmpty()) {
+                DB::commit();
+                Log::warning('No eligible employees found for farmer order ID: ' . $order->order_id);
+                return redirect()->route('processor.order.farmer_order.index')
+                    ->with('warning', 'Farmer order created successfully, but no eligible employees available for assignment.');
+            }
+
+            // Priority 1: Employees with no farmer orders
+            $noOrdersEmployees = $eligibleEmployees->filter(function ($employee) {
+                return $employee->farmerOrders()->count() === 0;
+            });
+
+            // Priority 2: Employees with only delivered farmer orders
+            $deliveredOrdersEmployees = $eligibleEmployees->filter(function ($employee) {
+                $activeOrders = $employee->farmerOrders()
+                    ->whereNotIn('order_status', ['delivered', 'cancelled'])
+                    ->count();
+                return $activeOrders === 0 && $employee->farmerOrders()->count() > 0;
+            });
+
+            // Priority 3: Any eligible employee (including those with active orders)
+            $selectedEmployee = null;
+
+            if (!$noOrdersEmployees->isEmpty()) {
+                // Randomly select from employees with no orders
+                $selectedEmployee = $noOrdersEmployees->shuffle()->first();
+            } elseif (!$deliveredOrdersEmployees->isEmpty()) {
+                // Randomly select from employees with only delivered orders
+                $selectedEmployee = $deliveredOrdersEmployees->shuffle()->first();
+            } else {
+                // Randomly select from any eligible employee
+                $selectedEmployee = $eligibleEmployees->shuffle()->first();
+            }
+
+            // Assign the employee to the order
+            $order->employee_id = $selectedEmployee->employee_id;
+            $order->save();
+
+            // // Update employee availability
+            // $selectedEmployee->availability_status = 'busy';
+            // $selectedEmployee->save();
+
+            DB::commit();
+            Log::info('Farmer order ID: ' . $order->order_id . ' assigned to employee ID: ' . $selectedEmployee->employee_id);
+            return redirect()->route('processor.order.farmer_order.index')
+                ->with('success', 'Farmer order created and assigned to ' . $selectedEmployee->employee_name . ' successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create or assign farmer order: ' . $e->getMessage());
+            return redirect()->route('processor.order.farmer_order.index')
+                ->with('error', 'Failed to create or assign farmer order.');
+        }
     }
 
     public function show($order_id)
