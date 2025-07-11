@@ -2,6 +2,19 @@
 
 @section('title', 'Work Distribution')
 
+
+<!-- Dashboard Header -->
+<div class="dashboard-header fade-in">
+    <div class="dashboard-title">
+        <i class="fas fa-cogs"></i>
+        <div>
+            <h1>Work Distribution</h1>
+            <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
+                View assigned farmer and retailer orders
+            </p>
+        </div>
+    </div>
+</div>
 @section('content')
     <!-- Alerts -->
     @if (session('success'))
@@ -19,19 +32,6 @@
             {{ session('warning') }}
         </div>
     @endif
-
-    <!-- Dashboard Header -->
-    <div class="dashboard-header fade-in">
-        <div class="dashboard-title">
-            <i class="fas fa-cogs"></i>
-            <div>
-                <h1>Work Distribution</h1>
-                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
-                    View assigned farmer and retailer orders
-                </p>
-            </div>
-        </div>
-    </div>
 
     <!-- Farmer Orders Table -->
     <div class="content-section fade-in">
