@@ -34,4 +34,14 @@ class Employee extends Model
     {
         return $this->belongsTo(User::class, 'processor_company_id');
     }
+
+    public function processorRetailerOrders()
+    {
+        return $this->hasMany(RetailerOrder::class, 'employee_id', 'employee_id');
+    }
+
+    public function farmerOrders()
+    {
+        return $this->hasMany(FarmerOrder::class, 'employee_id', 'employee_id');
+    }
 }
