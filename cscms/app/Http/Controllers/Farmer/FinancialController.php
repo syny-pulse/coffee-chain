@@ -71,6 +71,7 @@ class FinancialController extends Controller
         $pricing = Pricing::where('company_id', $company->company_id)->get()->map(function($price) {
             return [
                 'coffee_variety' => ucfirst($price->coffee_variety),
+                'processing_method' => ucfirst($price->processing_method),
                 'grade' => ucfirst(str_replace('_', ' ', $price->grade)),
                 'unit_price' => $price->unit_price,
                 'current_market_price' => $price->unit_price,
@@ -138,7 +139,7 @@ class FinancialController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $orders = FarmerOrder::where('farmer_company_id', $company->company_id)->get();
-        
+
         // Generate financial reports data
         $monthlyRevenue = $orders->whereIn('order_status', ['delivered', 'confirmed'])
             ->groupBy(function($order) {
@@ -162,7 +163,7 @@ class FinancialController extends Controller
     {
         $user = Auth::user();
         $company = $user->company;
-        
+
         // Mock expenses data - in a real app, you'd have an expenses table
         $expenses = [
             'labor' => 0,
@@ -180,7 +181,7 @@ class FinancialController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $orders = FarmerOrder::where('farmer_company_id', $company->company_id)->get();
-        
+
         // Calculate cash flow data
         $cashflow = [
             'inflows' => $orders->whereIn('order_status', ['delivered', 'confirmed'])->sum('total_amount'),
@@ -196,7 +197,7 @@ class FinancialController extends Controller
         $user = Auth::user();
         $company = $user->company;
         $orders = FarmerOrder::where('farmer_company_id', $company->company_id)->get();
-        
+
         // Generate forecasting data
         $forecasting = [
             'projected_revenue' => $orders->sum('total_amount') * 1.15,

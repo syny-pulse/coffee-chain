@@ -227,51 +227,62 @@ class FarmerOrderController extends Controller
     }
 
     public function getPrice(Request $request)
-    {
-        try {
-            // Check if user is authenticated
-            if (!Auth::check()) {
-                Log::error('User not authenticated for getPrice request');
-                return response()->json(['error' => 'Authentication required.'], 401);
-            }
+{
+    try {
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            Log::error('User not authenticated for getPrice request');
+            return response()->json(['error' => 'Authentication required.'], 401);
+        }
 
-            Log::info('getPrice method called by user:', ['user_id' => Auth::id(), 'user_type' => Auth::user()->user_type]);
+        Log::info('getPrice method called by user:', [
+            'user_id' => Auth::id(),
+            'user_type' => Auth::user()->user_type
+        ]);
 
-            $request->validate([
-                'farmer_company_id' => 'required|exists:companies,company_id',
-                'coffee_variety' => 'required|in:arabica,robusta',
-                'grade' => 'required|in:grade_1,grade_2,grade_3,grade_4,grade_5',
-            ]);
+        // Validate all required parameters
+        $request->validate([
+            'farmer_company_id' => 'required|exists:companies,company_id',
+            'coffee_variety' => 'required|in:arabica,robusta',
+            'grade' => 'required|in:grade_1,grade_2,grade_3,grade_4,grade_5',
+            'processing_method' => 'required|in:natural,washed,honey',
+        ]);
 
-            $coffee_variety = strtolower($request->coffee_variety);
-            $grade = strtolower($request->grade);
+        $coffee_variety = strtolower($request->coffee_variety);
+        $grade = strtolower($request->grade);
+        $processing_method = strtolower($request->processing_method);
 
-            // Log the search parameters for debugging
-            Log::info('Searching for pricing:', [
+        // Log the search parameters for debugging
+        Log::info('Searching for pricing:', [
+            'company_id' => $request->farmer_company_id,
+            'coffee_variety' => $coffee_variety,
+            'grade' => $grade,
+            'processing_method' => $processing_method
+        ]);
+
+
+        $pricing = Pricing::where('company_id', $request->farmer_company_id)
+            ->where('coffee_variety', $coffee_variety)
+            ->where('grade', $grade)
+            ->where('processing_method', $processing_method)
+            ->first();
+
+        if ($pricing) {
+            Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
+            return response()->json(['unit_price' => $pricing->unit_price]);
+        } else {
+            Log::warning('No pricing found for:', [
                 'company_id' => $request->farmer_company_id,
                 'coffee_variety' => $coffee_variety,
-                'grade' => $grade
+                'grade' => $grade,
+                'processing_method' => $processing_method
             ]);
-
-            $pricing = Pricing::where('company_id', $request->farmer_company_id)
-                ->where('coffee_variety', $coffee_variety)
-                ->where('grade', $grade)
-                ->first();
-
-            if ($pricing) {
-                Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
-                return response()->json(['unit_price' => $pricing->unit_price]);
-            } else {
-                Log::warning('No pricing found for:', [
-                    'company_id' => $request->farmer_company_id,
-                    'coffee_variety' => $coffee_variety,
-                    'grade' => $grade
-                ]);
-                return response()->json(['error' => 'No pricing found for the selected options.'], 404);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json(['error' => 'An error occurred while fetching the price.'], 500);
+            return response()->json(['error' => 'No pricing found for the selected options.'], 404);
         }
+    } catch (\Exception $e) {
+        Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        return response()->json(['error' => 'An error occurred while fetching the price.'], 500);
     }
 }
+}
+
