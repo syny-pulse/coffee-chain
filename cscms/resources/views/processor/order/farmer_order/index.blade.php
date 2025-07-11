@@ -14,28 +14,7 @@
                 </p>
             </div>
         </div>
-        <!-- Success Message -->
-        @if (session('success'))
-            <div class="alert status-success fade-in auto-dismiss"
-                style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
-                {{ session('success') }}
-            </div>
-        @endif
 
-        <!-- Error Message -->
-        @if (session('error'))
-            <div class="alert status-error fade-in auto-dismiss"
-                style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
-                {{ session('error') }}
-            </div>
-        @endif
-        <!-- Warning Message -->
-        @if (session('warning'))
-            <div class="alert status-warning fade-in auto-dismiss"
-                style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
-                {{ session('warning') }}
-            </div>
-        @endif
         <div class="dashboard-actions">
             <a href="{{ route('processor.order.farmer_order.create') }}" class="btn btn-success">
                 <i class="fas fa-plus"></i>
@@ -43,6 +22,28 @@
             </a>
         </div>
     </div>
+    <!-- Success Message -->
+    @if (session('success'))
+        <div class="alert status-success fade-in auto-dismiss"
+            style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- Error Message -->
+    @if (session('error'))
+        <div class="alert status-error fade-in auto-dismiss"
+            style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+            {{ session('error') }}
+        </div>
+    @endif
+    <!-- Warning Message -->
+    @if (session('warning'))
+        <div class="alert status-warning fade-in auto-dismiss"
+            style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+            {{ session('warning') }}
+        </div>
+    @endif
 
     <!-- Farmer Orders Table -->
     <div class="content-section fade-in">
