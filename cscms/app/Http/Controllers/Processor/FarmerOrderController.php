@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Processor;
 
 use App\Http\Controllers\Controller;
 use App\Models\FarmerOrder;
+use App\Models\ProcessorRawMaterialInventory;
 use App\Models\Company;
 use App\Models\Pricing;
 use Illuminate\Http\Request;
@@ -34,7 +35,7 @@ class FarmerOrderController extends Controller
         ]);
 
         // Find farmers who have pricing for the selected variety
-        $farmers = \App\Models\Company::where('company_type', 'farmer')
+        $farmers = Company::where('company_type', 'farmer')
             ->where('acceptance_status', 'accepted')
             ->whereHas('pricings', function($q) use ($request) {
                 $q->where('coffee_variety', $request->coffee_variety);
@@ -131,7 +132,7 @@ class FarmerOrderController extends Controller
 
         // If status changed to confirmed, update processor raw material inventory
         if ($previous_status !== 'confirmed' && $request->order_status === 'confirmed') {
-            $inventory = \App\Models\ProcessorRawMaterialInventory::where([
+            $inventory = ProcessorRawMaterialInventory::where([
                 'processor_company_id' => $order->processor_company_id,
                 'coffee_variety' => $order->coffee_variety,
                 'processing_method' => $order->processing_method,
@@ -144,7 +145,7 @@ class FarmerOrderController extends Controller
                 $inventory->last_updated = now();
                 $inventory->save();
             } else {
-                \App\Models\ProcessorRawMaterialInventory::create([
+                ProcessorRawMaterialInventory::create([
                     'processor_company_id' => $order->processor_company_id,
                     'coffee_variety' => $order->coffee_variety,
                     'processing_method' => $order->processing_method,
@@ -166,11 +167,11 @@ class FarmerOrderController extends Controller
         try {
             // Check if user is authenticated
             if (!Auth::check()) {
-                \Log::error('User not authenticated for getPrice request');
+                Log::error('User not authenticated for getPrice request');
                 return response()->json(['error' => 'Authentication required.'], 401);
             }
 
-            \Log::info('getPrice method called by user:', ['user_id' => Auth::id(), 'user_type' => Auth::user()->user_type]);
+            Log::info('getPrice method called by user:', ['user_id' => Auth::id(), 'user_type' => Auth::user()->user_type]);
 
             $request->validate([
                 'farmer_company_id' => 'required|exists:companies,company_id',
@@ -182,7 +183,7 @@ class FarmerOrderController extends Controller
             $grade = strtolower($request->grade);
 
             // Log the search parameters for debugging
-            \Log::info('Searching for pricing:', [
+            Log::info('Searching for pricing:', [
                 'company_id' => $request->farmer_company_id,
                 'coffee_variety' => $coffee_variety,
                 'grade' => $grade
@@ -194,10 +195,10 @@ class FarmerOrderController extends Controller
                 ->first();
 
             if ($pricing) {
-                \Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
+                Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
                 return response()->json(['unit_price' => $pricing->unit_price]);
             } else {
-                \Log::warning('No pricing found for:', [
+                Log::warning('No pricing found for:', [
                     'company_id' => $request->farmer_company_id,
                     'coffee_variety' => $coffee_variety,
                     'grade' => $grade
@@ -205,7 +206,7 @@ class FarmerOrderController extends Controller
                 return response()->json(['error' => 'No pricing found for the selected options.'], 404);
             }
         } catch (\Exception $e) {
-            \Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'An error occurred while fetching the price.'], 500);
         }
     }
