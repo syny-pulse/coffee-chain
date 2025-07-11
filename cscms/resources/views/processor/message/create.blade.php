@@ -21,6 +21,22 @@
             </a>
         </div>
     </div>
+    <!-- Alerts -->
+    @if (session('success'))
+        <div class="alert status-success auto-dismiss">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert status-error auto-dismiss">
+            {{ session('error') }}
+        </div>
+    @endif
+    @if (session('warning'))
+        <div class="alert status-warning auto-dismiss">
+            {{ session('warning') }}
+        </div>
+    @endif
 
     <!-- Message Form -->
     <div class="content-section fade-in">
