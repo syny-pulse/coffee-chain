@@ -848,14 +848,14 @@
             <li>
                 <a href="{{ route('processor.employee.index') }}"
                     class="{{ request()->routeIs('processor.employee.*') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-user-tie"></i>
                     <span>Employees</span>
                 </a>
             </li>
             <li>
                 <a href="{{ route('processor.work.index') }}"
                     class="{{ request()->routeIs('processor.work.*') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-cogs"></i>
                     <span>Work Distribution</span>
                 </a>
             </li>
