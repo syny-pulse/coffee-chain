@@ -118,8 +118,9 @@
             <div class="form-group">
                 <label for="new_unit_price">Unit Price (UGX/kg)</label>
                 <div class="input-group">
+                    <span class="input-prefix">UGX</span>
                     <input type="number" id="new_unit_price" class="form-control" step="0.01" min="0"
-                        value="" placeholder="UGX">
+                        value="" required>
                 </div>
             </div>
             <div class="form-group">
@@ -308,39 +309,40 @@
             const newCard = document.createElement('div');
             newCard.className = 'pricing-card';
             newCard.innerHTML = `
-        <div class="pricing-header">
-            <h3>${variety} - ${method}</h3>
-            <span class="grade-badge ${grade.toLowerCase().replace(' ', '-')}">${grade}</span>
-            <button type="button" class="btn btn-sm btn-danger" onclick="removePricingRow(this)">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-        <div class="pricing-description">
-            <p>Set price for ${variety} ${method} ${grade}</p>
-        </div>
-        <div class="pricing-details">
-            <div class="detail-item">
-                <span class="detail-label">Current Market Price:</span>
-                <span class="detail-value">UGX 0.00</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Last Updated:</span>
-                <span class="detail-value">${new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
-            </div>
-        </div>
-        <div class="pricing-inputs">
-            <input type="hidden" name="prices[${index}][coffee_variety]" value="${variety}">
-            <input type="hidden" name="prices[${index}][grade]" value="${grade}">
-            <input type="hidden" name="prices[${index}][processing_method]" value="${method}">
-            <div class="form-group">
-                <label for="unit_price_${index}" class="form-label">Your Price (UGX/kg)</label>
-                <div class="input-group">
-                    <input type="number" name="prices[${index}][unit_price]" id="unit_price_${index}" class="form-control" step="0.01" value="${unitPrice}" min="0" placeholder="UGX">
+                <div class="pricing-header">
+                    <h3>${variety} - ${method}</h3>
+                    <span class="grade-badge ${grade.toLowerCase().replace(' ', '-')}">${grade}</span>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removePricingRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
-                <div class="form-text">Market: UGX 0.00 | Difference: UGX ${parseFloat(unitPrice || 0).toFixed(2)}</div>
-            </div>
-        </div>
-    `;
+                <div class="pricing-description">
+                    <p>Set price for ${variety} ${method} ${grade}</p>
+                </div>
+                <div class="pricing-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Current Market Price:</span>
+                        <span class="detail-value">UGX 0.00</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Updated:</span>
+                        <span class="detail-value">${new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
+                    </div>
+                </div>
+                <div class="pricing-inputs">
+                    <input type="hidden" name="prices[${index}][coffee_variety]" value="${variety}">
+                    <input type="hidden" name="prices[${index}][grade]" value="${grade}">
+                    <input type="hidden" name="prices[${index}][processing_method]" value="${method}">
+                    <div class="form-group">
+                        <label for="unit_price_${index}" class="form-label">Your Price (UGX/kg)</label>
+                        <div class="input-group">
+                            <span class="input-prefix">UGX</span>
+                            <input type="number" name="prices[${index}][unit_price]" id="unit_price_${index}" class="form-control" step="0.01" value="${unitPrice}" min="0" required>
+                        </div>
+                        <div class="form-text">Market: UGX 0.00 | Difference: UGX ${parseFloat(unitPrice || 0).toFixed(2)}</div>
+                    </div>
+                </div>
+            `;
             grid.appendChild(newCard);
             hideAddPricingForm();
         }
@@ -486,9 +488,19 @@
         align-items: center;
     }
 
+    .input-prefix {
+        background: var(--bg-secondary);
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+    }
 
     .input-group .form-control {
-        padding-left: 1rem;
+        border-radius: 0 8px 8px 0;
+        padding-left: 0.5rem;
         width: 100%;
     }
 
