@@ -364,39 +364,41 @@
 
         // Auto-calculate price differences and handle prefixes
         document.addEventListener('DOMContentLoaded', function() {
-    // Auto-calculate price differences
-    const priceInputs = document.querySelectorAll('input[name*="[unit_price]"]');
-    priceInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            updatePriceDifference(input);
-        });
-    });
+            // Auto-calculate price differences
+            const priceInputs = document.querySelectorAll('input[name*="[unit_price]"]');
+            priceInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    updatePriceDifference(input);
+                });
+            });
 
-    function updatePriceDifference(input) {
-        const card = input.closest('.pricing-card');
-        if (!card) return;
-        const marketPrice = parseFloat(card.querySelector('.detail-value').textContent.replace('UGX', '')) || 0;
-        const newPrice = parseFloat(input.value) || 0;
-        const difference = newPrice - marketPrice;
+            function updatePriceDifference(input) {
+                const card = input.closest('.pricing-card');
+                if (!card) return;
+                const marketPrice = parseFloat(card.querySelector('.detail-value').textContent.replace('UGX',
+                    '')) || 0;
+                const newPrice = parseFloat(input.value) || 0;
+                const difference = newPrice - marketPrice;
 
-        const formText = input.parentElement.querySelector('.form-text');
-        if (formText) {
-            formText.innerHTML = `Market: UGX ${marketPrice.toFixed(2)} | Difference: UGX ${difference.toFixed(2)}`;
-            if (difference > 0) {
-                formText.style.color = 'var(--success)';
-            } else if (difference < 0) {
-                formText.style.color = 'var(--danger)';
-            } else {
-                formText.style.color = 'var(--text-muted)';
+                const formText = input.parentElement.querySelector('.form-text');
+                if (formText) {
+                    formText.innerHTML =
+                        `Market: UGX ${marketPrice.toFixed(2)} | Difference: UGX ${difference.toFixed(2)}`;
+                    if (difference > 0) {
+                        formText.style.color = 'var(--success)';
+                    } else if (difference < 0) {
+                        formText.style.color = 'var(--danger)';
+                    } else {
+                        formText.style.color = 'var(--text-muted)';
+                    }
+                }
             }
-        }
-    }
 
-    const pricingLink = document.querySelector('a[href*="pricing"]');
-    if (pricingLink) {
-        pricingLink.classList.add('active');
-    }
-});
+            const pricingLink = document.querySelector('a[href*="pricing"]');
+            if (pricingLink) {
+                pricingLink.classList.add('active');
+            }
+        });
     </script>
 @endpush
 
