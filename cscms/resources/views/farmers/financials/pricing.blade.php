@@ -11,7 +11,11 @@
     <button class="btn btn-outline" onclick="resetPricing()">
         <i class="fas fa-undo"></i> Reset
     </button>
+    <button class="btn btn-outline" onclick="showAddPricingForm()">
+        <i class="fas fa-plus"></i> Add New Pricing
+    </button>
 @endsection
+
 @section('content')
     <!-- Market Trends Stats -->
     <div class="stats-grid">
@@ -72,6 +76,62 @@
         </div>
     </div>
 
+    <!-- Add New Pricing Form (Hidden by Default) -->
+    <div class="card" id="add-pricing-form" style="display: none;">
+        <div class="card-header">
+            <h2 class="card-title">Add New Pricing</h2>
+            <div class="card-actions right-actions">
+                <button class="btn btn-sm btn-outline" onclick="hideAddPricingForm()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+        <div class="form-container">
+            <div class="form-group">
+                <label for="new_coffee_variety">Coffee Variety</label>
+                <select id="new_coffee_variety" class="form-control" onchange="updateNewDescription()">
+                    <option value="">Select Variety</option>
+                    <option value="Arabica">Arabica</option>
+                    <option value="Robusta">Robusta</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="new_grade">Grade</label>
+                <select id="new_grade" class="form-control" onchange="updateNewDescription()">
+                    <option value="">Select Grade</option>
+                    <option value="Grade 1">Grade 1</option>
+                    <option value="Grade 2">Grade 2</option>
+                    <option value="Grade 3">Grade 3</option>
+                    <option value="Grade 4">Grade 4</option>
+                    <option value="Grade 5">Grade 5</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="new_processing_method">Processing Method</label>
+                <select id="new_processing_method" class="form-control" onchange="updateNewDescription()">
+                    <option value="">Select Method</option>
+                    <option value="Natural">Natural</option>
+                    <option value="Washed">Washed</option>
+                    <option value="Honey">Honey</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="new_unit_price">Unit Price (UGX/kg)</label>
+                <div class="input-group">
+                    <input type="number" id="new_unit_price" class="form-control" step="0.01" min="0"
+                        value="" placeholder="UGX">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <p id="new_description" class="form-text">Select options to generate description</p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addPricingRow()">
+                <i class="fas fa-plus"></i> Add Pricing
+            </button>
+        </div>
+    </div>
+
     <!-- Pricing Form -->
     <div class="card">
         <div class="card-header">
@@ -83,17 +143,15 @@
             </div>
         </div>
 
-        <form action="{{ route('farmers.financials.pricing.update') }}" method="POST" class="form-container">
+        <form action="{{ route('farmers.financials.pricing.update') }}" method="POST" class="form-container"
+            id="pricing-form">
             @csrf
-            <div class="pricing-grid">
+            <div class="pricing-grid" id="pricing-grid">
                 @foreach ($pricing as $index => $price)
                     <div class="pricing-card">
                         <div class="pricing-header">
-                            <h3>{{ $price['coffee_variety'] }} - {{ $price['processing_method'] }}
-                            </h3>
-                            <span class="grade-badge {{ strtolower($price['grade']) }}">
-                                {{ $price['grade'] }}
-                            </span>
+                            <h3>{{ $price['coffee_variety'] }} - {{ $price['processing_method'] }}</h3>
+                            <span class="grade-badge {{ strtolower($price['grade']) }}">{{ $price['grade'] }}</span>
                         </div>
 
                         <div class="pricing-description">
@@ -116,10 +174,14 @@
                         <div class="pricing-inputs">
                             <input type="hidden" name="prices[{{ $index }}][coffee_variety]"
                                 value="{{ $price['coffee_variety'] }}">
-                            <input type="hidden" name="prices[{{ $index }}][grade]" value="{{ $price['grade'] }}">
-
+                            <input type="hidden" name="prices[{{ $index }}][grade]"
+                                value="{{ $price['grade'] }}">
+                            <input type="hidden" name="prices[{{ $index }}][processing_method]"
+                                value="{{ $price['processing_method'] }}">
                             <div class="form-group">
-                                <label for="unit_price_{{ $index }}" class="form-label">Your Price (UGX/kg)</label>
+                                <label for="unit_price_{{ $index }}" class="form-label">Your Price
+                                    (UGX/kg)
+                                </label>
                                 <div class="input-group">
                                     <span class="input-prefix">UGX</span>
                                     <input type="number" name="prices[{{ $index }}][unit_price]"
@@ -129,8 +191,7 @@
                                 <div class="form-text">
                                     Market: UGX
                                     {{ is_numeric($price['current_market_price']) ? number_format($price['current_market_price'], 2) : '0.00' }}
-                                    |
-                                    Difference: UGX
+                                    | Difference: UGX
                                     {{ is_numeric($price['unit_price']) && is_numeric($price['current_market_price']) ? number_format($price['unit_price'] - $price['current_market_price'], 2) : '0.00' }}
                                 </div>
                             </div>
@@ -174,74 +235,168 @@
         </div>
     </div>
 @endsection
-
 @push('scripts')
     <script>
         // Pricing management functions
         function savePricing() {
-            // Trigger form submission
-            document.querySelector('form').submit();
+            document.querySelector('#pricing-form').submit();
         }
 
         function resetPricing() {
             if (confirm('Are you sure you want to reset all pricing to default values?')) {
-                // Reset form to original values
                 location.reload();
             }
         }
 
         function applyMarketPrices() {
             if (confirm('Apply current market prices to all coffee varieties?')) {
-                // In a real app, this would fetch current market prices and apply them
                 alert('Market prices applied successfully!');
             }
         }
 
-        // Auto-calculate price differences
+        function showAddPricingForm() {
+            document.getElementById('add-pricing-form').style.display = 'block';
+        }
+
+        function hideAddPricingForm() {
+            document.getElementById('add-pricing-form').style.display = 'none';
+            document.getElementById('new_coffee_variety').value = '';
+            document.getElementById('new_grade').value = '';
+            document.getElementById('new_processing_method').value = '';
+            document.getElementById('new_unit_price').value = '';
+            updateNewDescription();
+        }
+
+        function updateNewDescription() {
+            const variety = document.getElementById('new_coffee_variety').value;
+            const grade = document.getElementById('new_grade').value;
+            const method = document.getElementById('new_processing_method').value;
+            const description = document.getElementById('new_description');
+            if (variety && grade && method) {
+                description.textContent = `Set price for ${variety} ${method} ${grade}`;
+            } else {
+                description.textContent = 'Select options to generate description';
+            }
+        }
+
+        function addPricingRow() {
+            const variety = document.getElementById('new_coffee_variety').value;
+            const grade = document.getElementById('new_grade').value;
+            const method = document.getElementById('new_processing_method').value;
+            const unitPrice = document.getElementById('new_unit_price').value;
+
+            if (!variety || !grade || !method) {
+                alert('Please select variety, grade, and processing method.');
+                return;
+            }
+
+            // Check for duplicates
+            const existingRows = document.querySelectorAll('.pricing-card');
+            for (let row of existingRows) {
+                const rowVariety = row.querySelector('input[name*="[coffee_variety]"]').value;
+                const rowGrade = row.querySelector('input[name*="[grade]"]').value;
+                const rowMethod = row.querySelector('input[name*="[processing_method]"]').value;
+                if (rowVariety === variety && rowGrade === grade && rowMethod === method) {
+                    alert('This combination already exists.');
+                    return;
+                }
+            }
+
+            // Add new pricing card
+            const grid = document.getElementById('pricing-grid');
+            const index = existingRows.length;
+            const newCard = document.createElement('div');
+            newCard.className = 'pricing-card';
+            newCard.innerHTML = `
+        <div class="pricing-header">
+            <h3>${variety} - ${method}</h3>
+            <span class="grade-badge ${grade.toLowerCase().replace(' ', '-')}">${grade}</span>
+            <button type="button" class="btn btn-sm btn-danger" onclick="removePricingRow(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <div class="pricing-description">
+            <p>Set price for ${variety} ${method} ${grade}</p>
+        </div>
+        <div class="pricing-details">
+            <div class="detail-item">
+                <span class="detail-label">Current Market Price:</span>
+                <span class="detail-value">UGX 0.00</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Last Updated:</span>
+                <span class="detail-value">${new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
+            </div>
+        </div>
+        <div class="pricing-inputs">
+            <input type="hidden" name="prices[${index}][coffee_variety]" value="${variety}">
+            <input type="hidden" name="prices[${index}][grade]" value="${grade}">
+            <input type="hidden" name="prices[${index}][processing_method]" value="${method}">
+            <div class="form-group">
+                <label for="unit_price_${index}" class="form-label">Your Price (UGX/kg)</label>
+                <div class="input-group">
+                    <input type="number" name="prices[${index}][unit_price]" id="unit_price_${index}" class="form-control" step="0.01" value="${unitPrice}" min="0" placeholder="UGX">
+                </div>
+                <div class="form-text">Market: UGX 0.00 | Difference: UGX ${parseFloat(unitPrice || 0).toFixed(2)}</div>
+            </div>
+        </div>
+    `;
+            grid.appendChild(newCard);
+            hideAddPricingForm();
+        }
+
+        function removePricingRow(button) {
+            if (confirm('Are you sure you want to remove this pricing?')) {
+                button.closest('.pricing-card').remove();
+                // Re-index remaining inputs
+                const cards = document.querySelectorAll('.pricing-card');
+                cards.forEach((card, index) => {
+                    card.querySelector('input[name*="[coffee_variety]"]').name = `prices[${index}][coffee_variety]`;
+                    card.querySelector('input[name*="[grade]"]').name = `prices[${index}][grade]`;
+                    card.querySelector('input[name*="[processing_method]"]').name =
+                        `prices[${index}][processing_method]`;
+                    card.querySelector('input[name*="[unit_price]"]').name = `prices[${index}][unit_price]`;
+                    card.querySelector('input[name*="[unit_price]"]').id = `unit_price_${index}`;
+                    card.querySelector('label[for*="unit_price_"]').setAttribute('for', `unit_price_${index}`);
+                });
+            }
+        }
+
+        // Auto-calculate price differences and handle prefixes
         document.addEventListener('DOMContentLoaded', function() {
-            const priceInputs = document.querySelectorAll('input[name*="[unit_price]"]');
-
-            priceInputs.forEach(input => {
-                const prefix = input.parentElement.querySelector('.input-prefix');
-
-                function togglePrefix() {
-                    if (input.value && input.value.length > 0) {
-                        prefix.style.display = 'none';
-                    } else {
-                        prefix.style.display = '';
-                    }
-                }
-                input.addEventListener('input', togglePrefix);
-                // Set initial state
-                togglePrefix();
-            });
-
-            function updatePriceDifference(input) {
-                const card = input.closest('.pricing-card');
-                const marketPrice = parseFloat(card.querySelector('.detail-value').textContent.replace('UGX', ''));
-                const newPrice = parseFloat(input.value) || 0;
-                const difference = newPrice - marketPrice;
-
-                const formText = input.parentElement.querySelector('.form-text');
-                formText.innerHTML =
-                    `Market: UGX${marketPrice.toFixed(2)} | Difference: UGX${difference.toFixed(2)}`;
-
-                // Update visual indicator
-                if (difference > 0) {
-                    formText.style.color = 'var(--success)';
-                } else if (difference < 0) {
-                    formText.style.color = 'var(--danger)';
-                } else {
-                    formText.style.color = 'var(--text-muted)';
-                }
-            }
-
-            // Highlight pricing nav item
-            const pricingLink = document.querySelector('a[href*="pricing"]');
-            if (pricingLink) {
-                pricingLink.classList.add('active');
-            }
+    // Auto-calculate price differences
+    const priceInputs = document.querySelectorAll('input[name*="[unit_price]"]');
+    priceInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            updatePriceDifference(input);
         });
+    });
+
+    function updatePriceDifference(input) {
+        const card = input.closest('.pricing-card');
+        if (!card) return;
+        const marketPrice = parseFloat(card.querySelector('.detail-value').textContent.replace('UGX', '')) || 0;
+        const newPrice = parseFloat(input.value) || 0;
+        const difference = newPrice - marketPrice;
+
+        const formText = input.parentElement.querySelector('.form-text');
+        if (formText) {
+            formText.innerHTML = `Market: UGX ${marketPrice.toFixed(2)} | Difference: UGX ${difference.toFixed(2)}`;
+            if (difference > 0) {
+                formText.style.color = 'var(--success)';
+            } else if (difference < 0) {
+                formText.style.color = 'var(--danger)';
+            } else {
+                formText.style.color = 'var(--text-muted)';
+            }
+        }
+    }
+
+    const pricingLink = document.querySelector('a[href*="pricing"]');
+    if (pricingLink) {
+        pricingLink.classList.add('active');
+    }
+});
     </script>
 @endpush
 
@@ -329,16 +484,14 @@
         align-items: center;
     }
 
-    .input-prefix {
-        position: absolute;
-        left: 1rem;
-        color: var(--text-muted);
-        font-weight: 500;
-        z-index: 1;
-    }
 
     .input-group .form-control {
-        padding-left: 2rem;
+        padding-left: 1rem;
+        width: 100%;
+    }
+
+    .form-control:focus::placeholder {
+        opacity: 0.5;
     }
 
     /* Market Recommendation */

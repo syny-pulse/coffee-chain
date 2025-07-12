@@ -76,25 +76,26 @@ class FinancialController extends Controller
                 'unit_price' => $price->unit_price,
                 'current_market_price' => $price->unit_price,
                 'last_updated' => $price->updated_at->format('Y-m-d'),
-                'description' => 'Latest price for ' . ucfirst($price->coffee_variety) . ' ' . ucfirst(str_replace('_', ' ', $price->grade)),
+                'description' => 'Latest price for ' . ucfirst($price->coffee_variety) . ' ' . ucfirst(str_replace('_', ' ', $price->grade)). ' ' . ucfirst($price->processing_method),
             ];
         })->values();
 
         if ($pricing->isEmpty()) {
             $defaultVarieties = [
-                ['coffee_variety' => 'Arabica', 'grade' => 'Grade 1'],
-                ['coffee_variety' => 'Arabica', 'grade' => 'Grade 2'],
-                ['coffee_variety' => 'Robusta', 'grade' => 'Grade 1'],
-                ['coffee_variety' => 'Robusta', 'grade' => 'Grade 2'],
+                ['coffee_variety' => 'Arabica', 'grade' => 'Grade 1', 'processing_method' => 'Natural'],
+                ['coffee_variety' => 'Arabica', 'grade' => 'Grade 2', 'processing_method' => 'Washed'],
+                ['coffee_variety' => 'Robusta', 'grade' => 'Grade 1', 'processing_method' => 'Washed'],
+                ['coffee_variety' => 'Robusta', 'grade' => 'Grade 2', 'processing_method' => 'Natural'],
             ];
             $pricing = collect($defaultVarieties)->map(function($item) {
                 return [
                     'coffee_variety' => $item['coffee_variety'],
                     'grade' => $item['grade'],
+                    'processing_method' => $item['processing_method'],
                     'unit_price' => '',
                     'current_market_price' => '',
                     'last_updated' => now()->format('Y-m-d'),
-                    'description' => 'Set price for ' . $item['coffee_variety'] . ' ' . $item['grade'],
+                    'description' => 'Set price for ' . $item['coffee_variety'] . ' ' . $item['grade'] . ' ' . $item['processing_method'],
                 ];
             });
         }
@@ -111,28 +112,34 @@ class FinancialController extends Controller
     }
 
     public function updatePricing(Request $request)
-    {
-        $user = Auth::user();
-        $company = $user->company;
-        $request->validate([
-            'prices' => 'required|array|min:1',
-            'prices.*.unit_price' => 'required|numeric|min:0',
-        ]);
-        foreach ($request->prices as $price) {
-            Pricing::updateOrCreate(
-                [
-                    'company_id' => $company->company_id,
-                    'coffee_variety' => strtolower(trim($price['coffee_variety'])),
-                    'grade' => strtolower(str_replace(' ', '_', trim($price['grade']))),
-                ],
-                [
-                    'unit_price' => $price['unit_price'],
-                ]
-            );
-        }
-        return redirect()->route('farmers.financials.pricing')
-            ->with('success', 'Pricing updated successfully. Your new prices are now active.');
+{
+    $user = Auth::user();
+    $company = $user->company;
+    $request->validate([
+        'prices' => 'required|array|min:1',
+        'prices.*.coffee_variety' => 'required|in:arabica,robusta',
+        'prices.*.grade' => 'required|in:grade_1,grade_2,grade_3,grade_4,grade_5',
+        'prices.*.processing_method' => 'required|in:natural,washed,honey',
+        'prices.*.unit_price' => 'required|numeric|min:0',
+    ]);
+
+    foreach ($request->prices as $price) {
+        Pricing::updateOrCreate(
+            [
+                'company_id' => $company->company_id,
+                'coffee_variety' => strtolower(trim($price['coffee_variety'])),
+                'grade' => strtolower(str_replace(' ', '_', trim($price['grade']))),
+                'processing_method' => strtolower(trim($price['processing_method'])),
+            ],
+            [
+                'unit_price' => $price['unit_price'],
+            ]
+        );
     }
+
+    return redirect()->route('farmers.financials.pricing')
+        ->with('success', 'Pricing updated successfully. Your new prices are now active.');
+}
 
     public function reports()
     {
