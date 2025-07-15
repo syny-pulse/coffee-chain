@@ -23,7 +23,7 @@
                 <i class="fas fa-building"></i>
                 <span>Companies</span>
             </div>
-            <!-- Search Form -->
+            <!-- Search and Sort Container -->
             <div class="search-container">
                 <form action="{{ route('processor.company.index') }}" method="GET" class="d-flex align-items-center">
                     <input type="text" name="search" class="search-input" placeholder="Search by company name..."
@@ -31,14 +31,39 @@
                     <button type="submit" class="btn btn-primary ms-2">
                         <i class="fas fa-search"></i> Search
                     </button>
+                    <!-- Sort Dropdown -->
+                    <select name="sort" class="status-select ms-2" onchange="this.form.submit()">
+                        <option value="" disabled {{ !request('sort') ? 'selected' : '' }}>Sort By</option>
+                        <option value="created_at_desc" {{ request('sort') == 'created_at_desc' ? 'selected' : '' }}>
+                            Most Recent First
+                        </option>
+                        <option value="created_at_asc" {{ request('sort') == 'created_at_asc' ? 'selected' : '' }}>
+                            Oldest First
+                        </option>
+                        <option value="company_name_asc" {{ request('sort') == 'company_name_asc' ? 'selected' : '' }}>
+                            Name (A-Z)
+                        </option>
+                        <option value="company_name_desc" {{ request('sort') == 'company_name_desc' ? 'selected' : '' }}>
+                            Name (Z-A)
+                        </option>
+                    </select>
                 </form>
             </div>
         </div>
 
+        <!-- Success Message -->
         @if (session('success'))
-            <div class="alert status-success fade-in alert-dismissible" id="success-alert"
+            <div class="alert status-success fade-in auto-dismiss"
                 style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Error Message -->
+        @if (session('error'))
+            <div class="alert status-error fade-in auto-dismiss"
+                style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+                {{ session('error') }}
             </div>
         @endif
 
@@ -131,44 +156,4 @@
         </div>
     </div>
 
-    <style>
-        .search-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .search-input {
-            padding: 0.5rem 1rem;
-            border: 1px solid rgba(111, 78, 55, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.8);
-            color: var(--text-dark);
-            font-size: 0.85rem;
-            width: 250px;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:hover {
-            border-color: var(--coffee-medium);
-            background: var(--cream);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--coffee-light);
-            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
-        }
-
-        .ms-2 {
-            margin-left: 0.5rem;
-        }
-
-        .d-flex {
-            display: flex;
-        }
-
-        .align-items-center {
-            align-items: center;
-        }
-    </style>
 @endsection

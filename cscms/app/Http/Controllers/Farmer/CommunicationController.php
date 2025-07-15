@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Farmer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\Company;
 use App\Models\Message;
 use App\Models\FarmerOrder;
+use App\Models\User;
 
 class CommunicationController extends Controller
 {
@@ -16,14 +18,10 @@ class CommunicationController extends Controller
         $user = Auth::user();
         $company = $user->company;
         // Get processors the farmer has worked with (via messages or orders)
-        $processorIdsFromMessages = Message::where('sender_company_id', $company->company_id)
+       $processorIdsFromMessages = Message::where('sender_company_id', $company->company_id)
             ->orWhere('receiver_company_id', $company->company_id)
-            ->pluck('receiver_company_id')
-            ->merge(
-                Message::where('sender_company_id', $company->company_id)
-                    ->orWhere('receiver_company_id', $company->company_id)
-                    ->pluck('sender_company_id')
-            )
+            ->pluck('sender_company_id', 'receiver_company_id')
+            ->flatten()
             ->unique()
             ->filter(fn($id) => $id !== $company->company_id)
             ->values();
@@ -47,22 +45,51 @@ class CommunicationController extends Controller
     {
         $user = Auth::user();
         $company = $user->company;
+
+        if (!$user || !$company) {
+            Log::warning('Unauthenticated attempt to send message');
+            return redirect()->route('login')->with('error', 'Please log in to send messages.');
+        }
+
+        // Validate the request
         $request->validate([
             'processor_id' => 'required|integer|exists:companies,company_id',
             'content' => 'required|string|max:1000',
+            'subject' => 'nullable|string|max:200', // Optional, with default
         ]);
-        Message::create([
-            'sender_user_id' => $user->id,
-            'receiver_user_id' => null,
-            'sender_company_id' => $company->company_id,
-            'receiver_company_id' => $request->processor_id,
-            'subject' => $request->input('subject', 'Message from Farmer'),
-            'message_body' => $request->content,
-            'message_type' => 'general',
-            'is_read' => false,
-        ]);
-        return redirect()->route('farmers.communication.index')
-            ->with('success', 'Message sent successfully to the processor.');
+
+        try {
+            // Find an active user for the receiver company
+            $receiverUser = User::where('company_id', $request->processor_id)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$receiverUser) {
+                Log::warning('No active user found for receiver_company_id: ' . $request->processor_id);
+                return redirect()->route('farmers.communication.index')
+                    ->with('error', 'Cannot send message: No active user found for the selected processor.');
+            }
+
+            // Create the message
+            Message::create([
+                'sender_user_id' => $user->id,
+                'receiver_user_id' => $receiverUser->id,
+                'sender_company_id' => $company->company_id,
+                'receiver_company_id' => $request->processor_id,
+                'subject' => $request->input('subject', 'Message from Farmer'),
+                'message_body' => $request->content,
+                'message_type' => 'general',
+                'is_read' => false,
+            ]);
+
+            Log::info('Message sent from user ID: ' . $user->id . ' to company ID: ' . $request->processor_id);
+            return redirect()->route('farmers.communication.index')
+                ->with('success', 'Message sent successfully to the processor.');
+        } catch (\Exception $e) {
+            Log::error('Failed to send message: ' . $e->getMessage());
+            return redirect()->route('farmers.communication.index')
+                ->with('error', 'Failed to send message.');
+        }
     }
 
     public function show($id)

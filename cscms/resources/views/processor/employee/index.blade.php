@@ -22,12 +22,29 @@
         </div>
     </div>
 
+    <!-- Success Message -->
+    @if (session('success'))
+        <div class="alert status-success fade-in auto-dismiss"
+            style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- Error Message -->
+    @if (session('error'))
+        <div class="alert status-error fade-in auto-dismiss"
+            style="padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Employee Overview -->
     <div class="stats-grid fade-in">
         <div class="stat-card">
             <div class="stat-card-header">
                 <span class="stat-card-title">Total Employees</span>
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
+                <div class="stat-card-icon"
+                    style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
                     <i class="fas fa-users"></i>
                 </div>
             </div>
@@ -41,7 +58,8 @@
         <div class="stat-card">
             <div class="stat-card-header">
                 <span class="stat-card-title">Active Employees</span>
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
+                <div class="stat-card-icon"
+                    style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
                     <i class="fas fa-user-check"></i>
                 </div>
             </div>
@@ -55,7 +73,8 @@
         <div class="stat-card">
             <div class="stat-card-header">
                 <span class="stat-card-title">Available</span>
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
+                <div class="stat-card-icon"
+                    style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
                     <i class="fas fa-user-clock"></i>
                 </div>
             </div>
@@ -69,7 +88,8 @@
         <div class="stat-card">
             <div class="stat-card-header">
                 <span class="stat-card-title">On Leave</span>
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
+                <div class="stat-card-icon"
+                    style="background: linear-gradient(135deg, var(--coffee-medium) 0%, var(--coffee-light) 100%);">
                     <i class="fas fa-user-times"></i>
                 </div>
             </div>
@@ -93,14 +113,14 @@
                 Add Employee
             </a>
         </div>
-        
+
         <div class="table-container">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Employee</th>
                         <th>Skill Set</th>
-                        <th>Station</th>
+                        <th>Primary Station</th>
                         <th>Shift</th>
                         <th>Hourly Rate</th>
                         <th>Hire Date</th>
@@ -110,40 +130,44 @@
                 </thead>
                 <tbody>
                     @forelse($employees as $employee)
-                    <tr>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-user-circle" style="color: var(--coffee-medium); font-size: 1.5rem;"></i>
-                                <div>
-                                    <strong>{{ $employee->employee_name ?? 'N/A' }}</strong>
-                                    <br><small style="color: var(--text-light);">ID: {{ $employee->employee_code ?? 'N/A' }}</small>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-user-circle"
+                                        style="color: var(--coffee-medium); font-size: 1.5rem;"></i>
+                                    <div>
+                                        <strong>{{ $employee->employee_name ?? 'N/A' }}</strong>
+                                        <br><small style="color: var(--text-light);">ID:
+                                            {{ $employee->employee_code ?? 'N/A' }}</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>{{ ucfirst(str_replace('_', ' ', $employee->skill_set ?? 'N/A')) }}</td>
-                        <td>{{ ucfirst(str_replace('_', ' ', $employee->primary_station ?? 'N/A')) }}</td>
-                        <td>{{ ucfirst($employee->shift_schedule ?? 'N/A') }}</td>
-                        <td>UGX {{ number_format($employee->hourly_rate ?? 0) }}</td>
-                        <td>{{ isset($employee->hire_date) ? \Carbon\Carbon::parse($employee->hire_date)->format('M d, Y') : 'N/A' }}</td>
-                        <td>
-                            @if($employee->status == 'active')
-                                <span class="status-badge status-high">Active</span>
-                            @elseif($employee->status == 'inactive')
-                                <span class="status-badge status-medium">Inactive</span>
-                            @else
-                                <span class="status-badge status-low">Terminated</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('processor.employee.edit', $employee->employee_id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </td>
-                    </tr>
+                            </td>
+                            <td>{{ ucfirst(str_replace('_', ' ', $employee->skill_set ?? 'N/A')) }}</td>
+                            <td>{{ ucfirst(str_replace('_', ' ', $employee->primary_station ?? 'N/A')) }}</td>
+                            <td>{{ ucfirst($employee->shift_schedule ?? 'N/A') }}</td>
+                            <td>UGX {{ number_format($employee->hourly_rate ?? 0) }}</td>
+                            <td>{{ isset($employee->hire_date) ? \Carbon\Carbon::parse($employee->hire_date)->format('M d, Y') : 'N/A' }}
+                            </td>
+                            <td>
+                                @if ($employee->status == 'active')
+                                    <span class="status-badge status-high">Active</span>
+                                @elseif($employee->status == 'inactive')
+                                    <span class="status-badge status-medium">Inactive</span>
+                                @else
+                                    <span class="status-badge status-low">Terminated</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('processor.employee.edit', $employee->employee_id) }}" class="btn"
+                                    style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="8" class="text-center">No employees found</td>
-                    </tr>
+                        <tr>
+                            <td colspan="8" class="text-center">No employees found</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

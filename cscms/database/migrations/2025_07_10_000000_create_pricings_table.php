@@ -11,8 +11,9 @@ return new class extends Migration
         Schema::create('pricings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
-            $table->string('coffee_variety');
-            $table->string('grade');
+            $table->enum('coffee_variety', ['arabica', 'robusta']);
+            $table->enum('grade', ['grade_1', 'grade_2', 'grade_3', 'grade_4', 'grade_5']);
+            $table->enum('processing_method', ['natural', 'washed', 'honey']);
             $table->decimal('unit_price', 12, 2);
             $table->timestamps();
 
@@ -25,4 +26,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('pricings');
     }
-}; 
+};

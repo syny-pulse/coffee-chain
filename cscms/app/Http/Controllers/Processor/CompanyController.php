@@ -12,8 +12,9 @@ class CompanyController extends Controller
 {
     public function index(Request $request)
     {
-        // Get the search query from the request
+        // Get the search and sort queries from the request
         $search = $request->query('search');
+        $sort = $request->query('sort');
 
         // Build the query to fetch companies with related user account status
         $query = DB::table('companies')
@@ -27,6 +28,7 @@ class CompanyController extends Controller
                 'companies.address',
                 'companies.registration_number',
                 'companies.pdf_path',
+                'companies.created_at',
                 'companies.acceptance_status',
                 'users.status as account_status',
                 'users.id as user_id'
@@ -35,6 +37,30 @@ class CompanyController extends Controller
         // Apply search filter if provided
         if ($search) {
             $query->where('companies.company_name', 'LIKE', '%' . $search . '%');
+        }
+
+        // Apply sorting
+        if ($sort) {
+            switch ($sort) {
+                case 'created_at_desc':
+                    $query->orderBy('companies.created_at', 'desc');
+                    break;
+                case 'created_at_asc':
+                    $query->orderBy('companies.created_at', 'asc');
+                    break;
+                case 'company_name_asc':
+                    $query->orderBy('companies.company_name', 'asc');
+                    break;
+                case 'company_name_desc':
+                    $query->orderBy('companies.company_name', 'desc');
+                    break;
+                default:
+                    $query->orderBy('companies.created_at', 'asc');
+                    break;
+            }
+        } else {
+            // Default sorting by created_at ascending
+            $query->orderBy('companies.created_at', 'asc');
         }
 
         // Execute the query and get the results

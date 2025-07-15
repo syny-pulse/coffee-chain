@@ -13,6 +13,7 @@ class RetailerOrder extends Model
     protected $fillable = [
         'order_number',
         'processor_company_id',
+        'employee_id',
         'total_amount',
         'expected_delivery_date',
         'actual_delivery_date',
@@ -36,5 +37,10 @@ class RetailerOrder extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(RetailerOrderItem::class, 'order_id', 'order_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
     }
 }

@@ -12,6 +12,7 @@ class FarmerOrder extends Model
     protected $fillable = [
         'processor_company_id',
         'farmer_company_id',
+        'employee_id',
         'coffee_variety',
         'processing_method',
         'grade',
@@ -44,6 +45,11 @@ class FarmerOrder extends Model
     public function processor(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'processor_company_id', 'company_id');
+    }
+
+     public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
     }
 
     /**

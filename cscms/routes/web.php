@@ -13,6 +13,7 @@ use App\Http\Controllers\Processor\FarmerOrderController;
 use App\Http\Controllers\Processor\MessageController;
 use App\Http\Controllers\Processor\ReportController;
 use App\Http\Controllers\Processor\CompanyController;
+use App\Http\Controllers\Processor\WorkDistributionController;
 use App\Http\Controllers\Processor\AnalyticsController;
 use App\Http\Controllers\Processor\EmployeeController;
 use App\Http\Controllers\Farmer\DashboardController as FarmerDashboardController;
@@ -127,6 +128,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/company', [CompanyController::class, 'index'])->name('processor.company.index');
         Route::post('/company/{companyId}/acceptance-status', [CompanyController::class, 'updateAcceptanceStatus'])->name('processor.company.updateAcceptanceStatus');
         Route::post('/company/user/{userId}/account-status', [CompanyController::class, 'updateAccountStatus'])->name('processor.company.updateAccountStatus');
+        Route::get('/work_distribution', [WorkDistributionController::class, 'index'])->name('processor.work.index');
 
         // Report routes
         Route::get('/reports/application', [ReportController::class, 'application'])->name('processor.reports.application');
@@ -154,7 +156,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/financials/cashflow', [FinancialController::class, 'cashflow'])->name('farmers.financials.cashflow');
         Route::get('/financials/forecasting', [FinancialController::class, 'forecasting'])->name('farmers.financials.forecasting');
         Route::get('/analytics/reports', [FarmerAnalyticsController::class, 'reports'])->name('farmers.analytics.reports');
-        
+
         // Notification routes
         Route::post('/notifications/mark-read', function () {
             $user = Auth::user();
@@ -164,12 +166,12 @@ Route::middleware(['auth'])->group(function () {
                     ->where('is_read', false)
                     ->where('created_at', '>=', \Carbon\Carbon::now()->subDay())
                     ->update(['is_read' => true]);
-                
+
                 // Get updated counts
                 $notificationService = new \App\Services\NotificationService();
                 $pendingOrdersCount = $notificationService->getPendingOrdersCount($user->company);
                 $unreadMessagesCount = $notificationService->getUnreadMessagesCount($user->company);
-                
+
                 return response()->json([
                     'success' => true,
                     'pendingOrdersCount' => $pendingOrdersCount,

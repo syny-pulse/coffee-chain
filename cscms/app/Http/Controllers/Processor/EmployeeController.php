@@ -72,7 +72,6 @@ class EmployeeController extends Controller
     {
         $request->validate([
             'employee_name' => 'required|string|max:100',
-            'employee_code' => 'required|string|max:30|unique:employees,employee_code,' . $id,
             'skill_set' => 'required|in:grading,roasting,packaging,logistics,quality_control,maintenance',
             'primary_station' => 'required|in:grading,roasting,packaging,logistics,quality_control,maintenance',
             'availability_status' => 'required|in:available,busy,on_break,off_duty,on_leave',
