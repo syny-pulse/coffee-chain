@@ -363,7 +363,7 @@
     // Get real data from PHP variables
     const rawMaterialsTotal = {{ $inventory->raw_material_total ?? 0 }};
     const finishedGoodsTotal = {{ $inventory->finished_goods_total ?? 0 }};
-    const inProcessing = {{ $raw_materials->sum('quantity_kg') ?? 0 }}; // Estimate based on raw materials
+    const inProcessing = {{ $raw_materials ? $raw_materials->sum('quantity_kg') : 0 }}; // Estimate based on raw materials
     
     const productionChart = new Chart(ctx, {
         type: 'doughnut',
