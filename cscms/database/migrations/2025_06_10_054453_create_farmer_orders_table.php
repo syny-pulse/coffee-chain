@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id('order_id');
             $table->unsignedBigInteger('processor_company_id');
             $table->unsignedBigInteger('farmer_company_id');
-            $table->unsignedBigInteger('processor_company_id')->nullable();
             $table->enum('coffee_variety', ['arabica', 'robusta']);
             $table->enum('processing_method', ['natural', 'washed', 'honey']);
             $table->enum('grade', ['grade_1', 'grade_2', 'grade_3', 'grade_4', 'grade_5']);

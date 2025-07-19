@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RetailerOrder extends Model
 {
-    protected $table = 'retailer_orders';
+    protected $table = 'processor_retailer_orders';
     protected $primaryKey = 'order_id';
     protected $fillable = [
         'order_number',
         'processor_company_id',
+        'retailer_company_id',
         'employee_id',
         'total_amount',
         'expected_delivery_date',
@@ -32,6 +33,11 @@ class RetailerOrder extends Model
     public function processor(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'processor_company_id', 'company_id');
+    }
+
+    public function retailer(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'retailer_company_id', 'company_id');
     }
 
     public function orderItems(): HasMany
