@@ -1,12 +1,12 @@
 @extends('retailers.layouts.app')
 
-@section('title', 'Create Product Recipe')
+@section('title', 'Edit Product Recipe')
 
 @section('content')
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">Create Product Recipe</h1>
-        <p class="page-subtitle">Add a new product recipe</p>
+        <h1 class="page-title">Edit Product Recipe</h1>
+        <p class="page-subtitle">Update recipe information</p>
         <a href="{{ route('retailer.product_recipes.index') }}" class="btn btn-outline">
             <i class="fas fa-arrow-left"></i> Back to Recipes
         </a>
@@ -28,8 +28,9 @@
             <h3 class="card-title">Recipe Information</h3>
         </div>
         <div class="card-body">
-            <form action="{{ route('retailer.product_recipes.store') }}" method="POST" id="productRecipeForm">
+            <form action="{{ route('retailer.product_recipes.update', $recipe->recipe_id) }}" method="POST" id="productRecipeForm">
                 @csrf
+                @method('PUT')
                 
                 <div class="form-row">
                     <div class="form-group col-md-6">
@@ -37,7 +38,7 @@
                         <select name="product_name" id="product_name" class="form-control" required>
                             <option value="">Select Product</option>
                             @foreach(App\Models\ProductRecipe::PRODUCT_NAMES as $key => $value)
-                                <option value="{{ $key }}" {{ old('product_name') == $key ? 'selected' : '' }}>
+                                <option value="{{ $key }}" {{ old('product_name', $recipe->product_name) == $key ? 'selected' : '' }}>
                                     {{ $value }}
                                 </option>
                             @endforeach
@@ -48,7 +49,7 @@
                     <div class="form-group col-md-6">
                         <label for="recipe_name">Recipe Name<span class="text-danger">*</span></label>
                         <input type="text" name="recipe_name" id="recipe_name" class="form-control" 
-                               value="{{ old('recipe_name') }}" required maxlength="100">
+                               value="{{ old('recipe_name', $recipe->recipe_name) }}" required maxlength="100">
                         <small class="form-text text-muted">Give your recipe a unique name</small>
                     </div>
                 </div>
@@ -59,7 +60,7 @@
                         <select name="coffee_variety" id="coffee_variety" class="form-control" required>
                             <option value="">Select Variety</option>
                             @foreach(App\Models\ProductRecipe::COFFEE_VARIETIES as $key => $value)
-                                <option value="{{ $key }}" {{ old('coffee_variety') == $key ? 'selected' : '' }}>
+                                <option value="{{ $key }}" {{ old('coffee_variety', $recipe->coffee_variety) == $key ? 'selected' : '' }}>
                                     {{ $value }}
                                 </option>
                             @endforeach
@@ -71,7 +72,7 @@
                         <select name="processing_method" id="processing_method" class="form-control" required>
                             <option value="">Select Method</option>
                             @foreach(App\Models\ProductRecipe::PROCESSING_METHODS as $key => $value)
-                                <option value="{{ $key }}" {{ old('processing_method') == $key ? 'selected' : '' }}>
+                                <option value="{{ $key }}" {{ old('processing_method', $recipe->processing_method) == $key ? 'selected' : '' }}>
                                     {{ $value }}
                                 </option>
                             @endforeach
@@ -83,7 +84,7 @@
                         <select name="required_grade" id="required_grade" class="form-control" required>
                             <option value="">Select Grade</option>
                             @foreach(App\Models\ProductRecipe::REQUIRED_GRADES as $key => $value)
-                                <option value="{{ $key }}" {{ old('required_grade') == $key ? 'selected' : '' }}>
+                                <option value="{{ $key }}" {{ old('required_grade', $recipe->required_grade) == $key ? 'selected' : '' }}>
                                     {{ $value }}
                                 </option>
                             @endforeach
@@ -95,7 +96,7 @@
                     <label for="percentage_composition">Percentage Composition<span class="text-danger">*</span></label>
                     <div class="input-group">
                         <input type="number" name="percentage_composition" id="percentage_composition" 
-                               class="form-control" value="{{ old('percentage_composition') }}" 
+                               class="form-control" value="{{ old('percentage_composition', $recipe->percentage_composition) }}" 
                                min="0" max="100" step="0.01" required>
                         <div class="input-group-append">
                             <span class="input-group-text">%</span>
@@ -109,7 +110,7 @@
                         <i class="fas fa-times"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Create Recipe
+                        <i class="fas fa-save"></i> Update Recipe
                     </button>
                 </div>
             </form>
@@ -247,4 +248,4 @@
     color: #6c757d;
     margin-top: 0.25rem;
 }
-</style>
+</style> 

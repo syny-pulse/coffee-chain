@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ProcessorRawMaterialInventory;
 
 class InventoryController extends Controller
 {
@@ -22,20 +23,18 @@ class InventoryController extends Controller
             return redirect()->route('login')->with('error', 'Please log in to view inventory.');
         }
 
-        $raw_materials = Product::where('user_id', $user->id)
-            ->where('product_type', 'green_beans')
-            ->get();
+        // Use ProcessorRawMaterialInventory for raw materials
+        $raw_materials = ProcessorRawMaterialInventory::where('processor_company_id', $user->company_id)->get();
 
-        $finished_goods = Product::where('user_id', $user->id)
-            ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
-            ->get();
+        // TODO: Update finished_goods to use correct model/table if available
+        $finished_goods = collect(); // Placeholder, update if finished goods table/model exists
 
         // Calculate additional metrics
         $total_processing_capacity = 1000; // Default capacity
-        $ready_for_sale_count = $finished_goods->where('status', 'available')->count();
+        $ready_for_sale_count = 0; // Placeholder, update if finished goods logic is added
 
-        Log::info('Inventory Index', [
-            'user_id' => $user->id,
+        \Illuminate\Support\Facades\Log::info('Inventory Index', [
+            'company_id' => $user->company_id,
             'raw_materials_count' => $raw_materials->count(),
             'finished_goods_count' => $finished_goods->count()
         ]);
@@ -87,7 +86,7 @@ class InventoryController extends Controller
     public function show($id)
     {
         $user = Auth::user();
-        $item = Inventory::where('id', $id)
+        $item = ProcessorRawMaterialInventory::where('inventory_id', $id)
             ->where('processor_company_id', $user->company_id)
             ->firstOrFail();
 
@@ -97,7 +96,7 @@ class InventoryController extends Controller
     public function edit($id)
     {
         $user = Auth::user();
-        $item = Inventory::where('id', $id)
+        $item = ProcessorRawMaterialInventory::where('inventory_id', $id)
             ->where('processor_company_id', $user->company_id)
             ->firstOrFail();
 

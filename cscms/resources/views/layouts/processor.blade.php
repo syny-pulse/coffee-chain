@@ -959,6 +959,9 @@
         @csrf
     </form>
 
+    @if(request()->routeIs('messages.*'))
+        @include('partials.messages_modals')
+    @endif
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');

@@ -229,7 +229,7 @@ class NotificationService
         }
 
         // Low product stock (any product < 20kg)
-        $lowStock = \App\Models\Product::where('user_id', $company->company_id)
+        $lowStock = \App\Models\RetailerProduct::where('user_id', $company->company_id)
             ->where('quantity_kg', '<', 20)
             ->count();
         if ($lowStock > 0) {
@@ -246,7 +246,7 @@ class NotificationService
         }
 
         // Expiring products (expiry_date within 7 days)
-        $expiringProducts = \App\Models\Product::where('user_id', $company->company_id)
+        $expiringProducts = \App\Models\RetailerProduct::where('user_id', $company->company_id)
             ->whereNotNull('expiry_date')
             ->where('expiry_date', '>=', Carbon::now())
             ->where('expiry_date', '<=', Carbon::now()->addDays(7))

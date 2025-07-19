@@ -222,17 +222,29 @@
                             Orders
                         </a>
                     </div>
+                    <div class="nav-item">
+                        <a href="{{ route('retailer.demand_planning.index') }}" class="nav-link @if(request()->routeIs('retailer.demand_planning.*')) active @endif">
+                            <span class="icon"><i class="fas fa-lightbulb"></i></span>
+                            Demand Planning
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('retailer.product_info.index') }}" class="nav-link @if(request()->routeIs('retailer.product_info.*')) active @endif">
+                            <span class="icon"><i class="fas fa-box"></i></span>
+                            Product Info
+                        </a>
+                    </div>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Business</div>
                     <div class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('retailer.financials.index') }}" class="nav-link @if(request()->routeIs('retailer.financials.*')) active @endif">
                             <span class="icon"><i class="fas fa-dollar-sign"></i></span>
                             Financials
                         </a>
                     </div>
                     <div class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('retailer.analytics.index') }}" class="nav-link @if(request()->routeIs('retailer.analytics.*')) active @endif">
                             <span class="icon"><i class="fas fa-chart-line"></i></span>
                             Analytics
                         </a>
@@ -264,7 +276,21 @@
         </div>
         <!-- Main Content -->
         <div class="main-content" style="width: 100%;">
-            @yield('page-actions')
+            @hasSection('page-title')
+                <div class="page-header">
+                    <h1 class="page-title">@yield('page-title')</h1>
+                    @hasSection('page-subtitle')
+                        <p class="page-subtitle">@yield('page-subtitle')</p>
+                    @endif
+                    @hasSection('page-actions')
+                        <div class="page-actions">@yield('page-actions')</div>
+                    @endif
+                </div>
+            @else
+                @hasSection('page-actions')
+                    <div class="page-actions">@yield('page-actions')</div>
+                @endif
+            @endif
             @yield('content')
         </div>
     </div>
@@ -287,5 +313,9 @@ window.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+    @if(request()->routeIs('messages.*'))
+        @include('partials.messages_modals')
+    @endif
+    @stack('scripts')
 </body>
 </html> 

@@ -175,6 +175,9 @@
         </div>
     </div>
 
+    @if(request()->routeIs('messages.*'))
+        @include('partials.messages_modals')
+    @endif
     @vite('resources/js/app.js')
     <script src="{{ asset('js/farmers.js') }}"></script>
     @stack('scripts')

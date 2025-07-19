@@ -23,11 +23,12 @@ class WorkDistributionController extends Controller
             ->orderBy('farmer_orders.created_at', 'desc')
             ->get();
 
-        // Fetch retailer orders with employee names
-        $retailerOrders = RetailerOrder::where('processor_retailer_orders.processor_company_id', $companyId)
-            ->whereNotNull('processor_retailer_orders.employee_id')
+        // Fetch retailer orders with employee names (use processor_retailer_orders table directly)
+        $retailerOrders = \Illuminate\Support\Facades\DB::table('processor_retailer_orders')
             ->join('employees', 'processor_retailer_orders.employee_id', '=', 'employees.employee_id')
             ->join('companies', 'processor_retailer_orders.retailer_company_id', '=', 'companies.company_id')
+            ->where('processor_retailer_orders.processor_company_id', $companyId)
+            ->whereNotNull('processor_retailer_orders.employee_id')
             ->select('processor_retailer_orders.order_id', 'employees.employee_name', 'companies.company_name')
             ->orderBy('processor_retailer_orders.created_at', 'desc')
             ->get();

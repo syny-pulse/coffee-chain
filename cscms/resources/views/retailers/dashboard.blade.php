@@ -18,10 +18,11 @@
                 </div>
                 <div class="stat-trend positive">
                     <i class="fas fa-arrow-up"></i>
+                    <!-- Trend logic can be added -->
                     +12%
                 </div>
             </div>
-            <div class="stat-value">2,450</div>
+            <div class="stat-value">{{ $stats['cups_sold_today'] ?? 0 }}</div>
             <div class="stat-label">Cups Sold Today</div>
         </div>
         
@@ -35,7 +36,7 @@
                     +8%
                 </div>
             </div>
-            <div class="stat-value">890</div>
+            <div class="stat-value">{{ $stats['stock_level'] ?? 0 }}</div>
             <div class="stat-label">Stock Level (kg)</div>
         </div>
         
@@ -49,7 +50,7 @@
                     +15%
                 </div>
             </div>
-            <div class="stat-value">$8,420</div>
+            <div class="stat-value">UGX{{ number_format($stats['daily_revenue'] ?? 0, 2) }}</div>
             <div class="stat-label">Daily Revenue</div>
         </div>
         
@@ -63,7 +64,7 @@
                     -3
                 </div>
             </div>
-            <div class="stat-value">12</div>
+            <div class="stat-value">{{ $stats['pending_orders'] ?? 0 }}</div>
             <div class="stat-label">Pending Orders</div>
         </div>
     </div>
@@ -100,12 +101,26 @@
                 <div class="action-title">Menu</div>
                 <div class="action-desc">Update menu items and recipes</div>
             </a>
-            <a href="#" class="action-card" id="quick-reports">
+            <a href="{{ route('retailer.analytics.index') }}" class="action-card" id="quick-reports">
                 <div class="action-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="action-title">Reports</div>
                 <div class="action-desc">View sales and performance analytics</div>
+            </a>
+            <a href="{{ route('retailer.demand_planning.index') }}" class="action-card" id="quick-demand-planning">
+                <div class="action-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="action-title">Demand Planning</div>
+                <div class="action-desc">Forecast demand and plan orders</div>
+            </a>
+            <a href="{{ route('retailer.product_info.index') }}" class="action-card" id="quick-product-info">
+                <div class="action-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="action-title">Product Info</div>
+                <div class="action-desc">Manage product variants, pricing, and marketing</div>
             </a>
             <a href="#" class="action-card" id="quick-settings">
                 <div class="action-icon">
@@ -126,7 +141,7 @@
                     <i class="fas fa-shopping-bag"></i>
                 </div>
                 <div class="activity-content">
-                    <div class="activity-title">Large catering order received - $850</div>
+                    <div class="activity-title">Large catering order received - UGX850</div>
                     <div class="activity-time">15 minutes ago</div>
                 </div>
             </div>
@@ -146,7 +161,7 @@
                     <i class="fas fa-dollar-sign"></i>
                 </div>
                 <div class="activity-content">
-                    <div class="activity-title">Daily sales target achieved - $8,000</div>
+                    <div class="activity-title">Daily sales target achieved - UGX8,000</div>
                     <div class="activity-time">4 hours ago</div>
                 </div>
             </div>

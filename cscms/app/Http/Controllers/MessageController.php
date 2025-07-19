@@ -67,7 +67,27 @@ class MessageController extends Controller
             'recipient_company_id' => 'required|integer|exists:companies,company_id',
             'content' => 'required|string|max:1000',
             'subject' => 'nullable|string|max:200',
+            'message_type' => 'required|string',
+            'attachment' => 'nullable|file|max:10240', // 10MB
         ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('messages/attachments', 'public');
+        }
+
+        $extraData = null;
+        if ($request->message_type === 'delivery_schedule') {
+            $extraData = [
+                'schedule_date' => $request->input('schedule_date'),
+                'schedule_notes' => $request->input('schedule_notes'),
+            ];
+        } elseif ($request->message_type === 'feedback') {
+            $extraData = [
+                'feedback_rating' => $request->input('feedback_rating'),
+                'feedback_comments' => $request->input('feedback_comments'),
+            ];
+        }
 
         try {
             // Find an active user for the receiver company
@@ -89,7 +109,9 @@ class MessageController extends Controller
                 'receiver_company_id' => $request->recipient_company_id,
                 'subject' => $request->input('subject', 'Message'),
                 'message_body' => $request->content,
-                'message_type' => 'general',
+                'message_type' => $request->message_type,
+                'attachment_path' => $attachmentPath,
+                'extra_data' => $extraData ? json_encode($extraData) : null,
                 'is_read' => false,
             ]);
 
@@ -154,5 +176,23 @@ class MessageController extends Controller
         \App\Models\Message::where('receiver_company_id', $company->company_id)
             ->update(['is_read' => true]);
         return redirect()->route('messages.index')->with('success', 'All messages marked as read.');
+    }
+
+    public function thread($companyId)
+    {
+        $user = Auth::user();
+        $myCompanyId = $user->company->company_id;
+
+        $messages = Message::where(function($q) use ($myCompanyId, $companyId) {
+            $q->where('sender_company_id', $myCompanyId)
+              ->where('receiver_company_id', $companyId);
+        })->orWhere(function($q) use ($myCompanyId, $companyId) {
+            $q->where('sender_company_id', $companyId)
+              ->where('receiver_company_id', $myCompanyId);
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+        return response()->json(['messages' => $messages]);
     }
 } 

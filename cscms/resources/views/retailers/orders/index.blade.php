@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1 class="page-title">Orders</h1>
         <p class="page-subtitle">Manage your orders efficiently</p>
-        <button id="createOrderBtn" class="btn btn-primary" style="margin-left:auto;">Create New Order</button>
+        <a href="{{ route('retailer.orders.create') }}" class="btn btn-primary" style="margin-left:auto;">Create New Order</a>
     </div>
 
     <!-- Main orders content goes here -->
@@ -51,84 +51,87 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('retailer.orders.index') }}" class="filter-form" style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
+        <div>
+            <label for="processor_company_id">Processor:</label>
+            <select name="processor_company_id" id="processor_company_id" class="form-control">
+                <option value="">All</option>
+                @foreach($processors as $processor)
+                    <option value="{{ $processor->company_id }}" {{ (isset($filters['processor_company_id']) && $filters['processor_company_id'] == $processor->company_id) ? 'selected' : '' }}>{{ $processor->company_name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <!-- Removed product filter -->
+        <div>
+            <label for="status">Status</label>
+            <select name="status" id="status" class="form-control">
+                <option value="">All</option>
+                <option value="pending" @if(($filters['status'] ?? '')=='pending') selected @endif>Pending</option>
+                <option value="processing" @if(($filters['status'] ?? '')=='processing') selected @endif>Processing</option>
+                <option value="delivered" @if(($filters['status'] ?? '')=='delivered') selected @endif>Delivered</option>
+                <option value="cancelled" @if(($filters['status'] ?? '')=='cancelled') selected @endif>Cancelled</option>
+            </select>
+        </div>
+        <div>
+            <label for="date_from">From</label>
+            <input type="date" name="date_from" id="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}">
+        </div>
+        <div>
+            <label for="date_to">To</label>
+            <input type="date" name="date_to" id="date_to" class="form-control" value="{{ $filters['date_to'] ?? '' }}">
+        </div>
+        <button type="submit" class="btn btn-outline">Filter</button>
+    </form>
     <table class="table">
         <thead>
             <tr>
-                <th>Date Placed</th>
-                <th>Product</th>
+                <th>Order ID</th>
+                <th>Processor</th>
                 <th>Coffee Breed</th>
                 <th>Roast Grade</th>
-                <th>Quantity</th>
+                <th>Quantity (kg)</th>
+                <th>Expected Delivery</th>
+                <th>Notes</th>
                 <th>Status</th>
-                <th>Options</th>
+                <th>Created</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>2023-10-15</td>
-                <td>Espresso</td>
-                <td>Arabica</td>
-                <td>Grade 4</td>
-                <td>25 kg</td>
-                <td><span class="status-badge status-pending">Pending</span></td>
-                <td>
-                    <button class="btn btn-secondary editBtn" data-id="1" data-status="pending">Edit</button>
-                </td>
-            </tr>
-            <tr>
-                <td>2023-10-12</td>
-                <td>Iced Latte</td>
-                <td>Arabica</td>
-                <td>Grade 2</td>
-                <td>15 kg</td>
-                <td><span class="status-badge status-delivered">Delivered</span></td>
-                <td>
-                    <button class="btn btn-secondary editBtn" data-id="2" data-status="delivered">Edit</button>
-                </td>
-            </tr>
-            <tr>
-                <td>2023-10-08</td>
-                <td>Black Coffee</td>
-                <td>Robusta</td>
-                <td>Grade 5</td>
-                <td>30 kg</td>
-                <td><span class="status-badge status-cancelled">Cancelled</span></td>
-                <td>
-                    <button class="btn btn-secondary editBtn" data-id="3" data-status="cancelled">Edit</button>
-                </td>
-            </tr>
+            @foreach($orders as $order)
+                <tr>
+                    <td>{{ $order->id ?? $order->order_id }}</td>
+                    <td>
+                        @php
+                            $proc = $processors->firstWhere('company_id', $order->processor_company_id);
+                        @endphp
+                        {{ $proc ? $proc->company_name : 'N/A' }}
+                    </td>
+                    <td>{{ ucfirst($order->coffee_breed) }}</td>
+                    <td>Grade {{ $order->roast_grade }}</td>
+                    <td>{{ $order->quantity }}</td>
+                    <td>{{ $order->expected_delivery_date ? \Carbon\Carbon::parse($order->expected_delivery_date)->format('Y-m-d') : '-' }}</td>
+                    <td>{{ $order->notes ?? '-' }}</td>
+                    <td><span class="status-badge status-{{ $order->order_status }}">{{ ucfirst($order->order_status) }}</span></td>
+                    <td>{{ $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('Y-m-d') : '-' }}</td>
+                    <td>
+                        <a href="{{ route('retailer.orders.show', $order->id ?? $order->order_id) }}" class="btn btn-sm btn-outline">View</a>
+                        <form action="{{ route('retailer.orders.destroy', $order->order_id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this order?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
         </tbody>
     </table>
-
-    <!-- Edit Order Modal -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Edit Order Status</h2>
-                <span id="closeModal" class="close">&times;</span>
-            </div>
-            <form id="editForm" method="POST" action="">
-                @csrf
-                @method('PUT')
-                <div class="form-group">
-                    <label for="status">Status</label>
-                    <select name="status" id="status" class="form-control" required>
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
-                    <button type="submit" class="btn">Save Changes</button>
-                </div>
-            </form>
-        </div>
+    <div class="pagination-wrapper">
+        {{ $orders->links() }}
     </div>
 
     <!-- Create Order Modal -->
-    <div id="createModal" class="modal">
+    <div id="createModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Create New Order</h2>
@@ -214,21 +217,16 @@
     @parent
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const editModal = document.getElementById('editModal');
             const createModal = document.getElementById('createModal');
-            const closeModal = document.getElementById('closeModal');
             const closeCreateModal = document.getElementById('closeCreateModal');
-            const cancelEdit = document.getElementById('cancelEdit');
             const cancelCreate = document.getElementById('cancelCreate');
-            const editForm = document.getElementById('editForm');
             const createForm = document.getElementById('createForm');
-            const createOrderBtn = document.getElementById('createOrderBtn');
-            const refreshPredictionsBtn = document.getElementById('refreshPredictions');
             const productSelect = document.getElementById('product');
             const monthSelect = document.getElementById('month');
             const yearSelect = document.getElementById('year');
             const quantityInput = document.getElementById('quantity');
             const predictedQuantitySpan = document.getElementById('predictedQuantity');
+            const createOrderSubmitBtn = createForm.querySelector('button[type="submit"]');
             
             // Initialize prediction chart
             const ctx = document.getElementById('predictionChart').getContext('2d');
@@ -269,27 +267,10 @@
                 }
             });
 
-            // Edit order functionality
-            document.querySelectorAll('.editBtn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const orderId = this.getAttribute('data-id');
-                    const status = this.getAttribute('data-status');
-                    // Use the correct retailer prefix for the update route
-                    editForm.action = `/retailer/orders/${orderId}`;
-                    document.getElementById('status').value = status;
-                    editModal.style.display = 'flex';
-                });
-            });
-
-            // Create order functionality
-            createOrderBtn.addEventListener('click', function() {
-                createModal.style.display = 'flex';
-            });
-
             // Refresh predictions
-            refreshPredictionsBtn.addEventListener('click', function() {
+            document.getElementById('refreshPredictions').addEventListener('click', function() {
                 // Simulate loading
-                refreshPredictionsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
                 
                 // In a real app, this would fetch new predictions from the server
                 setTimeout(() => {
@@ -302,7 +283,7 @@
                     ];
                     predictionChart.update();
                     
-                    refreshPredictionsBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
                 }, 1500);
             });
 
@@ -313,8 +294,8 @@
                 const year = yearSelect.value;
                 
                 if (product && month && year) {
-                    // Show loading
-                    document.getElementById('mlPredictedQuantity').textContent = '...';
+                    document.getElementById('mlPredictedQuantity').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    if (createOrderSubmitBtn) createOrderSubmitBtn.disabled = true;
                     fetch(`/retailer/orders/predict?product=${encodeURIComponent(product)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`)
                         .then(res => res.json())
                         .then(data => {
@@ -324,12 +305,15 @@
                             } else {
                                 document.getElementById('mlPredictedQuantity').textContent = 'N/A';
                             }
+                            if (createOrderSubmitBtn) createOrderSubmitBtn.disabled = false;
                         })
                         .catch(() => {
                             document.getElementById('mlPredictedQuantity').textContent = 'Error';
+                            if (createOrderSubmitBtn) createOrderSubmitBtn.disabled = false;
                         });
                 } else {
                     document.getElementById('mlPredictedQuantity').textContent = '-';
+                    if (createOrderSubmitBtn) createOrderSubmitBtn.disabled = false;
                 }
             }
             
@@ -340,7 +324,6 @@
 
             // Close modals
             function closeAllModals() {
-                editModal.style.display = 'none';
                 createModal.style.display = 'none';
             }
 
@@ -356,9 +339,47 @@
                 });
             }
 
+            // Add event delegation for demand planning create order button
+            document.body.addEventListener('click', function(e) {
+                const btn = e.target.closest('.createOrderFromPlanBtn');
+                if (btn) {
+                    createModal.style.display = 'flex';
+                    // Set product and quantity
+                    const product = btn.getAttribute('data-product');
+                    const quantity = btn.getAttribute('data-quantity');
+                    const month = btn.getAttribute('data-month');
+                    const year = btn.getAttribute('data-year');
+                    if (productSelect) {
+                        productSelect.value = product;
+                        productSelect.dispatchEvent(new Event('change'));
+                    }
+                    if (quantityInput) {
+                        quantityInput.value = quantity;
+                    }
+                    if (monthSelect && month) {
+                        monthSelect.value = month;
+                    }
+                    if (yearSelect && year) {
+                        yearSelect.value = year;
+                    }
+                    // Auto-select breed/grade
+                    const productMap = {
+                        'Espresso': { breed: 'arabica', grade: '4' },
+                        'Latte': { breed: 'arabica', grade: '3' },
+                        'Iced_Latte': { breed: 'arabica', grade: '2' },
+                        'Black_Coffee': { breed: 'robusta', grade: '5' }
+                    };
+                    if (productMap[product]) {
+                        document.getElementById('coffee_breed').value = productMap[product].breed;
+                        document.getElementById('roast_grade').value = productMap[product].grade;
+                    }
+                    createModal.scrollIntoView({behavior: 'smooth', block: 'center'});
+                }
+            });
+
             // Close modals when clicking outside
             window.addEventListener('click', function(event) {
-                if (event.target === editModal || event.target === createModal) {
+                if (event.target === createModal) {
                     closeAllModals();
                 }
             });

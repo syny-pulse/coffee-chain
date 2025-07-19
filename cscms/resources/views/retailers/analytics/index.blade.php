@@ -37,7 +37,7 @@
         <div class="stat-header">
             <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
         </div>
-        <div class="stat-value">${{ number_format($income, 2) }}</div>
+        <div class="stat-value">UGX<?php echo e(number_format($income, 2)); ?></div>
         <div class="stat-label">Total Income (7 days)</div>
     </div>
     <div class="stat-card">
@@ -46,6 +46,36 @@
         </div>
         <div class="stat-value">{{ $sales->sum('total_sold') }}</div>
         <div class="stat-label">Total Units Sold (7 days)</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:2rem;">
+    <div class="card-header">
+        <h2 class="card-title">Top Products (All Time)</h2>
+    </div>
+    <table class="table">
+        <thead><tr><th>Product</th><th>Units Sold</th></tr></thead>
+        <tbody>
+            @foreach($topProducts as $row)
+            <tr><td>{{ $row->product_name }}</td><td>{{ $row->total_sold }}</td></tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+<div class="card" style="margin-bottom:2rem;">
+    <div class="card-header">
+        <h2 class="card-title">Sales Trends (Last 12 Months)</h2>
+    </div>
+    <div style="padding:1.5rem;">
+        <canvas id="salesTrendsChart" height="80"></canvas>
+    </div>
+</div>
+<div class="card" style="margin-bottom:2rem;">
+    <div class="card-header">
+        <h2 class="card-title">Inventory Turnover (30 days)</h2>
+    </div>
+    <div style="padding:1.5rem; font-size:1.2rem;">
+        <strong>{{ number_format($turnover, 2) }}</strong> times
     </div>
 </div>
 
@@ -101,6 +131,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 backgroundColor: 'rgba(139, 115, 85, 0.7)',
                 borderColor: 'rgb(139, 115, 85)',
                 borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Units' }
+                }
+            }
+        }
+    });
+
+    // Sales Trends Chart
+    const trendsCtx = document.getElementById('salesTrendsChart').getContext('2d');
+    new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($salesTrends->pluck('month')) !!},
+            datasets: [{
+                label: 'Units Sold',
+                data: {!! json_encode($salesTrends->pluck('total_sold')) !!},
+                backgroundColor: 'rgba(66, 153, 225, 0.3)',
+                borderColor: 'rgb(66, 153, 225)',
+                borderWidth: 2,
+                fill: true
             }]
         },
         options: {
