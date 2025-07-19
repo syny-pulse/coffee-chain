@@ -7,6 +7,9 @@
     <title>@yield('title') - Coffee Supply Chain</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    @if (request()->routeIs('messages.*'))
+        <link href="{{ asset('css/messages.css') }}" rel="stylesheet">
+    @endif
     <link href="{{ asset('css/farmers.css') }}" rel="stylesheet">
     <style>
         .notification-badge {
@@ -56,7 +59,7 @@
                     <a href="{{ route('farmers.inventory.index') }}"><i class="fas fa-boxes-stacked"></i> Inventory</a>
                     <a href="{{ route('farmers.financials.pricing') }}"><i class="fas fa-tags"></i> Pricing</a>
                     <a href="{{ route('farmers.analytics.reports') }}"><i class="fas fa-chart-line"></i> Reports</a>
-                    <a href="{{ route('farmers.communication.index') }}"><i class="fas fa-comments"></i> Messages</a>
+                    <a href="{{ route('messages.index') }}"><i class="fas fa-comments"></i> Messages</a>
                 </div>
             </div>
             <!-- End Quick Actions Dropdown -->
@@ -138,7 +141,7 @@
                 <div class="nav-section">
                     <div class="nav-section-title">Communication</div>
                     <div class="nav-item">
-                        <a href="{{ route('farmers.communication.index') }}" class="nav-link {{ request()->routeIs('farmers.communication.*') ? 'active' : '' }}">
+                        <a href="{{ route('messages.index') }}" class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}">
                             <span class="icon"><i class="fas fa-comments"></i></span>
                             Messages
                             @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)

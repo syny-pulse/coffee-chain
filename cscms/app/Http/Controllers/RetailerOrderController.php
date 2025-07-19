@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use App\Models\RetailerInventory;
 
 class RetailerOrderController extends Controller
 {
@@ -49,38 +51,45 @@ class RetailerOrderController extends Controller
 
         // If status changed to delivered, increase inventory and record transaction
         if ($order && $order->order_status !== 'delivered' && $data['status'] === 'delivered') {
+            $productType = $order->product_type ?? 'drinking_coffee';
             // Increase inventory
-            $existingInventory = DB::table('retailer_inventory')
+            $existingInventory = RetailerInventory::where('product_type', $productType)
                 ->where('coffee_breed', $order->coffee_breed)
                 ->where('roast_grade', $order->roast_grade)
                 ->first();
 
             if ($existingInventory) {
-                DB::table('retailer_inventory')
-                    ->where('id', $existingInventory->id)
-                    ->increment('quantity', $order->quantity);
+                $existingInventory->increment('quantity', $order->quantity);
             } else {
-                DB::table('retailer_inventory')->insert([
+                RetailerInventory::create([
+                    'product_type' => $productType,
                     'coffee_breed' => $order->coffee_breed,
                     'roast_grade' => $order->roast_grade,
                     'quantity' => $order->quantity,
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
             }
-
-            // Record transaction
-            DB::table('retailer_inventory_transactions')->insert([
-                'transaction_type' => 'order_delivered',
-                'coffee_breed' => $order->coffee_breed,
-                'roast_grade' => $order->roast_grade,
-                'quantity' => $order->quantity,
-                'notes' => 'Order ID ' . $id . ' marked as delivered',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Record transaction (optional, if you have a transaction model/table)
+            // DB::table('retailer_inventory_transactions')->insert([...]);
         }
 
         return redirect()->route('retailer.orders.index')->with('success', 'Order status updated successfully.');
+    }
+
+    public function getPrediction(Request $request)
+    {
+        $product = $request->input('product');
+        $month = $request->input('month');
+        $year = $request->input('year');
+        // Example ML API call
+        $mlServerUrl = config('services.ml_server.url', 'http://localhost:5000');
+        $response = Http::get("{$mlServerUrl}/api/predict-demand", [
+            'product_name' => $product,
+            'month' => $month,
+            'year' => $year,
+        ]);
+        if ($response->successful()) {
+            return response()->json(['prediction' => $response->json('predicted_demand')]);
+        }
+        return response()->json(['prediction' => null, 'error' => 'ML server unavailable'], 500);
     }
 }

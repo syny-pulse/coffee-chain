@@ -16,6 +16,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
 
 class ProcessorDashboardController extends Controller
 {
@@ -36,6 +37,9 @@ class ProcessorDashboardController extends Controller
         }
 
         $companyId = $user->company_id;
+        $company = $user->company;
+        $notificationService = new NotificationService();
+        $notifications = $notificationService->getNotifications($company);
 
         try {
             // Default forecast value
@@ -164,7 +168,8 @@ class ProcessorDashboardController extends Controller
                 'order_fulfillment_rate',
                 'processing_efficiency',
                 'quality_score_percentage',
-                'customer_satisfaction'
+                'customer_satisfaction',
+                'notifications'
             ));
 
         } catch (\Exception $e) {

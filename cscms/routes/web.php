@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ChangePasswordController;
@@ -10,7 +11,6 @@ use App\Http\Controllers\Processor\ProcessorDashboardController;
 use App\Http\Controllers\Processor\InventoryController;
 use App\Http\Controllers\Processor\RetailerOrderController;
 use App\Http\Controllers\Processor\FarmerOrderController;
-use App\Http\Controllers\Processor\MessageController;
 use App\Http\Controllers\Processor\ReportController;
 use App\Http\Controllers\Processor\CompanyController;
 use App\Http\Controllers\Processor\WorkDistributionController;
@@ -20,9 +20,9 @@ use App\Http\Controllers\Farmer\DashboardController as FarmerDashboardController
 use App\Http\Controllers\Farmer\HarvestController;
 use App\Http\Controllers\Farmer\InventoryController as FarmerInventoryController;
 use App\Http\Controllers\Farmer\OrderController;
-use App\Http\Controllers\Farmer\CommunicationController;
 use App\Http\Controllers\Farmer\FinancialController;
 use App\Http\Controllers\Farmer\AnalyticsController as FarmerAnalyticsController;
+use App\Http\Controllers\MessageController;
 
 
 
@@ -114,16 +114,6 @@ Route::middleware(['auth'])->group(function () {
             'destroy' => 'processor.order.farmer_order.destroy',
         ]);
 
-        Route::resource('message', MessageController::class)->names([
-            'index' => 'processor.message.index',
-            'create' => 'processor.message.create',
-            'store' => 'processor.message.store',
-            'show' => 'processor.message.show',
-            'edit' => 'processor.message.edit',
-            'update' => 'processor.message.update',
-            'destroy' => 'processor.message.destroy',
-        ]);
-
         Route::get('/analytics.index', [AnalyticsController::class, 'index'])->name('processor.analytics.index');
         Route::get('/company', [CompanyController::class, 'index'])->name('processor.company.index');
         Route::post('/company/{companyId}/acceptance-status', [CompanyController::class, 'updateAcceptanceStatus'])->name('processor.company.updateAcceptanceStatus');
@@ -144,10 +134,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/inventory/{id}/edit', [FarmerInventoryController::class, 'edit'])->name('farmers.inventory.edit');
         Route::delete('/inventory/{id}', [FarmerInventoryController::class, 'destroy'])->name('farmers.inventory.destroy');
         Route::resource('orders', OrderController::class)->names('farmers.orders');
-        Route::get('/communication', [CommunicationController::class, 'index'])->name('farmers.communication.index');
-        Route::post('/communication/send', [CommunicationController::class, 'send'])->name('farmers.communication.send');
-        Route::get('/communication/message/{id}', [CommunicationController::class, 'show'])->name('farmers.communication.show');
-        Route::get('/communication/message/{id}/reply', [CommunicationController::class, 'replyForm'])->name('farmers.communication.reply');
         Route::get('/financials', [FinancialController::class, 'index'])->name('farmers.financials.index');
         Route::get('/financials/pricing', [FinancialController::class, 'pricing'])->name('farmers.financials.pricing');
         Route::post('/financials/pricing', [FinancialController::class, 'updatePricing'])->name('farmers.financials.pricing.update');
@@ -184,9 +170,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Retailer routes
     Route::prefix('retailer')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('retailers.dashboard');
-        })->name('retailer.dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\RetailerDashboardController::class, 'index'])->name('retailer.dashboard');
 
         Route::get('/orders', function () {
             return view('retailer.orders');
@@ -217,13 +201,28 @@ Route::middleware(['auth'])->group(function () {
 
         // Retailer inventory routes
         Route::get('/inventory', [\App\Http\Controllers\RetailerInventoryController::class, 'index'])->name('retailer.inventory.index');
+        // Retailer inventory adjustment route
+        Route::post('/inventory/adjust', [\App\Http\Controllers\RetailerInventoryController::class, 'storeAdjustment'])->name('retailer.inventory.adjust');
 
         // Retailer communication routes
         Route::get('/communication', function () {
             return view('retailers.communication.index');
         })->name('retailer.communication.index');
+
+        // Retailer analytics routes
+        Route::get('/analytics', [\App\Http\Controllers\RetailerAnalyticsController::class, 'index'])->name('retailer.analytics.index');
+        Route::get('/analytics/export/{type}', [\App\Http\Controllers\RetailerAnalyticsController::class, 'export'])->name('retailer.analytics.export');
+
+        // Retailer order ML prediction route
+        Route::get('/orders/predict', [\App\Http\Controllers\RetailerOrderController::class, 'getPrediction'])->name('retailer.orders.predict');
     });
 
+    // Unified messaging routes for all roles
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
+    Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
+    Route::get('/messages/{id}/reply', [MessageController::class, 'replyForm'])->name('messages.reply');
+    Route::post('/messages/mark-all-read', [App\Http\Controllers\MessageController::class, 'markAllRead'])->name('messages.mark-all-read')->middleware('auth');
 
 
     // Profile route

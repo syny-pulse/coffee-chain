@@ -1,6 +1,9 @@
 @extends('layouts.processor')
 
 @section('title', 'Dashboard')
+@section('head')
+    <link href="{{ asset('css/messages.css') }}" rel="stylesheet">
+@endsection
 
 @section('content')
     <!-- Welcome Hero Section -->
@@ -50,7 +53,7 @@
             </div>
         </div>
 
-        <div class="action-card" onclick="window.location.href='{{ route('processor.message.create') }}'">
+        <div class="action-card" onclick="window.location.href='{{ route('messages.index') }}'">
             <div class="action-icon">
                 <i class="fas fa-envelope"></i>
                 </div>
@@ -109,248 +112,249 @@
                 <div class="metric-header">
                     <div class="metric-icon">
                         <i class="fas fa-warehouse"></i>
-                </div>
+                    </div>
                     <div class="metric-trend positive">
                         <i class="fas fa-arrow-up"></i>
                         <span>Available</span>
                                     </div>
-                </div>
+                    </div>
                 <div class="metric-value">{{ $total_inventory_items }}</div>
                 <div class="metric-label">Inventory Items</div>
                 <div class="metric-progress">
                     <div class="progress-bar" style="width: {{ min(($total_inventory_items / max($total_inventory_items, 1)) * 100, 100) }}%"></div>
-            </div>
-        </div>
-
-            <div class="metric-card">
-                <div class="metric-header">
-                    <div class="metric-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="metric-trend positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>Active</span>
-                    </div>
-                </div>
-                <div class="metric-value">{{ $total_retailer_orders }}</div>
-                <div class="metric-label">Retailer Orders</div>
-                <div class="metric-progress">
-                    <div class="progress-bar" style="width: {{ min(($total_retailer_orders / max($total_retailer_orders, 1)) * 100, 100) }}%"></div>
                 </div>
             </div>
 
-            <div class="metric-card">
-                <div class="metric-header">
-                    <div class="metric-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Active</span>
+                        </div>
                     </div>
-                    <div class="metric-trend positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>Revenue</span>
+                    <div class="metric-value">{{ $total_retailer_orders }}</div>
+                    <div class="metric-label">Retailer Orders</div>
+                    <div class="metric-progress">
+                        <div class="progress-bar" style="width: {{ min(($total_retailer_orders / max($total_retailer_orders, 1)) * 100, 100) }}%"></div>
                     </div>
                 </div>
-                <div class="metric-value">UGX {{ number_format($total_revenue) }}</div>
-                <div class="metric-label">Total Revenue</div>
-                <div class="metric-progress">
-                    <div class="progress-bar" style="width: {{ min(($total_revenue / max($total_revenue, 1)) * 100, 100) }}%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Dashboard Grid -->
-    <div class="dashboard-grid fade-in">
-        <!-- Production Overview -->
-        <div class="dashboard-card production-overview">
-            <div class="card-header">
-                <h3><i class="fas fa-industry"></i> Production Overview</h3>
-                <div class="card-actions">
-                    <button class="btn-icon" onclick="refreshChart()">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="chart-container">
-                <canvas id="productionChart" width="400" height="200"></canvas>
-            </div>
-            <div class="chart-legend">
-                <div class="legend-item">
-                    <span class="legend-color" style="background: var(--coffee-medium);"></span>
-                    <span>Raw Materials</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: var(--coffee-light);"></span>
-                    <span>Finished Goods</span>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Revenue</span>
+                        </div>
+                    </div>
+                    <div class="metric-value">UGX {{ number_format($total_revenue) }}</div>
+                    <div class="metric-label">Total Revenue</div>
+                    <div class="metric-progress">
+                        <div class="progress-bar" style="width: {{ min(($total_revenue / max($total_revenue, 1)) * 100, 100) }}%"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="dashboard-card recent-activity">
-            <div class="card-header">
-                <h3><i class="fas fa-clock"></i> Recent Activity</h3>
-                <a href="#" class="btn-link">View All</a>
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid fade-in">
+            <!-- Production Overview -->
+            <div class="dashboard-card production-overview">
+                <div class="card-header">
+                    <h3><i class="fas fa-industry"></i> Production Overview</h3>
+                    <div class="card-actions">
+                        <button class="btn-icon" onclick="refreshChart()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="productionChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: var(--coffee-medium);"></span>
+                        <span>Raw Materials</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: var(--coffee-light);"></span>
+                        <span>Finished Goods</span>
+                    </div>
+                </div>
             </div>
-            <div class="activity-list">
-                @forelse($farmer_orders->take(3) as $order)
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Farmer Order #{{ $order->order_id }}</div>
-                        <div class="activity-desc">{{ $order->quantity_kg }}kg {{ $order->coffee_variety }} - {{ $order->order_status }}</div>
-                        <div class="activity-time">{{ $order->created_at->diffForHumans() }}</div>
-                    </div>
-                </div>
-                @empty
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">No Recent Orders</div>
-                        <div class="activity-desc">No farmer orders placed yet</div>
-                        <div class="activity-time">-</div>
-                    </div>
-                </div>
-                @endforelse
 
-                @forelse($retailer_orders->take(2) as $order)
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Retailer Order #{{ $order->order_number }}</div>
-                        <div class="activity-desc">UGX {{ number_format($order->total_amount) }} - {{ $order->order_status }}</div>
-                        <div class="activity-time">{{ $order->created_at->diffForHumans() }}</div>
-                    </div>
+            <!-- Recent Activity -->
+            <div class="dashboard-card recent-activity">
+                <div class="card-header">
+                    <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                    <a href="#" class="btn-link">View All</a>
                 </div>
-                @empty
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-shopping-cart"></i>
+                <div class="activity-list">
+                    @forelse($farmer_orders->take(3) as $order)
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Farmer Order #{{ $order->order_id }}</div>
+                            <div class="activity-desc">{{ $order->quantity_kg }}kg {{ $order->coffee_variety }} - {{ $order->order_status }}</div>
+                            <div class="activity-time">{{ $order->created_at->diffForHumans() }}</div>
+                        </div>
                     </div>
-                    <div class="activity-content">
-                        <div class="activity-title">No Retailer Orders</div>
-                        <div class="activity-desc">No orders from retailers yet</div>
-                        <div class="activity-time">-</div>
+                    @empty
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">No Recent Orders</div>
+                            <div class="activity-desc">No farmer orders placed yet</div>
+                            <div class="activity-time">-</div>
+                        </div>
                     </div>
-                </div>
-                @endforelse
+                    @endforelse
 
-                @forelse($messages->take(1) as $message)
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-envelope"></i>
+                    @forelse($retailer_orders->take(2) as $order)
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Retailer Order #{{ $order->order_number }}</div>
+                            <div class="activity-desc">UGX {{ number_format($order->total_amount) }} - {{ $order->order_status }}</div>
+                            <div class="activity-time">{{ $order->created_at->diffForHumans() }}</div>
+                        </div>
                     </div>
-                    <div class="activity-content">
-                        <div class="activity-title">Message Received</div>
-                        <div class="activity-desc">{{ Str::limit($message->message_content, 50) }}</div>
-                        <div class="activity-time">{{ $message->created_at->diffForHumans() }}</div>
+                    @empty
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">No Retailer Orders</div>
+                            <div class="activity-desc">No orders from retailers yet</div>
+                            <div class="activity-time">-</div>
+                        </div>
                     </div>
+                    @endforelse
+
+                    @forelse($messages->take(1) as $message)
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Message Received</div>
+                            <div class="activity-desc">{{ Str::limit($message->message_content, 50) }}</div>
+                            <div class="activity-time">{{ $message->created_at->diffForHumans() }}</div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">No Recent Messages</div>
+                            <div class="activity-desc">No messages received yet</div>
+                            <div class="activity-time">-</div>
+                        </div>
+                    </div>
+                    @endforelse
                 </div>
-                @empty
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">No Recent Messages</div>
-                        <div class="activity-desc">No messages received yet</div>
-                        <div class="activity-time">-</div>
-                    </div>
-                </div>
-                @endforelse
             </div>
         </div>
-    </div>
 
-    <!-- Performance Indicators -->
-    <div class="performance-section fade-in">
-        <div class="section-header">
-            <h2>Performance Indicators</h2>
-            <p>Real-time monitoring of key operational metrics</p>
-                </div>
-        
-        <div class="performance-grid">
-            <div class="performance-card">
-                <div class="performance-header">
-                    <h4>Processing Efficiency</h4>
-                    <div class="performance-value">{{ $processing_efficiency }}%</div>
-                </div>
-                <div class="performance-chart">
-                    <svg width="120" height="120" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--coffee-medium)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $processing_efficiency / 100) }}" stroke-linecap="round" 
-                                style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
-                    </svg>
-                    <div class="chart-center">
-                        <span>{{ $processing_efficiency }}%</span>
-                </div>
-        </div>
-    </div>
-
-            <div class="performance-card">
-                <div class="performance-header">
-                    <h4>Order Fulfillment</h4>
-                    <div class="performance-value">{{ $order_fulfillment_rate }}%</div>
-                </div>
-                <div class="performance-chart">
-                    <svg width="120" height="120" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--coffee-light)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $order_fulfillment_rate / 100) }}" stroke-linecap="round" 
-                                style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
-                    </svg>
-                    <div class="chart-center">
-                        <span>{{ $order_fulfillment_rate }}%</span>
-                </div>
-        </div>
-    </div>
-
-            <div class="performance-card">
-                <div class="performance-header">
-                    <h4>Quality Score</h4>
-                    <div class="performance-value">{{ $quality_score_percentage }}%</div>
-                </div>
-                <div class="performance-chart">
-                    <svg width="120" height="120" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--success)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $quality_score_percentage / 100) }}" stroke-linecap="round" 
-                                style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
-                    </svg>
-                    <div class="chart-center">
-                        <span>{{ $quality_score_percentage }}%</span>
-                </div>
-        </div>
-    </div>
-
-            <div class="performance-card">
-                <div class="performance-header">
-                    <h4>Customer Satisfaction</h4>
-                    <div class="performance-value">{{ $customer_satisfaction }}%</div>
-                </div>
-                <div class="performance-chart">
-                    <svg width="120" height="120" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="8" 
-                                stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $customer_satisfaction / 100) }}" stroke-linecap="round" 
-                                style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
-                    </svg>
-                    <div class="chart-center">
-                        <span>{{ $customer_satisfaction }}%</span>
+        <!-- Performance Indicators -->
+        <div class="performance-section fade-in">
+            <div class="section-header">
+                <h2>Performance Indicators</h2>
+                <p>Real-time monitoring of key operational metrics</p>
                     </div>
-                </div>
-                </div>
+            
+            <div class="performance-grid">
+                <div class="performance-card">
+                    <div class="performance-header">
+                        <h4>Processing Efficiency</h4>
+                        <div class="performance-value">{{ $processing_efficiency }}%</div>
+                    </div>
+                    <div class="performance-chart">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--coffee-medium)" stroke-width="8" 
+                                    stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $processing_efficiency / 100) }}" stroke-linecap="round" 
+                                    style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
+                        </svg>
+                        <div class="chart-center">
+                            <span>{{ $processing_efficiency }}%</span>
+                    </div>
+            </div>
+        </div>
+
+                <div class="performance-card">
+                    <div class="performance-header">
+                        <h4>Order Fulfillment</h4>
+                        <div class="performance-value">{{ $order_fulfillment_rate }}%</div>
+                    </div>
+                    <div class="performance-chart">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--coffee-light)" stroke-width="8" 
+                                    stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $order_fulfillment_rate / 100) }}" stroke-linecap="round" 
+                                    style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
+                        </svg>
+                        <div class="chart-center">
+                            <span>{{ $order_fulfillment_rate }}%</span>
+                    </div>
+            </div>
+        </div>
+
+                <div class="performance-card">
+                    <div class="performance-header">
+                        <h4>Quality Score</h4>
+                        <div class="performance-value">{{ $quality_score_percentage }}%</div>
+                    </div>
+                    <div class="performance-chart">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--success)" stroke-width="8" 
+                                    stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $quality_score_percentage / 100) }}" stroke-linecap="round" 
+                                    style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
+                        </svg>
+                        <div class="chart-center">
+                            <span>{{ $quality_score_percentage }}%</span>
+                    </div>
+            </div>
+        </div>
+
+                <div class="performance-card">
+                    <div class="performance-header">
+                        <h4>Customer Satisfaction</h4>
+                        <div class="performance-value">{{ $customer_satisfaction }}%</div>
+                    </div>
+                    <div class="performance-chart">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(111, 78, 55, 0.1)" stroke-width="8"/>
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="8" 
+                                    stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * $customer_satisfaction / 100) }}" stroke-linecap="round" 
+                                    style="transform: rotate(-90deg); transform-origin: 60px 60px;"/>
+                        </svg>
+                        <div class="chart-center">
+                            <span>{{ $customer_satisfaction }}%</span>
+                        </div>
+                    </div>
+                    </div>
+            </div>
         </div>
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Production Chart with real data
@@ -905,4 +909,4 @@
         }
     }
 </style>
-@endsection
+@endpush

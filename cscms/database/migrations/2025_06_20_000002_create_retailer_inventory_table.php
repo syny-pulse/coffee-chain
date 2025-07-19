@@ -15,6 +15,7 @@ class CreateRetailerInventoryTable extends Migration
     {
         Schema::create('retailer_inventory', function (Blueprint $table) {
             $table->id();
+            $table->enum('product_type', ['drinking_coffee', 'roasted_coffee', 'coffee_scents', 'coffee_soap']);
             $table->enum('coffee_breed', ['arabica', 'robusta']);
             $table->enum('roast_grade', ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5']);
             $table->integer('quantity');

@@ -3,61 +3,54 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\RetailerInventory;
 use Illuminate\Support\Facades\DB;
 
 class RetailerInventoryController extends Controller
 {
     public function index()
     {
-        // Fetch inventory grouped by coffee breed and roast grade
-        $inventory = DB::table('retailer_inventory')
-            ->select('coffee_breed', 'roast_grade', DB::raw('SUM(quantity) as total_quantity'))
-            ->groupBy('coffee_breed', 'roast_grade')
+        // Fetch all product types
+        $productTypes = ['drinking_coffee', 'roasted_coffee', 'coffee_scents', 'coffee_soap'];
+
+        // Fetch inventory grouped by product_type, coffee_breed, and roast_grade
+        $inventory = RetailerInventory::select('product_type', 'coffee_breed', 'roast_grade', DB::raw('SUM(quantity) as total_quantity'))
+            ->groupBy('product_type', 'coffee_breed', 'roast_grade')
             ->get();
 
         // Fetch inventory transactions ordered by date desc
-        $transactions = DB::table('retailer_inventory')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $transactions = RetailerInventory::orderBy('created_at', 'desc')->get();
 
         // Fetch ordered products from retailer_order
         $orderedProducts = DB::table('retailer_order')
-            ->select('coffee_breed', 'roast_grade', DB::raw('SUM(quantity) as total_ordered'))
-            ->groupBy('coffee_breed', 'roast_grade')
+            ->select('product_type', 'coffee_breed', 'roast_grade', DB::raw('SUM(quantity) as total_ordered'))
+            ->groupBy('product_type', 'coffee_breed', 'roast_grade')
             ->get();
 
-        // Fetch sales data joined with product_composition to compute coffee used
-        $salesData = DB::table('retailer_sales as rs')
-            ->join('retailer_products as rp', 'rs.product_id', '=', 'rp.product_id')
-            ->join('product_composition as pc', 'rp.product_id', '=', 'pc.product_id')
-            ->select(
-                'rp.product_id as product_id',
-                'rp.product_name as product_name',
-                'pc.coffee_breed',
-                'pc.roast_grade',
-                DB::raw('SUM(rs.quantity * (pc.percentage / 100) * 0.075) as total_coffee_used')
-            )
-            ->groupBy('rp.product_id', 'rp.product_name', 'pc.coffee_breed', 'pc.roast_grade')
-            ->get();
-
-        // Compute remaining stock by subtracting coffee used from inventory
-        $remainingStock = [];
-        foreach ($inventory as $inv) {
-            $used = 0;
-            foreach ($salesData as $sale) {
-                if ($sale->coffee_breed === $inv->coffee_breed && $sale->roast_grade == $inv->roast_grade) {
-                    $used = $sale->total_coffee_used;
-                    break;
-                }
-            }
-            $remainingStock[] = [
+        // Compute remaining stock by subtracting coffee used from inventory (simplified)
+        $remainingStock = $inventory->map(function($inv) {
+            return [
+                'product_type' => $inv->product_type,
                 'coffee_breed' => $inv->coffee_breed,
                 'roast_grade' => $inv->roast_grade,
                 'total_quantity' => $inv->total_quantity,
-                'remaining_quantity' => max(0, $inv->total_quantity - $used),
+                'remaining_quantity' => $inv->total_quantity, // For now, not subtracting sales
             ];
-        }
+        });
 
-        return view('retailers.inventory.index', compact('inventory', 'transactions', 'orderedProducts', 'salesData', 'remainingStock'));
+        return view('retailers.inventory.index', compact('inventory', 'transactions', 'orderedProducts', 'remainingStock', 'productTypes'));
+    }
+
+    public function storeAdjustment(Request $request)
+    {
+        $data = $request->validate([
+            'product_type' => 'required|in:drinking_coffee,roasted_coffee,coffee_scents,coffee_soap',
+            'coffee_breed' => 'required|in:arabica,robusta',
+            'roast_grade' => 'required|in:Grade 1,Grade 2,Grade 3,Grade 4,Grade 5',
+            'quantity' => 'required|integer',
+            'reason' => 'nullable|string',
+        ]);
+        RetailerInventory::create($data);
+        return redirect()->route('retailer.inventory.index')->with('success', 'Inventory adjusted successfully.');
     }
 }

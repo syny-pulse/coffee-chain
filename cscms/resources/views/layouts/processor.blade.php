@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Coffee Chain - @yield('title')</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/messages.css') }}" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -824,6 +825,7 @@
 </head>
 
 <body>
+    @include('partials.notifications')
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <button class="sidebar-toggle" onclick="toggleSidebar()">
@@ -888,8 +890,8 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.message.index') }}"
-                    class="{{ request()->routeIs('processor.message.*') ? 'active' : '' }}">
+                <a href="{{ route('messages.index') }}"
+                    class="{{ request()->routeIs('messages.*') ? 'active' : '' }}">
                     <i class="fas fa-envelope"></i>
                     <span>Messages</span>
                 </a>
@@ -937,6 +939,19 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        @hasSection('page-title')
+            <div class="page-header">
+                <h1>@yield('page-title')</h1> 
+                @hasSection('page-subtitle')
+                    <p class="page-subtitle">@yield('page-subtitle')</p>
+                @endif
+                @hasSection('page-actions')
+                    <div class="page-actions">
+                        @yield('page-actions')
+                    </div>
+                @endif
+            </div>
+        @endif
         @yield('content')
     </main>
 
@@ -986,7 +1001,7 @@
         });
     </script>
 
-    @yield('scripts')
+    @stack('scripts')
 </body>
 
 </html>
