@@ -160,25 +160,25 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <i class="fas fa-seedling" style="color: var(--coffee-medium);"></i>
-                                <strong>{{ ucfirst($material->name) }}</strong>
+                                <strong>{{ ucfirst($material->coffee_variety) }}</strong>
                             </div>
                         </td>
                         <td>{{ ucfirst($material->processing_method) }}</td>
-                        <td>{{ ucfirst($material->roast_level ?? 'N/A') }}</td>
-                        <td>{{ number_format($material->quantity_kg, 2) }}</td>
-                        <td>{{ number_format($material->quantity_kg, 2) }}</td>
-                        <td>UGX {{ number_format($material->price_per_kg, 2) }}</td>
+                        <td>{{ ucfirst($material->grade) }}</td>
+                        <td>{{ number_format($material->current_stock_kg, 2) }}</td>
+                        <td>{{ number_format($material->available_stock_kg, 2) }}</td>
+                        <td>UGX {{ number_format($material->average_cost_per_kg, 2) }}</td>
                         <td>
-                            @if($material->quantity_kg < 100)
+                            @if($material->current_stock_kg < 100)
                                 <span class="status-badge status-low">Low Stock</span>
-                            @elseif($material->quantity_kg < 500)
+                            @elseif($material->current_stock_kg < 500)
                                 <span class="status-badge status-medium">Medium</span>
                             @else
                                 <span class="status-badge status-high">Good</span>
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('processor.inventory.edit', $material->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
+                            <a href="{{ route('processor.inventory.edit', $material->inventory_id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>
@@ -243,7 +243,7 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('processor.inventory.edit', $product->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
+                            <a href="{{ route('processor.inventory.edit', $product->inventory_id ?? $product->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>

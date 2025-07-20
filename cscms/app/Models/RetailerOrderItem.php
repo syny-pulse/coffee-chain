@@ -11,7 +11,7 @@ class RetailerOrderItem extends Model
     protected $primaryKey = 'item_id';
     protected $fillable = [
         'order_id',
-        'product_id',
+        'recipe_id',
         'product_name',
         'product_variant',
         'quantity_units',
@@ -31,8 +31,8 @@ class RetailerOrderItem extends Model
         return $this->belongsTo(RetailerOrder::class, 'order_id', 'order_id');
     }
 
-    public function product(): BelongsTo
+    public function recipe(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'product_id', 'id');
+        return $this->belongsTo(ProductRecipe::class, 'recipe_id', 'recipe_id');
     }
 }

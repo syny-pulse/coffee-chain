@@ -103,51 +103,56 @@ class InventoryController extends Controller
         return view('processor.inventory.edit', compact('item'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login');
         }
 
-        if ($product->user_id !== $user->id) {
-            return abort(403, 'Unauthorized action.');
-        }
+        $item = ProcessorRawMaterialInventory::where('inventory_id', $id)
+            ->where('processor_company_id', $user->company_id)
+            ->firstOrFail();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'product_type' => 'required|in:green_beans,roasted_beans,ground_coffee',
-            'origin_country' => 'nullable|string|max:100',
-            'processing_method' => 'nullable|in:washed,natural,honey',
-            'roast_level' => 'nullable|in:light,medium,dark',
-            'quantity_kg' => 'required|numeric|min:0',
-            'price_per_kg' => 'nullable|numeric|min:0',
-            'quality_score' => 'nullable|numeric|min:1|max:10',
-            'harvest_date' => 'nullable|date',
-            'processing_date' => 'nullable|date',
-            'expiry_date' => 'nullable|date',
-            'description' => 'nullable|string',
-            'status' => 'required|in:available,reserved,sold,expired',
+            'coffee_variety' => 'required|in:arabica,robusta',
+            'processing_method' => 'required|in:washed,natural,honey',
+            'grade' => 'required|in:grade_1,grade_2,grade_3,grade_4,grade_5',
+            'current_stock_kg' => 'required|numeric|min:0',
+            'reserved_stock_kg' => 'required|numeric|min:0',
+            'available_stock_kg' => 'required|numeric|min:0',
+            'average_cost_per_kg' => 'nullable|numeric|min:0',
+            'last_updated' => 'nullable|date',
         ]);
 
-        $product->update($validated);
+        // Ensure available stock doesn't exceed current stock
+        if ($validated['available_stock_kg'] > $validated['current_stock_kg']) {
+            return back()->withErrors(['available_stock_kg' => 'Available stock cannot exceed current stock.'])->withInput();
+        }
 
-        return redirect()->route('processor.inventory.index')->with('success', 'Product updated successfully.');
+        // Ensure reserved stock doesn't exceed current stock
+        if ($validated['reserved_stock_kg'] > $validated['current_stock_kg']) {
+            return back()->withErrors(['reserved_stock_kg' => 'Reserved stock cannot exceed current stock.'])->withInput();
+        }
+
+        $item->update($validated);
+
+        return redirect()->route('processor.inventory.index')->with('success', 'Inventory item updated successfully.');
     }
 
-    public function destroy(Product $product)
+    public function destroy($id)
     {
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login');
         }
 
-        if ($product->user_id !== $user->id) {
-            return abort(403, 'Unauthorized action.');
-        }
+        $item = ProcessorRawMaterialInventory::where('inventory_id', $id)
+            ->where('processor_company_id', $user->company_id)
+            ->firstOrFail();
 
-        $product->delete();
+        $item->delete();
 
-        return redirect()->route('processor.inventory.index')->with('success', 'Product deleted successfully.');
+        return redirect()->route('processor.inventory.index')->with('success', 'Inventory item deleted successfully.');
     }
 }

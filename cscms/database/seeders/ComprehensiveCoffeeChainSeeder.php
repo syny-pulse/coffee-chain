@@ -470,18 +470,22 @@ class ComprehensiveCoffeeChainSeeder extends Seeder
         
         $coffeeVarieties = ['arabica', 'robusta'];
         $grades = ['grade_1', 'grade_2', 'grade_3', 'grade_4', 'grade_5'];
+        $processingMethods = ['natural', 'washed', 'honey'];
         
         foreach ($allCompanies as $company) {
             foreach ($coffeeVarieties as $variety) {
                 foreach ($grades as $grade) {
-                    $pricing[] = [
-                        'company_id' => $company->company_id,
-                        'coffee_variety' => $variety,
-                        'grade' => $grade,
-                        'unit_price' => rand(150, 800),
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now(),
-                    ];
+                    foreach ($processingMethods as $processingMethod) {
+                        $pricing[] = [
+                            'company_id' => $company->company_id,
+                            'coffee_variety' => $variety,
+                            'grade' => $grade,
+                            'processing_method' => $processingMethod,
+                            'unit_price' => rand(150, 800),
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ];
+                    }
                 }
             }
         }

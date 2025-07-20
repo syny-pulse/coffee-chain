@@ -24,92 +24,63 @@
 
     <!-- Inventory Form -->
     <div class="content-section fade-in">
-        <form action="{{ route('processor.inventory.update', $product->id) }}" method="POST" class="form-container">
+        <form action="{{ route('processor.inventory.update', $item->inventory_id) }}" method="POST" class="form-container">
             @csrf
             @method('PUT')
             
             <div class="form-group">
-                <label for="name">Product Name</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ $product->name }}" required>
-            </div>
-
-            <div class="form-group">
-                <label for="product_type">Product Type</label>
-                <select id="product_type" name="product_type" class="form-control" required>
-                    <option value="green_beans" {{ $product->product_type == 'green_beans' ? 'selected' : '' }}>Green Beans</option>
-                    <option value="roasted_beans" {{ $product->product_type == 'roasted_beans' ? 'selected' : '' }}>Roasted Beans</option>
-                    <option value="ground_coffee" {{ $product->product_type == 'ground_coffee' ? 'selected' : '' }}>Ground Coffee</option>
+                <label for="coffee_variety">Coffee Variety</label>
+                <select id="coffee_variety" name="coffee_variety" class="form-control" required>
+                    <option value="arabica" {{ $item->coffee_variety == 'arabica' ? 'selected' : '' }}>Arabica</option>
+                    <option value="robusta" {{ $item->coffee_variety == 'robusta' ? 'selected' : '' }}>Robusta</option>
                 </select>
-            </div>
-
-            <div class="form-group">
-                <label for="origin_country">Origin Country</label>
-                <input type="text" id="origin_country" name="origin_country" class="form-control" value="{{ $product->origin_country }}" placeholder="e.g., Uganda, Kenya, Ethiopia">
             </div>
 
             <div class="form-group">
                 <label for="processing_method">Processing Method</label>
-                <select id="processing_method" name="processing_method" class="form-control">
+                <select id="processing_method" name="processing_method" class="form-control" required>
                     <option value="">Select Method</option>
-                    <option value="washed" {{ $product->processing_method == 'washed' ? 'selected' : '' }}>Washed</option>
-                    <option value="natural" {{ $product->processing_method == 'natural' ? 'selected' : '' }}>Natural</option>
-                    <option value="honey" {{ $product->processing_method == 'honey' ? 'selected' : '' }}>Honey</option>
+                    <option value="washed" {{ $item->processing_method == 'washed' ? 'selected' : '' }}>Washed</option>
+                    <option value="natural" {{ $item->processing_method == 'natural' ? 'selected' : '' }}>Natural</option>
+                    <option value="honey" {{ $item->processing_method == 'honey' ? 'selected' : '' }}>Honey</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="roast_level">Roast Level</label>
-                <select id="roast_level" name="roast_level" class="form-control">
-                    <option value="">Select Roast Level</option>
-                    <option value="light" {{ $product->roast_level == 'light' ? 'selected' : '' }}>Light</option>
-                    <option value="medium" {{ $product->roast_level == 'medium' ? 'selected' : '' }}>Medium</option>
-                    <option value="dark" {{ $product->roast_level == 'dark' ? 'selected' : '' }}>Dark</option>
+                <label for="grade">Grade</label>
+                <select id="grade" name="grade" class="form-control" required>
+                    <option value="">Select Grade</option>
+                    <option value="grade_1" {{ $item->grade == 'grade_1' ? 'selected' : '' }}>Grade 1</option>
+                    <option value="grade_2" {{ $item->grade == 'grade_2' ? 'selected' : '' }}>Grade 2</option>
+                    <option value="grade_3" {{ $item->grade == 'grade_3' ? 'selected' : '' }}>Grade 3</option>
+                    <option value="grade_4" {{ $item->grade == 'grade_4' ? 'selected' : '' }}>Grade 4</option>
+                    <option value="grade_5" {{ $item->grade == 'grade_5' ? 'selected' : '' }}>Grade 5</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="quantity_kg">Quantity (kg)</label>
-                <input type="number" id="quantity_kg" name="quantity_kg" class="form-control" step="0.01" min="0" value="{{ $product->quantity_kg }}" required>
+                <label for="current_stock_kg">Current Stock (kg)</label>
+                <input type="number" id="current_stock_kg" name="current_stock_kg" class="form-control" step="0.01" min="0" value="{{ $item->current_stock_kg }}" required>
             </div>
 
             <div class="form-group">
-                <label for="price_per_kg">Price per kg (UGX)</label>
-                <input type="number" id="price_per_kg" name="price_per_kg" class="form-control" step="0.01" min="0" value="{{ $product->price_per_kg }}" placeholder="Enter price per kilogram">
+                <label for="reserved_stock_kg">Reserved Stock (kg)</label>
+                <input type="number" id="reserved_stock_kg" name="reserved_stock_kg" class="form-control" step="0.01" min="0" value="{{ $item->reserved_stock_kg }}" required>
             </div>
 
             <div class="form-group">
-                <label for="quality_score">Quality Score (1-10)</label>
-                <input type="number" id="quality_score" name="quality_score" class="form-control" min="1" max="10" step="0.1" value="{{ $product->quality_score }}" placeholder="Enter quality score">
+                <label for="available_stock_kg">Available Stock (kg)</label>
+                <input type="number" id="available_stock_kg" name="available_stock_kg" class="form-control" step="0.01" min="0" value="{{ $item->available_stock_kg }}" required>
             </div>
 
             <div class="form-group">
-                <label for="harvest_date">Harvest Date</label>
-                <input type="date" id="harvest_date" name="harvest_date" class="form-control" value="{{ $product->harvest_date ? $product->harvest_date->format('Y-m-d') : '' }}">
+                <label for="average_cost_per_kg">Average Cost per kg (UGX)</label>
+                <input type="number" id="average_cost_per_kg" name="average_cost_per_kg" class="form-control" step="0.01" min="0" value="{{ $item->average_cost_per_kg }}" placeholder="Enter average cost per kilogram">
             </div>
 
             <div class="form-group">
-                <label for="processing_date">Processing Date</label>
-                <input type="date" id="processing_date" name="processing_date" class="form-control" value="{{ $product->processing_date ? $product->processing_date->format('Y-m-d') : '' }}">
-            </div>
-
-            <div class="form-group">
-                <label for="expiry_date">Expiry Date</label>
-                <input type="date" id="expiry_date" name="expiry_date" class="form-control" value="{{ $product->expiry_date ? $product->expiry_date->format('Y-m-d') : '' }}">
-            </div>
-
-            <div class="form-group">
-                <label for="status">Status</label>
-                <select id="status" name="status" class="form-control" required>
-                    <option value="available" {{ $product->status == 'available' ? 'selected' : '' }}>Available</option>
-                    <option value="reserved" {{ $product->status == 'reserved' ? 'selected' : '' }}>Reserved</option>
-                    <option value="sold" {{ $product->status == 'sold' ? 'selected' : '' }}>Sold</option>
-                    <option value="expired" {{ $product->status == 'expired' ? 'selected' : '' }}>Expired</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter product description">{{ $product->description }}</textarea>
+                <label for="last_updated">Last Updated</label>
+                <input type="datetime-local" id="last_updated" name="last_updated" class="form-control" value="{{ $item->last_updated ? \Carbon\Carbon::parse($item->last_updated)->format('Y-m-d\TH:i') : '' }}">
             </div>
 
             <div class="auth-buttons">

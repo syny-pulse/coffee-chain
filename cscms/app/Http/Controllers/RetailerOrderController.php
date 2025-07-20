@@ -76,7 +76,7 @@ class RetailerOrderController extends Controller
         // Insert corresponding item
         \App\Models\RetailerOrderItem::create([
             'order_id' => $order->order_id,
-            'product_id' => 1, // Use 1 as a default valid product_id
+            'recipe_id' => 1, // Use 1 as a default valid recipe_id
             'product_name' => $pricing && isset($pricing->product_type) ? $pricing->product_type : 'drinking_coffee',
             'product_variant' => 'Standard',
             'quantity_units' => $data['quantity'],
