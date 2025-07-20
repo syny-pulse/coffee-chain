@@ -70,12 +70,12 @@
                     
                     <div class="info-item">
                         <label>Created</label>
-                        <span class="value">{{ $recipe->created_at->format('F d, Y \a\t g:i A') }}</span>
+                        <span class="value">{{ $recipe->created_at ? $recipe->created_at->format('F d, Y \a\t g:i A') : 'N/A' }}</span>
                     </div>
                     
                     <div class="info-item">
                         <label>Last Updated</label>
-                        <span class="value">{{ $recipe->updated_at->format('F d, Y \a\t g:i A') }}</span>
+                        <span class="value">{{ $recipe->updated_at ? $recipe->updated_at->format('F d, Y \a\t g:i A') : 'N/A' }}</span>
                     </div>
                 </div>
             </div>

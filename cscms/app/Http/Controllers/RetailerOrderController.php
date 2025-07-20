@@ -63,31 +63,25 @@ class RetailerOrderController extends Controller
         $totalAmount = $unitPrice * $data['quantity'];
         $orderNumber = 'RO-' . strtoupper(uniqid());
         // Insert order and get ID
-        $orderId = DB::table('retailer_orders')->insertGetId([
+        $order = \App\Models\RetailerOrder::create([
             'order_number' => $orderNumber,
             'processor_company_id' => $data['processor_company_id'],
-            'coffee_breed' => $data['coffee_breed'],
-            'roast_grade' => $data['roast_grade'],
-            'quantity' => $data['quantity'],
+            'retailer_company_id' => \Illuminate\Support\Facades\Auth::user()->company_id,
             'expected_delivery_date' => $data['expected_delivery_date'],
             'shipping_address' => $data['shipping_address'],
             'notes' => $data['notes'] ?? null,
             'order_status' => 'pending',
             'total_amount' => $totalAmount,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
         // Insert corresponding item
-        DB::table('retailer_order_items')->insert([
-            'order_id' => $orderId,
-            'recipe_id' => 1, // Use 1 as a default valid recipe_id
+        \App\Models\RetailerOrderItem::create([
+            'order_id' => $order->order_id,
+            'product_id' => 1, // Use 1 as a default valid product_id
             'product_name' => $pricing && isset($pricing->product_type) ? $pricing->product_type : 'drinking_coffee',
             'product_variant' => 'Standard',
             'quantity_units' => $data['quantity'],
             'unit_price' => $unitPrice,
             'line_total' => $totalAmount,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
         return redirect()->route('retailer.orders.index')->with('success', 'Order created successfully.');
@@ -99,34 +93,16 @@ class RetailerOrderController extends Controller
             'status' => 'required|in:pending,delivered,cancelled',
         ]);
 
-        $order = DB::table('retailer_orders')->where('id', $id)->first();
-
-        DB::table('retailer_orders')->where('id', $id)->update([
+        $order = \App\Models\RetailerOrder::findOrFail($id);
+        $order->update([
             'order_status' => $data['status'],
-            'updated_at' => now(),
         ]);
 
-        // If status changed to delivered, increase inventory and record transaction
-        if ($order && $order->order_status !== 'delivered' && $data['status'] === 'delivered') {
-            $productType = $order->product_type ?? 'drinking_coffee';
-            // Increase inventory
-            $existingInventory = RetailerInventory::where('product_type', $productType)
-                ->where('coffee_breed', $order->coffee_breed)
-                ->where('roast_grade', $order->roast_grade)
-                ->first();
-
-            if ($existingInventory) {
-                $existingInventory->increment('quantity', $order->quantity);
-            } else {
-                RetailerInventory::create([
-                    'product_type' => $productType,
-                    'coffee_breed' => $order->coffee_breed,
-                    'roast_grade' => $order->roast_grade,
-                    'quantity' => $order->quantity,
-                ]);
-            }
-            // Record transaction (optional, if you have a transaction model/table)
-            // DB::table('retailer_inventory_transactions')->insert([...]);
+        // If status changed to delivered, update actual delivery date
+        if ($order->order_status !== 'delivered' && $data['status'] === 'delivered') {
+            $order->update([
+                'actual_delivery_date' => now(),
+            ]);
         }
 
         return redirect()->route('retailer.orders.index')->with('success', 'Order status updated successfully.');

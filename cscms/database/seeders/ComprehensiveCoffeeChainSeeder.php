@@ -261,26 +261,26 @@ class ComprehensiveCoffeeChainSeeder extends Seeder
     {
         $recipes = [
             // Drinking Coffee Recipes
-            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Classic Espresso', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_1', 'percentage_composition' => 100.00],
-            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Smooth Latte', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_2', 'percentage_composition' => 80.00],
-            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Rich Cappuccino', 'coffee_variety' => 'arabica', 'processing_method' => 'natural', 'required_grade' => 'grade_2', 'percentage_composition' => 85.00],
-            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Bold Americano', 'coffee_variety' => 'robusta', 'processing_method' => 'washed', 'required_grade' => 'grade_3', 'percentage_composition' => 100.00],
+            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Classic Espresso', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_1', 'percentage_composition' => 100.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Smooth Latte', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_2', 'percentage_composition' => 80.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Rich Cappuccino', 'coffee_variety' => 'arabica', 'processing_method' => 'natural', 'required_grade' => 'grade_2', 'percentage_composition' => 85.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'drinking_coffee', 'recipe_name' => 'Bold Americano', 'coffee_variety' => 'robusta', 'processing_method' => 'washed', 'required_grade' => 'grade_3', 'percentage_composition' => 100.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             
             // Roasted Coffee Recipes
-            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Light Roast Arabica', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_1', 'percentage_composition' => 100.00],
-            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Medium Roast Blend', 'coffee_variety' => 'arabica', 'processing_method' => 'natural', 'required_grade' => 'grade_2', 'percentage_composition' => 70.00],
-            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Dark Roast Robusta', 'coffee_variety' => 'robusta', 'processing_method' => 'washed', 'required_grade' => 'grade_3', 'percentage_composition' => 100.00],
-            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Premium Single Origin', 'coffee_variety' => 'arabica', 'processing_method' => 'honey', 'required_grade' => 'grade_1', 'percentage_composition' => 100.00],
+            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Light Roast Arabica', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_1', 'percentage_composition' => 100.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Medium Roast Blend', 'coffee_variety' => 'arabica', 'processing_method' => 'natural', 'required_grade' => 'grade_2', 'percentage_composition' => 70.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Dark Roast Robusta', 'coffee_variety' => 'robusta', 'processing_method' => 'washed', 'required_grade' => 'grade_3', 'percentage_composition' => 100.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'roasted_coffee', 'recipe_name' => 'Premium Single Origin', 'coffee_variety' => 'arabica', 'processing_method' => 'honey', 'required_grade' => 'grade_1', 'percentage_composition' => 100.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             
             // Coffee Scents Recipes
-            ['product_name' => 'coffee_scents', 'recipe_name' => 'Morning Brew Scent', 'coffee_variety' => 'arabica', 'processing_method' => 'natural', 'required_grade' => 'grade_4', 'percentage_composition' => 60.00],
-            ['product_name' => 'coffee_scents', 'recipe_name' => 'Roasted Bean Aroma', 'coffee_variety' => 'robusta', 'processing_method' => 'washed', 'required_grade' => 'grade_4', 'percentage_composition' => 50.00],
-            ['product_name' => 'coffee_scents', 'recipe_name' => 'Vanilla Coffee Blend', 'coffee_variety' => 'arabica', 'processing_method' => 'honey', 'required_grade' => 'grade_3', 'percentage_composition' => 40.00],
+            ['product_name' => 'coffee_scents', 'recipe_name' => 'Morning Brew Scent', 'coffee_variety' => 'arabica', 'processing_method' => 'natural', 'required_grade' => 'grade_4', 'percentage_composition' => 60.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'coffee_scents', 'recipe_name' => 'Roasted Bean Aroma', 'coffee_variety' => 'robusta', 'processing_method' => 'washed', 'required_grade' => 'grade_4', 'percentage_composition' => 50.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'coffee_scents', 'recipe_name' => 'Vanilla Coffee Blend', 'coffee_variety' => 'arabica', 'processing_method' => 'honey', 'required_grade' => 'grade_3', 'percentage_composition' => 40.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             
             // Coffee Soap Recipes
-            ['product_name' => 'coffee_soap', 'recipe_name' => 'Exfoliating Coffee Soap', 'coffee_variety' => 'robusta', 'processing_method' => 'natural', 'required_grade' => 'grade_5', 'percentage_composition' => 30.00],
-            ['product_name' => 'coffee_soap', 'recipe_name' => 'Luxury Coffee Soap', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_4', 'percentage_composition' => 25.00],
-            ['product_name' => 'coffee_soap', 'recipe_name' => 'Organic Coffee Soap', 'coffee_variety' => 'arabica', 'processing_method' => 'honey', 'required_grade' => 'grade_4', 'percentage_composition' => 35.00],
+            ['product_name' => 'coffee_soap', 'recipe_name' => 'Exfoliating Coffee Soap', 'coffee_variety' => 'robusta', 'processing_method' => 'natural', 'required_grade' => 'grade_5', 'percentage_composition' => 30.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'coffee_soap', 'recipe_name' => 'Luxury Coffee Soap', 'coffee_variety' => 'arabica', 'processing_method' => 'washed', 'required_grade' => 'grade_4', 'percentage_composition' => 25.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['product_name' => 'coffee_soap', 'recipe_name' => 'Organic Coffee Soap', 'coffee_variety' => 'arabica', 'processing_method' => 'honey', 'required_grade' => 'grade_4', 'percentage_composition' => 35.00, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
         ];
 
         return ProductRecipe::insert($recipes);

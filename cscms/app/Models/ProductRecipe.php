@@ -8,6 +8,7 @@ class ProductRecipe extends Model
 {
     protected $table = 'product_recipes';
     protected $primaryKey = 'recipe_id';
+    public $timestamps = true;
     
     protected $fillable = [
         'product_name',
@@ -15,7 +16,9 @@ class ProductRecipe extends Model
         'coffee_variety',
         'processing_method',
         'required_grade',
-        'percentage_composition'
+        'percentage_composition',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [

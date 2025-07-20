@@ -79,7 +79,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ $recipe->created_at->format('M d, Y') }}</td>
+                            <td>{{ $recipe->created_at ? $recipe->created_at->format('M d, Y') : 'N/A' }}</td>
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ route('retailer.product_recipes.show', $recipe->recipe_id) }}" 
@@ -165,7 +165,7 @@
                                     <span class="text-muted">No components</span>
                                 @endif
                             </td>
-                            <td>{{ \Carbon\Carbon::parse($product->created_at)->format('M d, Y') }}</td>
+                            <td>{{ $product->created_at ? \Carbon\Carbon::parse($product->created_at)->format('M d, Y') : 'N/A' }}</td>
                         </tr>
                         @endforeach
                     </tbody>

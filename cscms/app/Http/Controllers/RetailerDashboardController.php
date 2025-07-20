@@ -29,7 +29,7 @@ class RetailerDashboardController extends Controller
             ->join('retailer_products as rp', 'rs.product_id', '=', 'rp.product_id')
             ->where('rs.date', $today)
             ->sum(\DB::raw('rs.quantity * rp.price_per_kg'));
-        $pendingOrders = \DB::table('retailer_orders')->where('order_status', 'pending')->count();
+        $pendingOrders = \App\Models\RetailerOrder::where('retailer_company_id', $company->company_id)->where('order_status', 'pending')->count();
         $stats = [
             'cups_sold_today' => $cupsSoldToday,
             'stock_level' => $stockLevel,
