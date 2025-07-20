@@ -215,8 +215,14 @@
             const farmerSelect = document.getElementById('farmer_company_id');
             farmerSelect.innerHTML = '<option value="">Select a Farmer Company</option>';
             farmerSelect.disabled = true;
+            
+            console.log('Coffee variety changed to:', variety);
+            
             if (variety) {
-                fetch(`{{ route('processor.order.farmer_order.getFarmersByVariety') }}?coffee_variety=${variety}`, {
+                const url = `{{ route('processor.order.farmer_order.getFarmersByVariety') }}?coffee_variety=${variety}`;
+                console.log('Fetching farmers from URL:', url);
+                
+                fetch(url, {
                         method: 'GET',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
@@ -226,9 +232,16 @@
                         },
                         credentials: 'same-origin'
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.farmers && data.farmers.length > 0) {
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json().then(data => ({
+                            status: response.status,
+                            data
+                        }));
+                    })
+                    .then(({status, data}) => {
+                        console.log('Response data:', data);
+                        if (status === 200 && data.farmers && data.farmers.length > 0) {
                             data.farmers.forEach(farmer => {
                                 const option = document.createElement('option');
                                 option.value = farmer.company_id;
@@ -236,19 +249,23 @@
                                 farmerSelect.appendChild(option);
                             });
                             farmerSelect.disabled = false;
+                            console.log('Farmers loaded successfully:', data.farmers.length, 'farmers');
                         } else {
                             farmerSelect.innerHTML =
                                 '<option value="">No farmer companies found for this variety</option>';
                             farmerSelect.disabled = true;
+                            console.log('No farmers found for variety:', variety);
                         }
                         fetchUnitPrice(); // Trigger price fetch after farmers are loaded
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        console.error('Error fetching farmers:', error);
                         farmerSelect.innerHTML = '<option value="">Error loading farmer companies</option>';
                         farmerSelect.disabled = true;
                         fetchUnitPrice(); // Still attempt to fetch price
                     });
             } else {
+                console.log('No variety selected, clearing farmers');
                 fetchUnitPrice(); // Update price if variety is cleared
             }
         });

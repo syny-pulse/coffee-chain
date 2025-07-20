@@ -36,6 +36,13 @@ class FarmerOrderController extends Controller
             'coffee_variety' => 'required|in:arabica,robusta',
         ]);
 
+        // Log the request for debugging
+        Log::info('getFarmersByVariety called with:', [
+            'coffee_variety' => $request->coffee_variety,
+            'user_id' => Auth::id(),
+            'user_type' => Auth::user()->user_type ?? 'not set'
+        ]);
+
         // Find farmers who have pricing for the selected variety
         $farmers = Company::where('company_type', 'farmer')
             ->where('acceptance_status', 'accepted')
@@ -44,6 +51,12 @@ class FarmerOrderController extends Controller
             })
             ->select('company_id', 'company_name')
             ->get();
+
+        // Log the results for debugging
+        Log::info('Farmers found:', [
+            'count' => $farmers->count(),
+            'farmers' => $farmers->toArray()
+        ]);
 
         return response()->json(['farmers' => $farmers]);
     }
