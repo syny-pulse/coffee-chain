@@ -174,11 +174,11 @@
 
                         <div class="pricing-inputs">
                             <input type="hidden" name="prices[{{ $index }}][coffee_variety]"
-                                value="{{ $price['coffee_variety'] }}">
+                                value="{{ strtolower(trim($price['coffee_variety'])) }}">
                             <input type="hidden" name="prices[{{ $index }}][grade]"
-                                value="{{ $price['grade'] }}">
+                                value="{{ strtolower(str_replace(' ', '_', trim($price['grade']))) }}">
                             <input type="hidden" name="prices[{{ $index }}][processing_method]"
-                                value="{{ $price['processing_method'] }}">
+                                value="{{ strtolower(trim($price['processing_method'])) }}">
                             <div class="form-group">
                                 <label for="unit_price_{{ $index }}" class="form-label">Your Price
                                     (UGX/kg)
