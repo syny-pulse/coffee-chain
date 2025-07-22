@@ -62,7 +62,7 @@
                 <td>{{ $sale->date }}</td>
                 <td>{{ $sale->product_name }}</td>
                 <td>{{ $sale->quantity }}</td>
-                <td>{{ $inventory[$sale->product_id]->quantity ?? 'N/A' }}</td>
+                <td>{{ $inventoryMap[$sale->product_id] ?? 0 }}</td>
             </tr>
             @empty
             <tr>
@@ -78,28 +78,45 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Chart.js sales chart
+    // Chart.js multi-series sales chart by product
     const ctx = document.getElementById('salesChart').getContext('2d');
-    const salesByDay = @json($salesByDay ?? []);
-    const labels = salesByDay.map(row => row.date);
-    const data = salesByDay.map(row => row.total_sold);
+    const salesByProductDay = @json($salesByProductDay ?? []);
+    // Group data by product
+    const productNames = [...new Set(salesByProductDay.map(row => row.product_name))];
+    const dates = [...new Set(salesByProductDay.map(row => row.date))];
+    // Build datasets for each product
+    const datasets = productNames.map((product, idx) => {
+        const color = [
+            '#8B7355', '#B8956A', '#6B8E23', '#A0522D', '#708090', '#CD853F', '#3A2B1F', '#5D4E37'
+        ][idx % 8];
+        return {
+            label: product,
+            data: dates.map(date => {
+                const found = salesByProductDay.find(row => row.product_name === product && row.date === date);
+                return found ? found.total_sold : 0;
+            }),
+            borderColor: color,
+            backgroundColor: color + '33', // semi-transparent
+            fill: false,
+            tension: 0.3
+        };
+    });
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
-            datasets: [{
-                label: 'Units Sold',
-                data: data,
-                borderColor: '#8B7355',
-                backgroundColor: 'rgba(139, 115, 85, 0.1)',
-                fill: true,
-                tension: 0.3
-            }]
+            labels: dates,
+            datasets: datasets
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false }
+                legend: { display: true, position: 'top' },
+                tooltip: { enabled: true }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
             },
             scales: {
                 y: { beginAtZero: true }

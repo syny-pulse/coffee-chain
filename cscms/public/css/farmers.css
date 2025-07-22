@@ -200,6 +200,8 @@ body {
 .sidebar-nav {
     padding: 1.5rem 0;
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .nav-section {
@@ -1268,4 +1270,58 @@ body.sidebar-hidden .sidebar-toggle-btn:hover::after {
     background: var(--coffee-medium);
     color: #fff;
     border-color: var(--coffee-medium);
+}
+
+.sidebar .user-profile {
+    /* Position at the bottom */
+    margin-top: auto;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    
+    /* Prevent it from shrinking */
+    flex-shrink: 0;
+    
+    /* Layout for the profile content */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--coffee-medium), var(--coffee-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar .user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sidebar .user-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar .user-role {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

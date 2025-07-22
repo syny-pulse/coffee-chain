@@ -63,13 +63,7 @@
                 </div>
             </div>
             <!-- End Quick Actions Dropdown -->
-            <div class="user-profile">
-                <div class="user-avatar">{{ substr(auth()->user()->name ?? 'F', 0, 1) }}</div>
-                <div class="user-info">
-                    <div class="user-name">{{ auth()->user()->name ?? 'Farmer' }}</div>
-                    <div class="user-role">Coffee Farmer</div>
-                </div>
-            </div>
+            
             <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                 @csrf
                 <button type="submit" class="logout-btn">
@@ -149,6 +143,14 @@
                             @endif
                         </a>
                     </div>
+                </div>
+
+                <div class="user-profile">
+                <div class="user-avatar">{{ substr(auth()->user()->name ?? 'F', 0, 1) }}</div>
+                <div class="user-info">
+                    <div class="user-name">{{ auth()->user()->name ?? 'Farmer' }}</div>
+                    <div class="user-role">Coffee Farmer</div>
+                </div>
                 </div>
             </nav>
         </div>

@@ -25,6 +25,7 @@ class RetailerSalesController extends Controller
             $query->where('retailer_sales.product_id', $request->product_id);
         }
         $sales = $query->orderByDesc('retailer_sales.date')->orderByDesc('retailer_sales.id')->limit(30)->get();
+        // Fetch inventory by product_id and ensure up-to-date values
         $inventory = \DB::table('retailer_inventory')->get()->keyBy('product_id');
         // Export CSV
         if ($request->get('export') === 'csv') {
@@ -37,7 +38,7 @@ class RetailerSalesController extends Controller
                 'Content-Disposition' => 'attachment; filename="sales.csv"',
             ]);
         }
-        // Sales by day for chart
+        // Sales by day for chart (total)
         $salesByDayQuery = \DB::table('retailer_sales')
             ->select('date', \DB::raw('SUM(quantity) as total_sold'));
         if ($request->filled('date_from')) {
@@ -50,7 +51,27 @@ class RetailerSalesController extends Controller
             $salesByDayQuery->where('product_id', $request->product_id);
         }
         $salesByDay = $salesByDayQuery->groupBy('date')->orderBy('date')->get();
-        return view('retailers.sales.index', compact('products', 'sales', 'inventory', 'salesByDay'));
+        // Sales by day and product for multi-series chart
+        $salesByProductDayQuery = \DB::table('retailer_sales')
+            ->join('retailer_products', 'retailer_sales.product_id', '=', 'retailer_products.product_id')
+            ->select('retailer_sales.date', 'retailer_sales.product_id', 'retailer_products.name as product_name', \DB::raw('SUM(retailer_sales.quantity) as total_sold'));
+        if ($request->filled('date_from')) {
+            $salesByProductDayQuery->where('retailer_sales.date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $salesByProductDayQuery->where('retailer_sales.date', '<=', $request->date_to);
+        }
+        if ($request->filled('product_id')) {
+            $salesByProductDayQuery->where('retailer_sales.product_id', $request->product_id);
+        }
+        $salesByProductDay = $salesByProductDayQuery->groupBy('retailer_sales.date', 'retailer_sales.product_id', 'retailer_products.name')->orderBy('retailer_sales.date')->get();
+        // Build inventory map by product_id for the table (ensure always present)
+        $inventoryMap = [];
+        foreach ($products as $product) {
+            $inv = $inventory[$product->product_id] ?? null;
+            $inventoryMap[$product->product_id] = $inv ? $inv->quantity : 0;
+        }
+        return view('retailers.sales.index', compact('products', 'sales', 'inventoryMap', 'salesByDay', 'salesByProductDay'));
     }
 
     public function create()
