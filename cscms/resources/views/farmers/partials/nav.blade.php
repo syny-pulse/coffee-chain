@@ -12,7 +12,7 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('farmers.communication.index') }}">
+            <a href="{{ route('messages.index') }}">
                 <i class="fas fa-comments"></i> Communication
                 @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
                     <span class="notification-badge">{{ $unreadMessagesCount }}</span>

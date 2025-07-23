@@ -12,5 +12,6 @@ class Pricing extends Model
         'coffee_variety',
         'grade',
         'unit_price',
+        'processing_method',
     ];
 } 

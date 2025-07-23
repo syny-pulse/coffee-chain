@@ -11,22 +11,24 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    // In database/seeders/DatabaseSeeder.php
     public function run(): void
     {
+        // Use the comprehensive seeder for complete data
         $this->call([
-            UserSeeder::class,
-            CompanySeeder::class,
-            HarvestSeeder::class,
-            OrderSeeder::class,
-            MessageSeeder::class,
-            EmployeeSeeder::class,
-            InventorySeeder::class,
-            PricingSeeder::class,
+            ComprehensiveCoffeeChainSeeder::class,
         ]);
-
-        $this->call([
-            ProcessorSeeder::class,
-        ]);
+        
+        // Alternatively, you can use individual seeders if needed
+        // $this->call([
+        //     UserSeeder::class,
+        //     CompanySeeder::class,
+        //     HarvestSeeder::class,
+        //     OrderSeeder::class,
+        //     MessageSeeder::class,
+        //     EmployeeSeeder::class,
+        //     InventorySeeder::class,
+        //     PricingSeeder::class,
+        //     ProcessorSeeder::class,
+        // ]);
     }
 }

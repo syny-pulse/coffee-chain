@@ -140,7 +140,7 @@ class DashboardController extends Controller
                 'time' => $msg->created_at,
                 'human_time' => $msg->created_at->diffForHumans(),
                 'id' => $msg->id,
-                'link' => route('farmers.communication.index') . '#msg-' . $msg->id
+                'link' => route('messages.index') . '#msg-' . $msg->id
             ];
         }
         // Sort all activities by actual timestamp desc

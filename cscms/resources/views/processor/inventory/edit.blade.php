@@ -1,17 +1,14 @@
 @extends('layouts.processor')
 
-@section('title', 'Edit Inventory Item')
+@section('title', 'Edit Finished Good')
 
 @section('content')
-    <!-- Dashboard Header -->
     <div class="dashboard-header fade-in">
         <div class="dashboard-title">
             <i class="fas fa-edit"></i>
             <div>
-                <h1>Edit Inventory Item</h1>
-                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
-                    Update inventory item details
-                </p>
+                <h1>Edit Finished Good</h1>
+                <p>Update the details for this inventory item.</p>
             </div>
         </div>
         <div class="dashboard-actions">
@@ -22,108 +19,111 @@
         </div>
     </div>
 
-    <!-- Inventory Form -->
     <div class="content-section fade-in">
-        <form action="{{ route('processor.inventory.update', $product->id) }}" method="POST" class="form-container">
+        <form action="{{ route('processor.inventory.update', $item->inventory_id) }}" method="POST" class="form-container">
             @csrf
             @method('PUT')
             
             <div class="form-group">
-                <label for="name">Product Name</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ $product->name }}" required>
-            </div>
-
-            <div class="form-group">
-                <label for="product_type">Product Type</label>
-                <select id="product_type" name="product_type" class="form-control" required>
-                    <option value="green_beans" {{ $product->product_type == 'green_beans' ? 'selected' : '' }}>Green Beans</option>
-                    <option value="roasted_beans" {{ $product->product_type == 'roasted_beans' ? 'selected' : '' }}>Roasted Beans</option>
-                    <option value="ground_coffee" {{ $product->product_type == 'ground_coffee' ? 'selected' : '' }}>Ground Coffee</option>
+                <label for="product_name">Product Type</label>
+                <select id="product_name" name="product_name" class="form-control" required>
+                    <option value="">Select Product Type</option>
+                    @foreach($product_types as $type)
+                        <option value="{{ $type }}" {{ $item->product_name == $type ? 'selected' : '' }}>
+                            {{ ucwords(str_replace('_', ' ', $type)) }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="origin_country">Origin Country</label>
-                <input type="text" id="origin_country" name="origin_country" class="form-control" value="{{ $product->origin_country }}" placeholder="e.g., Uganda, Kenya, Ethiopia">
-            </div>
-
-            <div class="form-group">
-                <label for="processing_method">Processing Method</label>
-                <select id="processing_method" name="processing_method" class="form-control">
-                    <option value="">Select Method</option>
-                    <option value="washed" {{ $product->processing_method == 'washed' ? 'selected' : '' }}>Washed</option>
-                    <option value="natural" {{ $product->processing_method == 'natural' ? 'selected' : '' }}>Natural</option>
-                    <option value="honey" {{ $product->processing_method == 'honey' ? 'selected' : '' }}>Honey</option>
+                <label for="recipe_id">Recipe</label>
+                <select id="recipe_id" name="recipe_id" class="form-control" required>
+                    <option value="">Select Product Type First</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="roast_level">Roast Level</label>
-                <select id="roast_level" name="roast_level" class="form-control">
-                    <option value="">Select Roast Level</option>
-                    <option value="light" {{ $product->roast_level == 'light' ? 'selected' : '' }}>Light</option>
-                    <option value="medium" {{ $product->roast_level == 'medium' ? 'selected' : '' }}>Medium</option>
-                    <option value="dark" {{ $product->roast_level == 'dark' ? 'selected' : '' }}>Dark</option>
-                </select>
+                <label for="product_variant">Product Variant</label>
+                <input type="text" id="product_variant" name="product_variant" class="form-control" value="{{ $item->product_variant }}" required>
             </div>
 
             <div class="form-group">
-                <label for="quantity_kg">Quantity (kg)</label>
-                <input type="number" id="quantity_kg" name="quantity_kg" class="form-control" step="0.01" min="0" value="{{ $product->quantity_kg }}" required>
+                <label for="current_stock_units">Current Stock (units)</label>
+                <input type="number" id="current_stock_units" name="current_stock_units" class="form-control" value="{{ $item->current_stock_units }}" min="0" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="production_cost_per_unit">Production Cost per Unit (UGX)</label>
+                <input type="number" id="production_cost_per_unit" name="production_cost_per_unit" class="form-control" value="{{ $item->production_cost_per_unit }}" min="0" step="0.01" required>
             </div>
 
             <div class="form-group">
-                <label for="price_per_kg">Price per kg (UGX)</label>
-                <input type="number" id="price_per_kg" name="price_per_kg" class="form-control" step="0.01" min="0" value="{{ $product->price_per_kg }}" placeholder="Enter price per kilogram">
+                <label for="selling_price_per_unit">Selling Price per Unit (UGX)</label>
+                <input type="number" id="selling_price_per_unit" name="selling_price_per_unit" class="form-control" value="{{ $item->selling_price_per_unit }}" min="0" step="0.01" required>
             </div>
-
-            <div class="form-group">
-                <label for="quality_score">Quality Score (1-10)</label>
-                <input type="number" id="quality_score" name="quality_score" class="form-control" min="1" max="10" step="0.1" value="{{ $product->quality_score }}" placeholder="Enter quality score">
-            </div>
-
-            <div class="form-group">
-                <label for="harvest_date">Harvest Date</label>
-                <input type="date" id="harvest_date" name="harvest_date" class="form-control" value="{{ $product->harvest_date ? $product->harvest_date->format('Y-m-d') : '' }}">
-            </div>
-
-            <div class="form-group">
-                <label for="processing_date">Processing Date</label>
-                <input type="date" id="processing_date" name="processing_date" class="form-control" value="{{ $product->processing_date ? $product->processing_date->format('Y-m-d') : '' }}">
-            </div>
-
-            <div class="form-group">
-                <label for="expiry_date">Expiry Date</label>
-                <input type="date" id="expiry_date" name="expiry_date" class="form-control" value="{{ $product->expiry_date ? $product->expiry_date->format('Y-m-d') : '' }}">
-            </div>
-
-            <div class="form-group">
-                <label for="status">Status</label>
-                <select id="status" name="status" class="form-control" required>
-                    <option value="available" {{ $product->status == 'available' ? 'selected' : '' }}>Available</option>
-                    <option value="reserved" {{ $product->status == 'reserved' ? 'selected' : '' }}>Reserved</option>
-                    <option value="sold" {{ $product->status == 'sold' ? 'selected' : '' }}>Sold</option>
-                    <option value="expired" {{ $product->status == 'expired' ? 'selected' : '' }}>Expired</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter product description">{{ $product->description }}</textarea>
-            </div>
-
-            <div class="auth-buttons">
+            
+            <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
-                    Update Item
+                    Update Finished Good
                 </button>
-                <a href="{{ route('processor.inventory.index') }}" class="btn btn-outline">
-                    <i class="fas fa-times"></i>
-                    Cancel
-                </a>
             </div>
         </form>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productNameSelect = document.getElementById('product_name');
+        const recipeSelect = document.getElementById('recipe_id');
+
+        function fetchRecipes(productType, selectedRecipeId = null) {
+            if (!productType) {
+                recipeSelect.innerHTML = '<option value="">Select Product Type First</option>';
+                recipeSelect.disabled = true;
+                return;
+            }
+            
+            recipeSelect.innerHTML = '<option value="">Loading recipes...</option>';
+            recipeSelect.disabled = false;
+
+            fetch(`{{ route('processor.inventory.fetchRecipes') }}?product_name=${productType}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.recipes && data.recipes.length > 0) {
+                        recipeSelect.innerHTML = '<option value="">Select Recipe</option>';
+                        data.recipes.forEach(recipe => {
+                            const option = document.createElement('option');
+                            option.value = recipe.recipe_id;
+                            option.textContent = `${recipe.recipe_name} (${recipe.coffee_variety}, ${recipe.processing_method}, ${recipe.required_grade})`;
+                            if (selectedRecipeId && recipe.recipe_id == selectedRecipeId) {
+                                option.selected = true;
+                            }
+                            recipeSelect.appendChild(option);
+                        });
+                        recipeSelect.disabled = false;
+                    } else {
+                        recipeSelect.innerHTML = '<option value="">No recipes found for this product type</option>';
+                        recipeSelect.disabled = true;
+                    }
+                })
+                .catch(() => {
+                    recipeSelect.innerHTML = '<option value="">Error loading recipes</option>';
+                    recipeSelect.disabled = true;
+                });
+        }
+
+        // Fetch recipes on page load for the current product type
+        const initialProductType = productNameSelect.value;
+        const initialRecipeId = "{{ $item->recipe_id }}";
+        fetchRecipes(initialProductType, initialRecipeId);
+
+        // Fetch recipes when product type changes
+        productNameSelect.addEventListener('change', function() {
+            fetchRecipes(this.value);
+        });
+    });
+    </script>
 @endsection
 
 @section('scripts')

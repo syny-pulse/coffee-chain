@@ -21,6 +21,7 @@ class Message extends Model
         'message_type',
         'priority',
         'is_read',
+        'attachment_path',
     ];
 
     protected $casts = [

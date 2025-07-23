@@ -133,17 +133,19 @@ class AnalyticsController extends Controller
             $monthStart = $date->startOfMonth();
             $monthEnd = $date->copy()->endOfMonth();
             
-            // Get finished goods created in this month (if processing_date is available)
-            $monthlyProduction = \App\Models\Product::where('user_id', auth()->user()->id)
-                ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
-                ->whereBetween('processing_date', [$monthStart, $monthEnd])
-                ->sum('quantity_kg');
+            // Use processor_finished_goods_inventory for finished goods
+            $monthlyProduction = \Illuminate\Support\Facades\DB::table('processor_finished_goods_inventory')
+                ->where('processor_company_id', $processorCompanyId)
+                ->whereIn('product_name', ['roasted_coffee', 'ground_coffee'])
+                ->whereBetween('last_updated', [$monthStart, $monthEnd])
+                ->sum('current_stock_units');
             
-            // If no processing_date data, estimate based on current inventory
+            // If no production data, estimate based on current inventory
             if ($monthlyProduction == 0) {
-                $monthlyProduction = \App\Models\Product::where('user_id', auth()->user()->id)
-                    ->whereIn('product_type', ['roasted_beans', 'ground_coffee'])
-                    ->sum('quantity_kg') / 6; // Distribute current inventory across 6 months
+                $monthlyProduction = \Illuminate\Support\Facades\DB::table('processor_finished_goods_inventory')
+                    ->where('processor_company_id', $processorCompanyId)
+                    ->whereIn('product_name', ['roasted_coffee', 'ground_coffee'])
+                    ->sum('current_stock_units') / 6;
             }
             
             $productionData[] = round($monthlyProduction, 0);

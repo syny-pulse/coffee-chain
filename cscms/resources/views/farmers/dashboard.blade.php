@@ -69,7 +69,7 @@
                 <div class="action-title">Reports</div>
                 <div class="action-desc">View analytics and performance insights</div>
             </a>
-            <a href="{{ route('farmers.communication.index') }}" class="action-card">
+            <a href="{{ route('messages.index') }}" class="action-card">
                 <div class="action-icon"><i class="fas fa-comments"></i></div>
                 <div class="action-title">Messages</div>
                 <div class="action-desc">Communicate with buyers and partners</div>

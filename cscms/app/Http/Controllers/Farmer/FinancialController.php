@@ -117,9 +117,9 @@ class FinancialController extends Controller
     $company = $user->company;
     $request->validate([
         'prices' => 'required|array|min:1',
-        'prices.*.coffee_variety' => 'required|in:arabica,robusta',
-        'prices.*.grade' => 'required|in:grade_1,grade_2,grade_3,grade_4,grade_5',
-        'prices.*.processing_method' => 'required|in:natural,washed,honey',
+        'prices.*.coffee_variety' => 'required|in:Arabica,Robusta',
+        'prices.*.grade' => 'required|in:Grade 1,Grade 2,Grade 3,Grade 4,Grade 5',
+        'prices.*.processing_method' => 'required|in:Natural,Washed,Honey',
         'prices.*.unit_price' => 'required|numeric|min:0',
     ]);
 

@@ -77,6 +77,18 @@ class RetailerOrderController extends Controller
         return view('processor.order.retailer_order.show', compact('order'));
     }
 
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $order = RetailerOrder::with('orderItems')->findOrFail($id);
+        if ($order->processor_company_id != $user->company_id) {
+            abort(403, 'Unauthorized access to this order.');
+        }
+        // Alias for view compatibility
+        $order->items = $order->orderItems;
+        return view('processor.order.retailer_order.edit', compact('order'));
+    }
+
     public function update(Request $request, RetailerOrder $order)
     {
         $user = Auth::user();

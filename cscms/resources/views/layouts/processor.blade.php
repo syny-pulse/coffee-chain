@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Coffee Chain - @yield('title')</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/messages.css') }}" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,7 +18,8 @@
         :root {
             --coffee-dark: #2D1B0E;
             --coffee-medium: #6F4E37;
-            --coffee-light: #A0702A;
+            /* --coffee-light: #A0702A; */
+            --coffee-light: #8B7355;
             --cream: #F5F1EB;
             --accent: #D4A574;
             --text-dark: #2D1B0E;
@@ -67,7 +69,7 @@
             position: fixed;
             top: 1rem;
             left: calc(var(--sidebar-width) - 20px);
-            background: var(--coffee-medium);
+            background: var(--coffee-light);
             color: white;
             border: none;
             width: 40px;
@@ -123,7 +125,7 @@
         }
 
         .sidebar-menu a.active {
-            background: var(--coffee-medium);
+            background: var(--coffee-light);
             color: white;
             box-shadow: 0 2px 8px rgba(111, 78, 55, 0.2);
         }
@@ -169,7 +171,7 @@
         }
 
         .reports-btn.active {
-            background: var(--coffee-medium);
+            background: var(--coffee-light);
             color: white;
             box-shadow: 0 2px 8px rgba(111, 78, 55, 0.2);
         }
@@ -208,7 +210,7 @@
         }
 
         .reports-dropdown-content a.active {
-            background: var(--coffee-medium);
+            background: var(--coffee-light);
             color: white;
         }
 
@@ -271,7 +273,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            background: var(--coffee-medium);
+            background: var(--coffee-light);
             color: white;
             padding: 0.5rem 0.8rem;
             border-radius: 25px;
@@ -615,7 +617,7 @@
         }
 
         .btn-outline:hover {
-            background: var(--coffee-medium);
+            background: var(--coffee-light);
             color: white;
             transform: translateY(-2px);
         }
@@ -680,7 +682,7 @@
         }
 
         .status-select:hover {
-            border-color: var(--coffee-medium);
+            border-color: var(--coffee-light);
             background: var(--cream);
         }
 
@@ -824,6 +826,7 @@
 </head>
 
 <body>
+    @include('partials.notifications')
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <button class="sidebar-toggle" onclick="toggleSidebar()">
@@ -888,8 +891,8 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('processor.message.index') }}"
-                    class="{{ request()->routeIs('processor.message.*') ? 'active' : '' }}">
+                <a href="{{ route('messages.index') }}"
+                    class="{{ request()->routeIs('messages.*') ? 'active' : '' }}">
                     <i class="fas fa-envelope"></i>
                     <span>Messages</span>
                 </a>
@@ -937,6 +940,19 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        @hasSection('page-title')
+            <div class="page-header">
+                <h1>@yield('page-title')</h1>
+                @hasSection('page-subtitle')
+                    <p class="page-subtitle">@yield('page-subtitle')</p>
+                @endif
+                @hasSection('page-actions')
+                    <div class="page-actions">
+                        @yield('page-actions')
+                    </div>
+                @endif
+            </div>
+        @endif
         @yield('content')
     </main>
 
@@ -944,6 +960,9 @@
         @csrf
     </form>
 
+    @if (request()->routeIs('messages.*'))
+        @include('partials.messages_modals')
+    @endif
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -986,7 +1005,7 @@
         });
     </script>
 
-    @yield('scripts')
+    @stack('scripts')
 </body>
 
 </html>

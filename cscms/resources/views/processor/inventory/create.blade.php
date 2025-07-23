@@ -1,6 +1,6 @@
 @extends('layouts.processor')
 
-@section('title', 'Add Inventory Item')
+@section('title', 'Add Finished Good')
 
 @section('content')
     <!-- Dashboard Header -->
@@ -8,9 +8,9 @@
         <div class="dashboard-title">
             <i class="fas fa-plus"></i>
             <div>
-                <h1>Add New Inventory Item</h1>
+                <h1>Add New Finished Good</h1>
                 <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
-                    Add a new item to your inventory
+                    Add a new finished good to your inventory
                 </p>
             </div>
         </div>
@@ -22,153 +22,184 @@
         </div>
     </div>
 
+    <!-- Error Messages -->
+    @if($errors->any())
+        <div class="alert alert-danger fade-in">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger fade-in">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Inventory Form -->
     <div class="content-section fade-in">
         <form action="{{ route('processor.inventory.store') }}" method="POST" class="form-container">
             @csrf
+            
+            <!-- Product & Recipe -->
             <div class="form-group">
-                <label for="inventory_type">Inventory Type</label>
-                <select id="inventory_type" name="inventory_type" class="form-control" required>
-                    <option value="">Select Inventory Type</option>
-                    <option value="raw_material">Raw Material</option>
-                    <option value="finished_good">Finished Good</option>
+                <label for="product_name">Product Type</label>
+                <select id="product_name" name="product_name" class="form-control" required>
+                    <option value="">Select Product Type</option>
+                    <option value="drinking_coffee">Drinking Coffee</option>
+                    <option value="roasted_coffee">Roasted Coffee</option>
+                    <option value="coffee_scents">Coffee Scents</option>
+                    <option value="coffee_soap">Coffee Soap</option>
                 </select>
             </div>
 
-            <!-- Raw Material Fields -->
-            <div id="raw_material_fields" style="display: none;">
-                <div class="form-group">
-                    <label for="coffee_variety">Coffee Variety</label>
-                    <select id="coffee_variety" name="coffee_variety" class="form-control">
-                        <option value="">Select Variety</option>
-                        <option value="arabica">Arabica</option>
-                        <option value="robusta">Robusta</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="processing_method">Processing Method</label>
-                    <select id="processing_method" name="processing_method" class="form-control">
-                        <option value="">Select Method</option>
-                        <option value="natural">Natural</option>
-                        <option value="washed">Washed</option>
-                        <option value="honey">Honey</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="grade">Grade</label>
-                    <select id="grade" name="grade" class="form-control">
-                        <option value="">Select Grade</option>
-                        <option value="grade_1">Grade 1</option>
-                        <option value="grade_2">Grade 2</option>
-                        <option value="grade_3">Grade 3</option>
-                        <option value="grade_4">Grade 4</option>
-                        <option value="grade_5">Grade 5</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="current_stock_kg">Current Stock (kg)</label>
-                    <input type="number" id="current_stock_kg" name="current_stock_kg" class="form-control" step="0.01" min="0" 
-                           placeholder="Enter current stock in kilograms">
-                </div>
-
-                <div class="form-group">
-                    <label for="average_cost_per_kg">Average Cost per kg (UGX)</label>
-                    <input type="number" id="average_cost_per_kg" name="average_cost_per_kg" class="form-control" step="0.01" min="0" 
-                           placeholder="Enter average cost per kilogram">
-                </div>
+            <div class="form-group">
+                <label for="recipe_id">Recipe</label>
+                <select id="recipe_id" name="recipe_id" class="form-control" required>
+                    <option value="">Select Product Type First</option>
+                </select>
             </div>
 
-            <!-- Finished Goods Fields -->
-            <div id="finished_goods_fields" style="display: none;">
-                <div class="form-group">
-                    <label for="product_name">Product Name</label>
-                    <select id="product_name" name="product_name" class="form-control">
-                        <option value="">Select Product</option>
-                        <option value="drinking_coffee">Drinking Coffee</option>
-                        <option value="roasted_coffee">Roasted Coffee</option>
-                        <option value="coffee_scents">Coffee Scents</option>
-                        <option value="coffee_soap">Coffee Soap</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="product_variant">Product Variant</label>
-                    <input type="text" id="product_variant" name="product_variant" class="form-control" maxlength="100" 
-                           placeholder="Enter product variant">
-                </div>
-
-                <div class="form-group">
-                    <label for="recipe_id">Recipe</label>
-                    <select id="recipe_id" name="recipe_id" class="form-control">
-                        <option value="">Select Recipe</option>
-                        <!-- This should be populated from the database -->
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="current_stock_units">Current Stock (units)</label>
-                    <input type="number" id="current_stock_units" name="current_stock_units" class="form-control" step="0.01" min="0" 
-                           placeholder="Enter current stock in units">
-                </div>
-
-                <div class="form-group">
-                    <label for="production_cost_per_unit">Production Cost per Unit (UGX)</label>
-                    <input type="number" id="production_cost_per_unit" name="production_cost_per_unit" class="form-control" step="0.01" min="0" 
-                           placeholder="Enter production cost per unit">
-                </div>
-
-                <div class="form-group">
-                    <label for="selling_price_per_unit">Selling Price per Unit (UGX)</label>
-                    <input type="number" id="selling_price_per_unit" name="selling_price_per_unit" class="form-control" step="0.01" min="0" 
-                           placeholder="Enter selling price per unit">
-                </div>
+            <div class="form-group">
+                <label for="product_variant">Product Variant</label>
+                <input type="text" id="product_variant" name="product_variant" class="form-control" required>
             </div>
 
-            <div class="auth-buttons">
+            <!-- Stock & Pricing -->
+            <div class="form-group">
+                <label for="current_stock_units">Current Stock (units)</label>
+                <input type="number" id="current_stock_units" name="current_stock_units" class="form-control" min="0" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="production_cost_per_unit">Production Cost per Unit (UGX)</label>
+                <input type="number" id="production_cost_per_unit" name="production_cost_per_unit" class="form-control" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="selling_price_per_unit">Selling Price per Unit (UGX)</label>
+                <input type="number" id="selling_price_per_unit" name="selling_price_per_unit" class="form-control" min="0" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <small class="form-text text-muted">Reserved stock is set to 0 and available stock is set to current stock automatically.</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="reset" class="btn btn-outline">
+                    <i class="fas fa-undo"></i>
+                    Reset Form
+                </button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
-                    Save Item
+                    Save Finished Good
                 </button>
-                <a href="{{ route('processor.inventory.index') }}" class="btn btn-outline">
-                    <i class="fas fa-times"></i>
-                    Cancel
-                </a>
             </div>
         </form>
     </div>
 @endsection
 
-@section('scripts')
 <script>
-    document.getElementById('inventory_type').addEventListener('change', function() {
-        const rawMaterialFields = document.getElementById('raw_material_fields');
-        const finishedGoodsFields = document.getElementById('finished_goods_fields');
+document.addEventListener('DOMContentLoaded', function() {
+    const productNameSelect = document.getElementById('product_name');
+    const recipeSelect = document.getElementById('recipe_id');
+    
+    productNameSelect.addEventListener('change', async function() {
+        const productType = this.value;
         
-        if (this.value === 'raw_material') {
-            rawMaterialFields.style.display = 'block';
-            finishedGoodsFields.style.display = 'none';
-        } else if (this.value === 'finished_good') {
-            rawMaterialFields.style.display = 'none';
-            finishedGoodsFields.style.display = 'block';
-        } else {
-            rawMaterialFields.style.display = 'none';
-            finishedGoodsFields.style.display = 'none';
+        // Reset and disable the recipe select
+        recipeSelect.innerHTML = '<option value="">Loading recipes...</option>';
+        recipeSelect.disabled = true;
+        
+        if (!productType) {
+            recipeSelect.innerHTML = '<option value="">Select Product Type First</option>';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`{{ route('processor.inventory.fetchRecipes') }}?product_name=${productType}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to load recipes');
+            }
+
+            recipeSelect.innerHTML = '<option value="">Select Recipe</option>';
+            
+            if (data.recipes && data.recipes.length > 0) {
+                data.recipes.forEach(recipe => {
+                    const option = new Option(
+                        `${recipe.recipe_name} (${recipe.coffee_variety}, ${recipe.processing_method})`,
+                        recipe.recipe_id
+                    );
+                    recipeSelect.add(option);
+                });
+                recipeSelect.disabled = false;
+            } else {
+                recipeSelect.innerHTML = '<option value="">No recipes available</option>';
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            recipeSelect.innerHTML = '<option value="">Error loading recipes</option>';
+            alert('Failed to load recipes. Please check console for details.');
         }
     });
+
+    // Initialize if there's old input
+    @if(old('product_name'))
+        productNameSelect.value = "{{ old('product_name') }}";
+        productNameSelect.dispatchEvent(new Event('change'));
+    @endif
+});
 </script>
 
 <style>
-    /* Form Styles */
     .form-container {
-        max-width: 800px;
+        max-width: 1000px;
         margin: 0 auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .form-section h3 {
+        color: var(--coffee-dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
     }
 
     .form-group {
-        margin-bottom: 1.5rem;
+        flex: 1;
+        margin-bottom: 1rem;
     }
 
     .form-group label {
@@ -185,7 +216,6 @@
         border-radius: 8px;
         font-size: 0.9rem;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        background: rgba(255, 255, 255, 0.8);
     }
 
     .form-control:focus {
@@ -194,15 +224,28 @@
         box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
     }
 
-    .form-control::placeholder {
-        color: var(--text-light);
-    }
-
-    .auth-buttons {
+    .form-actions {
         display: flex;
+        justify-content: flex-end;
         gap: 1rem;
         margin-top: 2rem;
-        justify-content: flex-start;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 1px solid #f5c6cb;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 </style>
-@endsection 

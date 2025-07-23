@@ -4,31 +4,84 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use App\Models\RetailerInventory;
 
 class RetailerOrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = DB::table('retailer_order')->orderBy('created_at', 'desc')->get();
+        $query = \App\Models\RetailerOrder::query();
+        if ($request->filled('processor_company_id')) {
+            $query->where('processor_company_id', $request->processor_company_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('order_status', $request->status);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        $orders = $query->orderByDesc('created_at')->paginate(15)->appends($request->except('page'));
+        $processors = \App\Models\Company::where('company_type', 'processor')->where('acceptance_status', 'accepted')->get();
+        $products = \App\Models\RetailerProduct::all();
+        return view('retailers.orders.index', [
+            'orders' => $orders,
+            'products' => $products,
+            'processors' => $processors,
+            'filters' => $request->only(['processor_company_id','product','status','date_from','date_to'])
+        ]);
+    }
 
-        return view('retailers.orders.index', compact('orders'));
+    public function create()
+    {
+        $processors = \App\Models\Company::where('company_type', 'processor')->where('acceptance_status', 'accepted')->get();
+        return view('retailers.orders.create', compact('processors'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
+            'processor_company_id' => 'required|exists:companies,company_id',
             'coffee_breed' => 'required|in:arabica,robusta',
             'roast_grade' => 'required|integer|between:1,5',
             'quantity' => 'required|integer|min:1',
+            'expected_delivery_date' => 'required|date',
+            'shipping_address' => 'required|string|max:255',
+            'notes' => 'nullable|string',
         ]);
 
-        DB::table('retailer_order')->insert([
-            'coffee_breed' => $data['coffee_breed'],
-            'roast_grade' => $data['roast_grade'],
-            'quantity' => $data['quantity'],
+        // Fetch price per unit from pricings table
+        $pricing = DB::table('pricings')
+            ->where('company_id', $data['processor_company_id'])
+            ->where('coffee_variety', $data['coffee_breed'])
+            ->where('grade', 'grade_' . $data['roast_grade'])
+            ->first();
+        $unitPrice = $pricing ? $pricing->unit_price : 0;
+        $totalAmount = $unitPrice * $data['quantity'];
+        $orderNumber = 'RO-' . strtoupper(uniqid());
+        // Insert order and get ID
+        $order = \App\Models\RetailerOrder::create([
+            'order_number' => $orderNumber,
+            'processor_company_id' => $data['processor_company_id'],
+            'retailer_company_id' => \Illuminate\Support\Facades\Auth::user()->company_id,
+            'expected_delivery_date' => $data['expected_delivery_date'],
+            'shipping_address' => $data['shipping_address'],
+            'notes' => $data['notes'] ?? null,
             'order_status' => 'pending',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'total_amount' => $totalAmount,
+        ]);
+        // Insert corresponding item
+        \App\Models\RetailerOrderItem::create([
+            'order_id' => $order->order_id,
+            'recipe_id' => 1, // Use 1 as a default valid recipe_id
+            'product_name' => $pricing && isset($pricing->product_type) ? $pricing->product_type : 'drinking_coffee',
+            'product_variant' => 'Standard',
+            'quantity_units' => $data['quantity'],
+            'unit_price' => $unitPrice,
+            'line_total' => $totalAmount,
         ]);
 
         return redirect()->route('retailer.orders.index')->with('success', 'Order created successfully.');
@@ -40,47 +93,50 @@ class RetailerOrderController extends Controller
             'status' => 'required|in:pending,delivered,cancelled',
         ]);
 
-        $order = DB::table('retailer_order')->where('id', $id)->first();
-
-        DB::table('retailer_order')->where('id', $id)->update([
+        $order = \App\Models\RetailerOrder::findOrFail($id);
+        $order->update([
             'order_status' => $data['status'],
-            'updated_at' => now(),
         ]);
 
-        // If status changed to delivered, increase inventory and record transaction
-        if ($order && $order->order_status !== 'delivered' && $data['status'] === 'delivered') {
-            // Increase inventory
-            $existingInventory = DB::table('retailer_inventory')
-                ->where('coffee_breed', $order->coffee_breed)
-                ->where('roast_grade', $order->roast_grade)
-                ->first();
-
-            if ($existingInventory) {
-                DB::table('retailer_inventory')
-                    ->where('id', $existingInventory->id)
-                    ->increment('quantity', $order->quantity);
-            } else {
-                DB::table('retailer_inventory')->insert([
-                    'coffee_breed' => $order->coffee_breed,
-                    'roast_grade' => $order->roast_grade,
-                    'quantity' => $order->quantity,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            // Record transaction
-            DB::table('retailer_inventory_transactions')->insert([
-                'transaction_type' => 'order_delivered',
-                'coffee_breed' => $order->coffee_breed,
-                'roast_grade' => $order->roast_grade,
-                'quantity' => $order->quantity,
-                'notes' => 'Order ID ' . $id . ' marked as delivered',
-                'created_at' => now(),
-                'updated_at' => now(),
+        // If status changed to delivered, update actual delivery date
+        if ($order->order_status !== 'delivered' && $data['status'] === 'delivered') {
+            $order->update([
+                'actual_delivery_date' => now(),
             ]);
         }
 
         return redirect()->route('retailer.orders.index')->with('success', 'Order status updated successfully.');
+    }
+
+    public function show($id)
+    {
+        $order = \App\Models\RetailerOrder::findOrFail($id);
+        $processors = \App\Models\Company::where('company_type', 'processor')->where('acceptance_status', 'accepted')->get();
+        return view('retailers.orders.show', compact('order', 'processors'));
+    }
+
+    public function destroy($id)
+    {
+        $order = \App\Models\RetailerOrder::findOrFail($id);
+        $order->delete();
+        return redirect()->route('retailer.orders.index')->with('success', 'Order deleted.');
+    }
+
+    public function getPrediction(Request $request)
+    {
+        $product = $request->input('product');
+        $month = $request->input('month');
+        $year = $request->input('year');
+        // Example ML API call
+        $mlServerUrl = config('services.ml_server.url', 'http://localhost:5000');
+        $response = Http::get("{$mlServerUrl}/api/predict-demand", [
+            'product_name' => $product,
+            'month' => $month,
+            'year' => $year,
+        ]);
+        if ($response->successful()) {
+            return response()->json(['prediction' => $response->json('predicted_demand')]);
+        }
+        return response()->json(['prediction' => null, 'error' => 'ML server unavailable'], 500);
     }
 }
