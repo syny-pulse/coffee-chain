@@ -42,8 +42,7 @@
             </div>
         @endif
 
-        <form action="{{ route('processor.order.farmer_order.store') }}" method="POST" class="form-container"
-            id="farmerOrderForm">
+        <form action="{{ route('processor.order.farmer_order.store') }}" method="POST" class="form-container" id="farmerOrderForm">
             @csrf
 
             <div class="form-group">
@@ -86,28 +85,31 @@
 
             <div class="form-group">
                 <label for="quantity_kg">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" id="quantity_kg" class="form-control" required min="0.01"
-                    step="0.01" value="{{ old('quantity_kg') }}" placeholder="Enter quantity in kilograms"
-                    onchange="calculateTotal()">
+                <input type="number" name="quantity_kg" id="quantity_kg" class="form-control" required 
+                       min="0.01" step="0.01" value="{{ old('quantity_kg') }}"
+                       placeholder="Enter quantity in kilograms"
+                       onchange="calculateTotal()">
             </div>
 
             <div class="form-group">
                 <label for="unit_price">Unit Price per kg (UGX)</label>
-                <input type="number" name="unit_price" id="unit_price" class="form-control" required min="0.01"
-                    step="0.01" value="{{ old('unit_price') }}" placeholder="Unit price will be auto-filled" readonly>
+                <input type="number" name="unit_price" id="unit_price" class="form-control" required 
+                       min="0.01" step="0.01" value="{{ old('unit_price') }}"
+                       placeholder="Unit price will be auto-filled" readonly>
                 <small id="unit_price_error" class="text-danger" style="display:none;"></small>
             </div>
 
             <div class="form-group">
                 <label for="total_amount">Total Amount (UGX)</label>
-                <input type="number" name="total_amount" id="total_amount" class="form-control" readonly step="0.01"
-                    value="{{ old('total_amount') }}" style="background: rgba(111, 78, 55, 0.1);">
+                <input type="number" name="total_amount" id="total_amount" class="form-control" readonly 
+                       step="0.01" value="{{ old('total_amount') }}"
+                       style="background: rgba(111, 78, 55, 0.1);">
             </div>
 
             <div class="form-group">
                 <label for="expected_delivery_date">Expected Delivery Date</label>
-                <input type="date" name="expected_delivery_date" id="expected_delivery_date" class="form-control"
-                    required value="{{ old('expected_delivery_date') }}">
+                <input type="date" name="expected_delivery_date" id="expected_delivery_date" 
+                       class="form-control" required value="{{ old('expected_delivery_date') }}">
             </div>
 
             <!-- Remove the order status dropdown and add a hidden input for order_status -->
@@ -115,8 +117,8 @@
 
             <div class="form-group">
                 <label for="notes">Notes</label>
-                <textarea name="notes" id="notes" class="form-control" rows="3"
-                    placeholder="Additional notes about the order">{{ old('notes') }}</textarea>
+                <textarea name="notes" id="notes" class="form-control" rows="3" 
+                          placeholder="Additional notes about the order">{{ old('notes') }}</textarea>
             </div>
 
             <div class="auth-buttons">
@@ -133,8 +135,7 @@
     </div>
 @endsection
 
-@section('scripts')
-    <script>
+<script>
         function calculateTotal() {
             const quantity = parseFloat(document.getElementById('quantity_kg').value) || 0;
             const unitPrice = parseFloat(document.getElementById('unit_price').value) || 0;
@@ -151,17 +152,9 @@
             const unitPriceInput = document.getElementById('unit_price');
             const errorElem = document.getElementById('unit_price_error');
 
-            console.log('Fetching price for:', {
-                farmerId,
-                variety,
-                grade,
-                processingMethod
-            });
-
             if (farmerId && variety && grade && processingMethod) {
                 const url =
                     `{{ route('processor.order.farmer_order.getPrice') }}?farmer_company_id=${farmerId}&coffee_variety=${variety}&grade=${grade}&processing_method=${processingMethod}`;
-                console.log('Fetching from URL:', url);
 
                 fetch(url, {
                         method: 'GET',
@@ -173,7 +166,6 @@
                         credentials: 'same-origin'
                     })
                     .then(response => {
-                        console.log('Response status:', response.status);
                         return response.json().then(data => ({
                             status: response.status,
                             data
@@ -183,7 +175,6 @@
                         status,
                         data
                     }) => {
-                        console.log('Response data:', data);
                         if (status === 200 && data.unit_price) {
                             unitPriceInput.value = data.unit_price;
                             errorElem.style.display = 'none';
@@ -196,7 +187,6 @@
                         }
                     })
                     .catch((error) => {
-                        console.error('Error fetching price:', error);
                         unitPriceInput.value = '';
                         errorElem.textContent = 'Error fetching price. Please try again.';
                         errorElem.style.display = 'block';
@@ -209,147 +199,140 @@
             }
         }
 
-        // Fetch farmers when coffee variety changes
-        document.getElementById('coffee_variety').addEventListener('change', function() {
-            const variety = this.value;
-            const farmerSelect = document.getElementById('farmer_company_id');
-            farmerSelect.innerHTML = '<option value="">Select a Farmer Company</option>';
-            farmerSelect.disabled = true;
-            
-            console.log('Coffee variety changed to:', variety);
-            
-            if (variety) {
-                const url = `{{ route('processor.order.farmer_order.getFarmersByVariety') }}?coffee_variety=${variety}`;
-                console.log('Fetching farmers from URL:', url);
-                
-                fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                'content')
-                        },
-                        credentials: 'same-origin'
-                    })
-                    .then(response => {
-                        console.log('Response status:', response.status);
-                        return response.json().then(data => ({
-                            status: response.status,
-                            data
-                        }));
-                    })
-                    .then(({status, data}) => {
-                        console.log('Response data:', data);
-                        if (status === 200 && data.farmers && data.farmers.length > 0) {
-                            data.farmers.forEach(farmer => {
-                                const option = document.createElement('option');
-                                option.value = farmer.company_id;
-                                option.textContent = farmer.company_name;
-                                farmerSelect.appendChild(option);
-                            });
-                            farmerSelect.disabled = false;
-                            console.log('Farmers loaded successfully:', data.farmers.length, 'farmers');
-                        } else {
-                            farmerSelect.innerHTML =
-                                '<option value="">No farmer companies found for this variety</option>';
-                            farmerSelect.disabled = true;
-                            console.log('No farmers found for variety:', variety);
-                        }
-                        fetchUnitPrice(); // Trigger price fetch after farmers are loaded
-                    })
-                    .catch((error) => {
-                        console.error('Error fetching farmers:', error);
-                        farmerSelect.innerHTML = '<option value="">Error loading farmer companies</option>';
-                        farmerSelect.disabled = true;
-                        fetchUnitPrice(); // Still attempt to fetch price
-                    });
+document.addEventListener('DOMContentLoaded', function() {
+    const coffeeVarietySelect = document.getElementById('coffee_variety');
+    const farmerSelect = document.getElementById('farmer_company_id');
+
+    function fetchFarmersByVariety(variety) {
+        farmerSelect.innerHTML = '<option value="">Loading farmer companies...</option>';
+        farmerSelect.disabled = true;
+
+        if (!variety) {
+            farmerSelect.innerHTML = '<option value="">Select Variety First</option>';
+            return;
+        }
+
+        fetch(`{{ route('processor.order.farmer_order.getFarmersByVariety') }}?coffee_variety=${variety}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            if (data.farmers && data.farmers.length > 0) {
+                farmerSelect.innerHTML = '<option value="">Select Farmer Company</option>';
+                data.farmers.forEach(farmer => {
+                    const option = document.createElement('option');
+                    option.value = farmer.company_id;
+                    option.textContent = farmer.company_name;
+                    farmerSelect.appendChild(option);
+                });
+                farmerSelect.disabled = false;
             } else {
-                console.log('No variety selected, clearing farmers');
-                fetchUnitPrice(); // Update price if variety is cleared
+                farmerSelect.innerHTML = '<option value="">No farmer companies found for this variety</option>';
+                farmerSelect.disabled = true;
             }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            farmerSelect.innerHTML = '<option value="">Error loading farmer companies</option>';
+            farmerSelect.disabled = true;
         });
+    }
 
-        // Event listeners for price updates
-        document.getElementById('farmer_company_id').addEventListener('change', fetchUnitPrice);
-        document.getElementById('coffee_variety').addEventListener('change', fetchUnitPrice);
-        document.getElementById('grade').addEventListener('change', fetchUnitPrice);
-        document.getElementById('processing_method').addEventListener('change', fetchUnitPrice); // Added
-        document.getElementById('quantity_kg').addEventListener('input', calculateTotal);
+    coffeeVarietySelect.addEventListener('change', function() {
+        fetchFarmersByVariety(this.value);
+    });
 
-        // Initial fetch if values exist
-        fetchUnitPrice();
-        calculateTotal();
+    // On page load, if old value exists, trigger fetch
+    @if(old('coffee_variety'))
+        coffeeVarietySelect.value = "{{ old('coffee_variety') }}";
+        fetchFarmersByVariety(coffeeVarietySelect.value);
+    @endif
 
-        // Prevent form submission if unit price is empty or invalid
-        document.getElementById('farmerOrderForm').addEventListener('submit', function(e) {
-            const unitPriceInput = document.getElementById('unit_price');
-            const errorElem = document.getElementById('unit_price_error');
-            if (!unitPriceInput.value || isNaN(unitPriceInput.value) || parseFloat(unitPriceInput.value) <= 0) {
-                e.preventDefault();
-                errorElem.textContent = 'A valid unit price must be available before submitting.';
-                errorElem.style.display = 'block';
-                unitPriceInput.focus();
-            }
-        });
-    </script>
-
-    <style>
-        /* Form Styles */
-        .form-container {
-            max-width: 800px;
-            margin: 0 auto;
+    // The rest of your event listeners for price calculation, etc., remain unchanged
+    document.getElementById('farmer_company_id').addEventListener('change', fetchUnitPrice);
+    document.getElementById('coffee_variety').addEventListener('change', fetchUnitPrice);
+    document.getElementById('grade').addEventListener('change', fetchUnitPrice);
+    document.getElementById('processing_method').addEventListener('change', fetchUnitPrice);
+    document.getElementById('quantity_kg').addEventListener('input', calculateTotal);
+    fetchUnitPrice();
+    calculateTotal();
+    document.getElementById('farmerOrderForm').addEventListener('submit', function(e) {
+        const unitPriceInput = document.getElementById('unit_price');
+        const errorElem = document.getElementById('unit_price_error');
+        if (!unitPriceInput.value || isNaN(unitPriceInput.value) || parseFloat(unitPriceInput.value) <= 0) {
+            e.preventDefault();
+            errorElem.textContent = 'A valid unit price must be available before submitting.';
+            errorElem.style.display = 'block';
+            unitPriceInput.focus();
         }
+    });
+});
+</script>
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+<style>
+    /* Form Styles */
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--coffee-dark);
-        }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
 
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid rgba(111, 78, 55, 0.2);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-        }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--coffee-dark);
+    }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--coffee-medium);
-            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
-        }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid rgba(111, 78, 55, 0.2);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
 
-        .form-control::placeholder {
-            color: var(--text-light);
-        }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--coffee-medium);
+        box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+    }
 
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            justify-content: flex-start;
-        }
+    .form-control::placeholder {
+        color: var(--text-light);
+    }
 
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            border: 1px solid;
-        }
+    .auth-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: flex-start;
+    }
 
-        .alert-danger {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-            border-color: rgba(220, 53, 69, 0.2);
-        }
-    </style>
-@endsection
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid;
+    }
+
+    .alert-danger {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--danger);
+        border-color: rgba(220, 53, 69, 0.2);
+    }
+</style>

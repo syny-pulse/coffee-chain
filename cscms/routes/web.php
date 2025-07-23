@@ -77,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
             'destroy' => 'processor.employee.destroy',
         ]);
 
+        
+        // AJAX route for fetching recipes. Must be defined *before* the resource route.
+        Route::get('/inventory/fetch-recipes', [InventoryController::class, 'fetchRecipes'])->name('processor.inventory.fetchRecipes');
+
         Route::resource('inventory', InventoryController::class)->names([
             'index' => 'processor.inventory.index',
             'create' => 'processor.inventory.create',
