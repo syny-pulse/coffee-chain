@@ -144,20 +144,20 @@ class NotificationService
             ];
         }
 
-        // Low raw material stock (any inventory < 100kg)
+        // Low raw material stock (any inventory < 50kg)
         $lowStock = \App\Models\ProcessorRawMaterialInventory::where('processor_company_id', $company->company_id)
-            ->where('available_stock_kg', '<', 100)
+            ->where('available_stock_kg', '<', 50)
             ->count();
         if ($lowStock > 0) {
             $notifications[] = [
                 'type' => 'low_stock',
-                'title' => 'Low Raw Material Stock',
-                'message' => "One or more raw material inventories are low (< 100kg).",
+                'title' => 'Critical: Raw Material Stock Low',
+                'message' => "One or more raw material inventories are critically low (< 50kg). Please order more from farmers immediately!",
                 'count' => $lowStock,
                 'icon' => 'fas fa-boxes-stacked',
-                'color' => 'warning',
-                'link' => route('processor.inventory.index'),
-                'priority' => 'medium'
+                'color' => 'danger',
+                'link' => route('processor.order.farmer_order.create'),
+                'priority' => 'high'
             ];
         }
 

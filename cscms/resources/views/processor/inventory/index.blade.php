@@ -8,7 +8,7 @@
         <div class="dashboard-title">
             <i class="fas fa-warehouse"></i>
             <div>
-                <h1>Inventory Management</h1>
+        <h1>Inventory Management</h1>
                 <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">
                     Process raw materials into finished goods for retailers
                 </p>
@@ -59,7 +59,7 @@
                     <i class="fas fa-industry"></i>
                 </div>
             </div>
-            <div class="stat-card-value">{{ number_format($total_processing_capacity ?? 1000) }} kg</div>
+            <div class="stat-card-value">{{ number_format($metrics['total_processing_capacity'] ?? 1000) }} kg</div>
             <div class="stat-card-change">
                 <i class="fas fa-chart-line"></i>
                 <span class="change-positive">Monthly capacity</span>
@@ -73,7 +73,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <div class="stat-card-value">{{ $ready_for_sale_count ?? 0 }}</div>
+            <div class="stat-card-value">{{ $metrics['ready_for_sale_count'] ?? 0 }}</div>
             <div class="stat-card-change">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="change-positive">Available for retailers</span>
@@ -128,70 +128,74 @@
         </div>
     </div>
 
-    <!-- Raw Materials Section -->
-    <div class="content-section fade-in">
-        <div class="section-header">
-            <div class="section-title">
-                <i class="fas fa-seedling"></i>
-                <span>Raw Materials (From Farmers)</span>
-            </div>
+        <!-- Raw Materials Section -->
+        <div class="content-section fade-in">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-seedling"></i>
+                    <span>Raw Materials (From Farmers)</span>
+                </div>
             <a href="{{ route('processor.order.farmer_order.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i>
                 Order from Farmer
             </a>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Coffee Variety</th>
+                            <th>Processing Method</th>
+                            <th>Grade</th>
+                            <th>Current Stock (kg)</th>
+                            <th>Available Stock (kg)</th>
+                            <th>Cost per kg</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($raw_materials as $material)
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-seedling" style="color: var(--coffee-medium);"></i>
+                                    <strong>{{ ucfirst($material->coffee_variety) }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ ucfirst($material->processing_method) }}</td>
+                            <td>{{ ucfirst($material->grade) }}</td>
+                            <td>{{ number_format($material->current_stock_kg, 2) }}</td>
+                            <td>{{ number_format($material->available_stock_kg, 2) }}</td>
+                            <td>UGX {{ number_format($material->average_cost_per_kg, 2) }}</td>
+                            <td>
+                                @if($material->available_stock_kg < 100)
+                                    <span class="status-badge status-low">Low Stock</span>
+                                @elseif($material->available_stock_kg < 500)
+                                    <span class="status-badge status-medium">Medium</span>
+                                @else
+                                    <span class="status-badge status-high">Good</span>
+                                @endif
+                            </td>
+                            <td>
+                                <form action="{{ route('processor.inventory.destroy', $material->inventory_id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this raw material? This action cannot be undone.')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="text-center">No raw materials found. <a href="{{ route('processor.order.farmer_order.create') }}" style="color: var(--coffee-medium);">Order from farmers</a></td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Coffee Variety</th>
-                        <th>Processing Method</th>
-                        <th>Grade</th>
-                        <th>Current Stock (kg)</th>
-                        <th>Available Stock (kg)</th>
-                        <th>Cost per kg</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($raw_materials as $material)
-                    <tr>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-seedling" style="color: var(--coffee-medium);"></i>
-                                <strong>{{ ucfirst($material->coffee_variety) }}</strong>
-                            </div>
-                        </td>
-                        <td>{{ ucfirst($material->processing_method) }}</td>
-                        <td>{{ ucfirst($material->grade) }}</td>
-                        <td>{{ number_format($material->current_stock_kg, 2) }}</td>
-                        <td>{{ number_format($material->available_stock_kg, 2) }}</td>
-                        <td>UGX {{ number_format($material->average_cost_per_kg, 2) }}</td>
-                        <td>
-                            @if($material->current_stock_kg < 100)
-                                <span class="status-badge status-low">Low Stock</span>
-                            @elseif($material->current_stock_kg < 500)
-                                <span class="status-badge status-medium">Medium</span>
-                            @else
-                                <span class="status-badge status-high">Good</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('processor.inventory.edit', $material->inventory_id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center">No raw materials found. <a href="{{ route('processor.order.farmer_order.create') }}" style="color: var(--coffee-medium);">Order from farmers</a></td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
 
     <!-- Finished Goods Section -->
     <div class="content-section fade-in">
@@ -211,8 +215,9 @@
                     <tr>
                         <th>Product Name</th>
                         <th>Variant</th>
-                        <th>Current Stock (units)</th>
-                        <th>Available Stock (units)</th>
+                        <th>Recipe</th>
+                        <th>Current Stock</th>
+                        <th>Available Stock</th>
                         <th>Production Cost</th>
                         <th>Selling Price</th>
                         <th>Status</th>
@@ -225,32 +230,42 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <i class="fas fa-coffee" style="color: var(--coffee-medium);"></i>
-                                <strong>{{ str_replace('_', ' ', ucfirst($product->name)) }}</strong>
+                                <strong>{{ str_replace('_', ' ', ucfirst($product->product_name)) }}</strong>
                             </div>
                         </td>
-                        <td>{{ ucfirst($product->product_type) }}</td>
-                        <td>{{ number_format($product->quantity_kg, 2) }}</td>
-                        <td>{{ number_format($product->quantity_kg, 2) }}</td>
-                        <td>UGX {{ number_format($product->price_per_kg, 2) }}</td>
-                        <td>UGX {{ number_format($product->price_per_kg * 1.2, 2) }}</td>
+                        <td>{{ $product->product_variant }}</td>
+                        <td>{{ $product->recipe_name }} ({{ $product->coffee_variety }} - {{ $product->processing_method }})</td>
+                        <td>{{ number_format($product->current_stock_units, 2) }}</td>
+                        <td>{{ number_format($product->available_stock_units, 2) }}</td>
+                        <td>UGX {{ number_format($product->production_cost_per_unit, 2) }}</td>
+                        <td>UGX {{ number_format($product->selling_price_per_unit, 2) }}</td>
                         <td>
-                            @if($product->quantity_kg < 50)
+                            @if($product->available_stock_units < 50)
                                 <span class="status-badge status-low">Low Stock</span>
-                            @elseif($product->quantity_kg < 200)
+                            @elseif($product->available_stock_units < 200)
                                 <span class="status-badge status-medium">Medium</span>
                             @else
                                 <span class="status-badge status-high">Ready for Sale</span>
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('processor.inventory.edit', $product->inventory_id ?? $product->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--coffee-medium); color: white;">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                            <div class="action-buttons">
+                                <a href="{{ route('processor.inventory.edit', $product->inventory_id) }}" class="btn btn-sm btn-outline">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('processor.inventory.destroy', $product->inventory_id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this item?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center">No finished goods found. <a href="{{ route('processor.inventory.create') }}" style="color: var(--coffee-medium);">Add finished goods</a></td>
+                        <td colspan="9" class="text-center">No finished goods in inventory</td>
                     </tr>
                     @endforelse
                 </tbody>
