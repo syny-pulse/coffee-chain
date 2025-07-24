@@ -8,6 +8,7 @@
     <title>Coffee Supply Chain Management</title>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body class="bg-gray-100">
