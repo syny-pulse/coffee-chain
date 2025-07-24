@@ -41,6 +41,16 @@ class Company extends Model
         return $this->hasMany(User::class, 'company_id', 'company_id');
     }
 
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_company_id', 'company_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_company_id', 'company_id');
+    }
+
     public function isAccepted()
     {
         return $this->acceptance_status === 'accepted';
