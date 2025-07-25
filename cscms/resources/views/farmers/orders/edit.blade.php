@@ -13,10 +13,10 @@
 
 @section('content')
     <div class="form-container">
-        <form action="{{ route('farmers.orders.update', $order->order_id) }}" method="POST">
+        <form action="{{ route('processor.order.farmer_order.update', $order->order_id) }}" method="POST">
             @csrf
             @method('PUT')
-            
+
             @include('farmers.partials.form-field', [
                 'name' => 'order_status',
                 'label' => 'Order Status',
@@ -30,17 +30,19 @@
                     'processing' => 'Processing',
                     'shipped' => 'Shipped',
                     'delivered' => 'Delivered',
-                    'cancelled' => 'Cancelled'
-                ]
+                    'cancelled' => 'Cancelled',
+                ],
             ])
-            
+
             @include('farmers.partials.form-field', [
                 'name' => 'actual_delivery_date',
                 'label' => 'Actual Delivery Date',
                 'type' => 'date',
-                'value' => old('actual_delivery_date', $order->actual_delivery_date ? $order->actual_delivery_date->format('Y-m-d') : ''),
+                'value' => old(
+                    'actual_delivery_date',
+                    $order->actual_delivery_date ? $order->actual_delivery_date->format('Y-m-d') : ''),
             ])
-            
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
