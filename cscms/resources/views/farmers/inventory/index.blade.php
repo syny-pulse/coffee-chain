@@ -29,7 +29,7 @@
             <div class="stat-value">{{ number_format($totalStock, 1) }}</div>
             <div class="stat-label">Total Stock (kg)</div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-header">
                 <div class="stat-icon">
@@ -43,7 +43,7 @@
             <div class="stat-value">{{ number_format($totalAvailable, 1) }}</div>
             <div class="stat-label">Available Stock (kg)</div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-header">
                 <div class="stat-icon">
@@ -57,7 +57,7 @@
             <div class="stat-value">{{ number_format($totalReserved, 1) }}</div>
             <div class="stat-label">Reserved Stock (kg)</div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-header">
                 <div class="stat-icon">
@@ -83,7 +83,7 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="table-container" style="overflow-x: auto; overflow-y: auto; max-height: 400px; scrollbar-width: none; -ms-overflow-style: none;">
             <table class="table">
                 <thead>
@@ -170,7 +170,7 @@
                 <span class="detail-value">{{ $totalStock > 0 ? number_format(($totalReserved / $totalStock) * 100, 1) : 0 }}%</span>
             </div>
         </div>
-        
+
         <div class="detail-section">
             <h3><i class="fas fa-warehouse"></i> Storage Information</h3>
             <div class="detail-item">
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (inventoryLink) {
         inventoryLink.classList.add('active');
     }
-    
+
     // Add hover effects to table rows
     const tableRows = document.querySelectorAll('.table tbody tr');
     tableRows.forEach(row => {
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.transform = 'scale(1.01)';
             this.style.transition = 'transform 0.2s ease';
         });
-        
+
         row.addEventListener('mouseleave', function() {
             this.style.transform = 'scale(1)';
         });

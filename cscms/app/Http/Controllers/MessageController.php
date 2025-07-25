@@ -129,8 +129,9 @@ class MessageController extends Controller
     {
         $user = Auth::user();
         $company = $user->company;
-        $message = Message::where('message_id', $id)
-            ->where(function($q) use ($company) {
+        $message = Message::with(['senderCompany', 'receiverCompany'])
+            ->where('message_id', $id)
+            ->where(function ($q) use ($company) {
                 $q->where('sender_company_id', $company->company_id)
                   ->orWhere('receiver_company_id', $company->company_id);
             })->firstOrFail();
@@ -195,4 +196,4 @@ class MessageController extends Controller
 
         return response()->json(['messages' => $messages]);
     }
-} 
+}

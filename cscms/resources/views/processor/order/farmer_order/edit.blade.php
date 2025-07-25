@@ -77,6 +77,11 @@
 
             <div class="form-group">
                 <label for="quantity_kg">Quantity (kg)</label>
+
+                <input type="number" name="quantity_kg" id="quantity_kg" class="form-control" required min="0.01"
+                    step="0.01" value="{{ $order->quantity_kg }}" placeholder="Enter quantity in kilograms"
+                    onchange="calculateTotal()">
+
                 <input type="number" name="quantity_kg" id="quantity_kg" class="form-control"
                     {{ $order->order_status === 'pending' ? 'required' : 'readonly' }} min="0.01" step="0.01"
                     value="{{ old('quantity_kg', $order->quantity_kg) }}" placeholder="Enter quantity in kilograms"
@@ -85,10 +90,16 @@
                 @error('quantity_kg')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
+
             </div>
 
             <div class="form-group">
                 <label for="unit_price">Unit Price per kg (UGX)</label>
+
+                <input type="number" name="unit_price" id="unit_price" class="form-control" required min="0.01"
+                    step="0.01" value="{{ $order->unit_price }}" placeholder="Enter price per kilogram"
+                    onchange="calculateTotal()">
+
                 <input type="number" name="unit_price" id="unit_price" class="form-control"
                     {{ $order->order_status === 'pending' ? 'required' : 'readonly' }} min="0.01" step="0.01"
                     value="{{ old('unit_price', $order->unit_price) }}" placeholder="Enter price per kilogram"
@@ -101,13 +112,17 @@
 
             <div class="form-group">
                 <label for="total_amount">Total Amount (UGX)</label>
-                <input type="number" name="total_amount" id="total_amount" class="form-control" readonly step="0.01"
+                <input type="number" name="total_amount" id="total_amount" class="form-control" readonly step="0.01
+                    value="{{ $order->total_amount }}" style="background: rgba(111, 78, 55, 0.1);
                     value="{{ old('total_amount', $order->total_amount) }}" style="background: rgba(111, 78, 55, 0.1);">
             </div>
 
             <div class="form-group">
                 <label for="expected_delivery_date">Expected Delivery Date</label>
                 <input type="date" name="expected_delivery_date" id="expected_delivery_date" class="form-control"
+
+                    required
+                    value="{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('Y-m-d') : '' }}">
                     {{ $order->order_status === 'pending' ? 'required' : 'readonly' }}
                     value="{{ old('expected_delivery_date', $order->expected_delivery_date ? $order->expected_delivery_date->format('Y-m-d') : '') }}"
                     style="{{ $order->order_status !== 'pending' ? 'background: rgba(111, 78, 55, 0.1);' : '' }}">
@@ -119,6 +134,16 @@
             <div class="form-group">
                 <label for="order_status">Order Status</label>
                 <select name="order_status" id="order_status" class="form-control" required>
+
+                    {{-- <option value="pending" {{ $order->order_status == 'pending' ? 'selected' : '' }}>Pending</option>
+                     <option value="confirmed" {{ $order->order_status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                    <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>Processing</option>
+                    <option value="shipped" {{ $order->order_status == 'shipped' ? 'selected' : '' }}>Shipped</option> --}}
+                    <option value="delivered" {{ $order->order_status == 'delivered' ? 'selected' : '' }}>Delivered
+                    </option>
+                    <option value="cancelled" {{ $order->order_status == 'cancelled' ? 'selected' : '' }}>Cancelled
+                    </option>
+
                     @php
                         $allowedTransitions = [
                             'pending' => ['cancelled'],
@@ -134,6 +159,7 @@
                         <option value="{{ $status }}" {{ $currentStatus == $status ? 'selected' : '' }}>
                             {{ ucfirst($status) }}</option>
                     @endforeach
+
                 </select>
                 @error('order_status')
                     <div class="text-danger">{{ $message }}</div>
@@ -143,9 +169,13 @@
             <div class="form-group">
                 <label for="actual_delivery_date">Actual Delivery Date</label>
                 <input type="date" name="actual_delivery_date" id="actual_delivery_date" class="form-control"
+
+                    value="{{ $order->actual_delivery_date ? $order->actual_delivery_date->format('Y-m-d') : '' }}">
+
                     {{ $order->order_status === 'pending' ? '' : 'readonly' }}
                     value="{{ old('actual_delivery_date', $order->actual_delivery_date ? $order->actual_delivery_date->format('Y-m-d') : '') }}"
                     style="{{ $order->order_status !== 'pending' ? 'background: rgba(111, 78, 55, 0.1);' : '' }}">
+
                 <small class="form-text text-muted">Fill this when order status is set to "delivered"</small>
                 @error('actual_delivery_date')
                     <div class="text-danger">{{ $message }}</div>
@@ -155,6 +185,9 @@
             <div class="form-group">
                 <label for="notes">Notes</label>
                 <textarea name="notes" id="notes" class="form-control" rows="3"
+
+                    placeholder="Additional notes about the order">{{ $order->notes }}</textarea>
+
                     placeholder="Additional notes about the order" {{ $order->order_status !== 'pending' ? 'readonly' : '' }}
                     style="{{ $order->order_status !== 'pending' ? 'background: rgba(111, 78, 55, 0.1);' : '' }}">{{ old('notes', $order->notes) }}</textarea>
                 @error('notes')
@@ -215,6 +248,76 @@
             const unitPrice = parseFloat(document.getElementById('unit_price').value) || 0;
             const total = (quantity * unitPrice).toFixed(2);
             document.getElementById('total_amount').value = total;
+
+        }
+
+        // Auto-fill actual delivery date when status is set to delivered
+        document.getElementById('order_status').addEventListener('change', function() {
+            const actualDeliveryField = document.getElementById('actual_delivery_date');
+            if (this.value === 'delivered' && !actualDeliveryField.value) {
+                actualDeliveryField.value = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        // Calculate initial total
+        calculateTotal();
+    </script>
+
+    <style>
+        /* Form Styles */
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--coffee-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(111, 78, 55, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--coffee-medium);
+            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-light);
+        }
+
+        .form-control[readonly] {
+            background: rgba(111, 78, 55, 0.1);
+            cursor: not-allowed;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-text {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+
         }
 
         // Auto-fill actual delivery date when status is set to delivered
@@ -340,10 +443,13 @@
             color: #dc3545;
         }
 
+
+
         .alert-info {
             background: rgba(40, 167, 69, 0.1);
             border: 1px solid rgba(40, 167, 69, 0.2);
             color: #28a745;
         }
+
     </style>
 @endsection
