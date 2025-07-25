@@ -77,39 +77,7 @@ class OrderController extends Controller
         return view('farmers.orders.edit', compact('order', 'processors'));
     }
 
-    public function update(Request $request, $id)
-    {
-        $user = Auth::user();
-        $company = $user->company;
-        $request->validate([
-            'order_status' => 'required|string',
-            'actual_delivery_date' => 'nullable|date',
-        ]);
-        $order = FarmerOrder::where('farmer_company_id', $company->company_id)->findOrFail($id);
-        $previous_status = $order->order_status;
-        $order->update([
-            'order_status' => $request->order_status,
-            'actual_delivery_date' => $request->actual_delivery_date,
-        ]);
-        // Deduct from inventory if status changed from pending to any other status
-        if ($previous_status === 'pending' && $request->order_status !== 'pending') {
-            $harvest = \App\Models\Farmer\FarmerHarvest::where('company_id', $order->farmer_company_id)
-                ->where('coffee_variety', $order->coffee_variety)
-                ->where('processing_method', $order->processing_method)
-                ->where('grade', $order->grade)
-                ->orderBy('harvest_date', 'desc')
-                ->first();
-            if ($harvest) {
-                $harvest->available_quantity_kg -= $order->quantity_kg;
-                if ($harvest->available_quantity_kg < 0) {
-                    $harvest->available_quantity_kg = 0; // Prevent negative inventory
-                }
-                $harvest->save();
-            }
-        }
-        return redirect()->route('farmers.inventory.index')->with('success', 'Order status updated successfully. Inventory updated.');
-    }
-
+    
     public function destroy($id)
     {
         $user = Auth::user();
