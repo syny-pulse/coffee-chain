@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Processor;
 
 use App\Http\Controllers\Controller;
 use App\Models\FarmerOrder;
-use App\Models\Company;
+use App\Models\ProcessorRawMaterialInventory;
 use App\Models\Pricing;
+use App\Models\Company;
+use App\Models\Farmer\FarmerHarvest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class FarmerOrderController extends Controller
 {
@@ -34,7 +37,7 @@ class FarmerOrderController extends Controller
         ]);
 
         // Find farmers who have pricing for the selected variety
-        $farmers = \App\Models\Company::where('company_type', 'farmer')
+        $farmers = Company::where('company_type', 'farmer')
             ->where('acceptance_status', 'accepted')
             ->whereHas('pricings', function($q) use ($request) {
                 $q->where('coffee_variety', $request->coffee_variety);
@@ -102,75 +105,184 @@ class FarmerOrderController extends Controller
         return view('processor.order.farmer_order.edit', compact('order'));
     }
 
-    public function update(Request $request, FarmerOrder $order)
+    public function update(Request $request, $id)
     {
-        $user = Auth::user();
-        if ($order->processor_company_id != $user->company_id) {
-            abort(403, 'Unauthorized access to this order.');
-        }
-
-        $request->validate([
-            'quantity_kg' => 'required|numeric|min:0.01',
-            'unit_price' => 'required|numeric|min:0.01',
-            'expected_delivery_date' => 'required|date',
-            'order_status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
-            'actual_delivery_date' => 'nullable|date',
-            'notes' => 'nullable|string',
-        ]);
-
+        $order = FarmerOrder::findOrFail($id);
         $previous_status = $order->order_status;
-        $order->update([
-            'quantity_kg' => $request->quantity_kg,
-            'unit_price' => $request->unit_price,
-            'total_amount' => $request->quantity_kg * $request->unit_price,
-            'expected_delivery_date' => $request->expected_delivery_date,
-            'order_status' => $request->order_status,
-            'actual_delivery_date' => $request->actual_delivery_date,
-            'notes' => $request->notes,
+        $user_role = Auth::user()->user_type;
+
+        // Define allowed status transitions
+        $allowedTransitions = [
+            'pending' => ['confirmed', 'cancelled'], // From pending
+            'confirmed' => ['shipped', 'cancelled'], // From confirmed
+            'shipped' => ['delivered', 'cancelled'], // From shipped
+            'delivered' => [], // No transitions from delivered
+            'cancelled' => ['pending'], // From cancelled
+        ];
+
+        // Role-based status restrictions
+        $roleStatusRestrictions = [
+            'farmer' => ['pending', 'confirmed', 'shipped', 'cancelled'],
+            'processor' => ['pending', 'delivered', 'cancelled'],
+        ];
+
+        // Validate status and role
+        $request->validate([
+            'order_status' => [
+                'required',
+                'in:' . implode(',', array_unique(array_merge([$previous_status], $allowedTransitions[$previous_status] ?? []))),
+                function ($attribute, $value, $fail) use ($user_role, $roleStatusRestrictions, $previous_status) {
+                    if (!in_array($value, $roleStatusRestrictions[$user_role])) {
+                        $fail("Invalid status for $user_role: $value");
+                    }
+                    if ($value === 'confirmed' && $user_role !== 'farmer') {
+                        $fail('Only farmers can confirm orders.');
+                    }
+                },
+            ],
         ]);
 
-        // If status changed to delivered, update processor raw material inventory
-        if ($previous_status !== 'delivered' && $request->order_status === 'delivered') {
-            $inventory = \App\Models\ProcessorRawMaterialInventory::where([
-                'processor_company_id' => $order->processor_company_id,
-                'coffee_variety' => $order->coffee_variety,
-                'processing_method' => $order->processing_method,
-                'grade' => $order->grade,
-            ])->first();
-
-            if ($inventory) {
-                $inventory->current_stock_kg += $order->quantity_kg;
-                $inventory->available_stock_kg += $order->quantity_kg;
-                $inventory->last_updated = now();
-                $inventory->save();
-            } else {
-                \App\Models\ProcessorRawMaterialInventory::create([
-                    'processor_company_id' => $order->processor_company_id,
-                    'coffee_variety' => $order->coffee_variety,
-                    'processing_method' => $order->processing_method,
-                    'grade' => $order->grade,
-                    'current_stock_kg' => $order->quantity_kg,
-                    'reserved_stock_kg' => 0,
-                    'available_stock_kg' => $order->quantity_kg,
-                    'average_cost_per_kg' => $order->unit_price,
-                    'last_updated' => now(),
-                ]);
-            }
+        // Role-based validation for processor fields (only in pending status)
+        if ($user_role === 'processor' && $order->order_status === 'pending') {
+            $request->validate([
+                'quantity_kg' => 'required|numeric|min:0.01',
+                'unit_price' => 'required|numeric|min:0.01',
+                'expected_delivery_date' => 'required|date',
+                'actual_delivery_date' => 'nullable|date',
+                'notes' => 'nullable|string',
+            ]);
         }
 
-        return redirect()->route('processor.order.farmer_order.index')->with('success', 'Farmer order updated successfully.');
+        try {
+            DB::transaction(function () use ($request, $order, $previous_status, $user_role) {
+                if ($request->order_status === 'confirmed' && $previous_status !== 'confirmed') {
+                    // Only farmers can reach this due to validation
+                    $availableHarvests = FarmerHarvest::where([
+                        'company_id' => $order->farmer_company_id,
+                        'coffee_variety' => $order->coffee_variety,
+                        'grade' => $order->grade,
+                        'availability_status' => 'available',
+                    ])
+                    ->whereRaw('available_quantity_kg > reserved_quantity_kg')
+                    ->orderBy('harvest_date', 'asc')
+                    ->get();
+
+                    $totalUnreserved = $availableHarvests->sum(function ($harvest) {
+                        return $harvest->available_quantity_kg - $harvest->reserved_quantity_kg;
+                    });
+
+                    $quantityToCheck = $user_role === 'processor' && $order->order_status === 'pending' ? $request->quantity_kg : $order->quantity_kg;
+                    if ($totalUnreserved < $quantityToCheck) {
+                        throw new \Exception("Insufficient unreserved harvest quantity ($totalUnreserved kg available, $quantityToCheck kg required).");
+                    }
+
+                    // Allocate harvests
+                    $remainingQty = $quantityToCheck;
+                    foreach ($availableHarvests as $harvest) {
+                        if ($remainingQty <= 0) break;
+                        $availableForThisHarvest = $harvest->available_quantity_kg - $harvest->reserved_quantity_kg;
+                        $allocate = min($availableForThisHarvest, $remainingQty);
+                        if ($allocate > 0) {
+                            $order->harvests()->attach($harvest->harvest_id, ['allocated_quantity_kg' => $allocate]);
+                            $harvest->reserved_quantity_kg += $allocate;
+                            $harvest->availability_status = ($harvest->available_quantity_kg <= 0) ? 'sold_out' :
+                                ($harvest->available_quantity_kg == $harvest->reserved_quantity_kg ? 'reserved' :
+                                ($harvest->reserved_quantity_kg > 0 ? 'reserved' : 'available'));
+                            $harvest->save();
+                            $remainingQty -= $allocate;
+                        }
+                    }
+                } elseif ($request->order_status === 'cancelled' && $previous_status === 'confirmed') {
+                    // Allow both farmer and processor to cancel
+                    foreach ($order->harvests as $harvest) {
+                        $allocatedQty = $harvest->pivot->allocated_quantity_kg;
+                        $harvest->reserved_quantity_kg -= $allocatedQty;
+                        $harvest->availability_status = ($harvest->available_quantity_kg > $harvest->reserved_quantity_kg) ? 'available' :
+                            ($harvest->available_quantity_kg <= 0 ? 'sold_out' : 'reserved');
+                        $harvest->save();
+                    }
+                    $order->harvests()->detach();
+                } elseif ($request->order_status === 'delivered' && $previous_status !== 'delivered') {
+                    if ($user_role !== 'processor') {
+                        throw new \Exception('Only processors can set the status to delivered.');
+                    }
+
+                    foreach ($order->harvests as $harvest) {
+                        $allocatedQty = $harvest->pivot->allocated_quantity_kg;
+                        $harvest->reserved_quantity_kg -= $allocatedQty;
+                        $harvest->available_quantity_kg -= $allocatedQty;
+                        $harvest->availability_status = ($harvest->available_quantity_kg <= 0) ? 'sold_out' :
+                            ($harvest->available_quantity_kg == $harvest->reserved_quantity_kg ? 'reserved' :
+                            ($harvest->reserved_quantity_kg > 0 ? 'reserved' : 'available'));
+                        $harvest->save();
+                    }
+
+                    // Update processor raw material inventory
+                    $inventory = ProcessorRawMaterialInventory::where([
+                        'processor_company_id' => $order->processor_company_id,
+                        'coffee_variety' => $order->coffee_variety,
+                        'processing_method' => $order->processing_method,
+                        'grade' => $order->grade,
+                    ])->first();
+
+                    if ($inventory) {
+                        $inventory->current_stock_kg += $order->quantity_kg;
+                        $inventory->available_stock_kg += $order->quantity_kg;
+                        $inventory->last_updated = now();
+                        $inventory->save();
+                    } else {
+                        ProcessorRawMaterialInventory::create([
+                            'processor_company_id' => $order->processor_company_id,
+                            'coffee_variety' => $order->coffee_variety,
+                            'processing_method' => $order->processing_method,
+                            'grade' => $order->grade,
+                            'current_stock_kg' => $order->quantity_kg,
+                            'reserved_stock_kg' => 0,
+                            'available_stock_kg' => $order->quantity_kg,
+                            'average_cost_per_kg' => $order->unit_price,
+                            'last_updated' => now(),
+                        ]);
+                    }
+                    $order->actual_delivery_date = now();
+                }
+
+                // Update order fields
+                $updateData = ['order_status' => $request->order_status];
+                if ($user_role === 'processor' && $order->order_status === 'pending') {
+                    $updateData = array_merge($updateData, [
+                        'quantity_kg' => $request->quantity_kg,
+                        'unit_price' => $request->unit_price,
+                        'expected_delivery_date' => $request->expected_delivery_date,
+                        'actual_delivery_date' => $request->actual_delivery_date,
+                        'notes' => $request->notes,
+                        'total_amount' => $request->quantity_kg * $request->unit_price,
+                    ]);
+                }
+                $order->update($updateData);
+            });
+
+            // Redirect to appropriate dashboard
+            if ($user_role === 'farmer') {
+                return redirect()->route('farmers.inventory.index')->with('success', 'Order updated successfully.');
+            } elseif ($user_role === 'processor') {
+                return redirect()->route('processor.order.farmer_order.index')->with('success', 'Order updated successfully.');
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors(['order_status' => $e->getMessage()]);
+        }
     }
+    //
 
     public function getPrice(Request $request)
     {
         try {
             // Check if user is authenticated
             if (!Auth::check()) {
-                \Log::error('User not authenticated for getPrice request');
+                Log::error('User not authenticated for getPrice request');
                 return response()->json(['error' => 'Authentication required.'], 401);
             }
 
-            \Log::info('getPrice method called by user:', ['user_id' => Auth::id(), 'user_type' => Auth::user()->user_type]);
+            Log::info('getPrice method called by user:', ['user_id' => Auth::id(), 'user_type' => Auth::user()->user_type]);
 
             $request->validate([
                 'farmer_company_id' => 'required|exists:companies,company_id',
@@ -182,7 +294,7 @@ class FarmerOrderController extends Controller
             $grade = strtolower($request->grade);
 
             // Log the search parameters for debugging
-            \Log::info('Searching for pricing:', [
+            Log::info('Searching for pricing:', [
                 'company_id' => $request->farmer_company_id,
                 'coffee_variety' => $coffee_variety,
                 'grade' => $grade
@@ -194,10 +306,10 @@ class FarmerOrderController extends Controller
                 ->first();
 
             if ($pricing) {
-                \Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
+                Log::info('Pricing found:', ['unit_price' => $pricing->unit_price]);
                 return response()->json(['unit_price' => $pricing->unit_price]);
             } else {
-                \Log::warning('No pricing found for:', [
+                Log::warning('No pricing found for:', [
                     'company_id' => $request->farmer_company_id,
                     'coffee_variety' => $coffee_variety,
                     'grade' => $grade
@@ -205,7 +317,7 @@ class FarmerOrderController extends Controller
                 return response()->json(['error' => 'No pricing found for the selected options.'], 404);
             }
         } catch (\Exception $e) {
-            \Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Error in getPrice:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'An error occurred while fetching the price.'], 500);
         }
     }
