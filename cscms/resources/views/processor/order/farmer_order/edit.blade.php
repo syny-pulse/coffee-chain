@@ -165,8 +165,14 @@
             @if ($order->order_status === 'pending')
                 <div class="alert alert-info">
                     Available unreserved quantity for {{ ucfirst($order->coffee_variety) }},
-                    {{ ucfirst(str_replace('_', ' ', $order->grade)) }}:
-                    {{ \App\Models\Farmer\FarmerHarvest::where('company_id', $order->farmer_company_id)->where('coffee_variety', $order->coffee_variety)->where('grade', $order->grade)->where('availability_status', 'available')->whereRaw('available_quantity_kg > reserved_quantity_kg')->sum(DB::raw('available_quantity_kg - reserved_quantity_kg')) }}
+                    {{ ucfirst(str_replace('_', ' ', $order->grade)) }}, {{ ucfirst($order->processing_method) }}:
+                    {{ \App\Models\Farmer\FarmerHarvest::where([
+                        'company_id' => $order->farmer_company_id,
+                        'coffee_variety' => $order->coffee_variety,
+                        'processing_method' => $order->processing_method,
+                        'grade' => $order->grade,
+                        'availability_status' => 'available',
+                    ])->whereRaw('available_quantity_kg > reserved_quantity_kg')->sum(DB::raw('available_quantity_kg - reserved_quantity_kg')) }}
                     kg
                 </div>
             @endif
@@ -177,7 +183,8 @@
                     <ul>
                         @foreach ($order->harvests as $harvest)
                             <li>Harvest #{{ $harvest->harvest_id }} ({{ ucfirst($harvest->coffee_variety) }},
-                                {{ ucfirst(str_replace('_', ' ', $harvest->grade)) }}):
+                                {{ ucfirst(str_replace('_', ' ', $harvest->grade)) }},
+                                {{ ucfirst($harvest->processing_method) }}):
                                 {{ $harvest->pivot->allocated_quantity_kg }} kg (Reserved:
                                 {{ $harvest->reserved_quantity_kg }} kg,
                                 Available: {{ $harvest->available_quantity_kg }} kg, Status:
