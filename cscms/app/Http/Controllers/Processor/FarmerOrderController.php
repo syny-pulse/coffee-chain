@@ -263,7 +263,7 @@ class FarmerOrderController extends Controller
 
             // Redirect to appropriate dashboard
             if ($user_role === 'farmer') {
-                return redirect()->route('farmers.inventory.index')->with('success', 'Order updated successfully.');
+                return redirect()->route('farmers.orders.index')->with('success', 'Order updated successfully.');
             } elseif ($user_role === 'processor') {
                 return redirect()->route('processor.order.farmer_order.index')->with('success', 'Order updated successfully.');
             }

@@ -3,6 +3,7 @@
 namespace App\Farmers\Models;
 
 use App\Models\Company;
+use App\Models\Farmer\FarmerHarvest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,6 +27,7 @@ class FarmerOrder extends Model
         'actual_delivery_date',
         'order_status',
         'notes',
+        'reserved_quantity_kg'
     ];
 
     protected $casts = [
@@ -38,6 +40,7 @@ class FarmerOrder extends Model
         'quantity_kg' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'reserved_quantity_kg' => 'decimal:2',
     ];
 
     public function company()
@@ -48,6 +51,13 @@ class FarmerOrder extends Model
     public function processor()
     {
         return $this->belongsTo(Company::class, 'processor_company_id', 'company_id');
+    }
+
+    public function harvests()
+    {
+        return $this->belongsToMany(FarmerHarvest::class, 'farmer_order_harvest', 'order_id', 'harvest_id')
+                    ->withPivot('allocated_quantity_kg')
+                    ->withTimestamps();
     }
 
 }

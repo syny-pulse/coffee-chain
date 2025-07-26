@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Farmer\FarmerHarvest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +23,7 @@ class FarmerOrder extends Model
         'actual_delivery_date',
         'order_status',
         'notes',
+        'reserved_quantity_kg',
     ];
 
     protected $casts = [
@@ -35,6 +36,7 @@ class FarmerOrder extends Model
         'expected_delivery_date' => 'date',
         'actual_delivery_date' => 'date',
         'order_status' => 'string',
+        'reserved_quantity_kg' => 'decimal:2',
     ];
 
     public function farmer(): BelongsTo
@@ -50,6 +52,13 @@ class FarmerOrder extends Model
      public function employee()
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
+    }
+
+    public function harvests()
+    {
+        return $this->belongsToMany(FarmerHarvest::class, 'farmer_order_harvest', 'order_id', 'harvest_id')
+                    ->withPivot('allocated_quantity_kg')
+                    ->withTimestamps();
     }
 
     /**
