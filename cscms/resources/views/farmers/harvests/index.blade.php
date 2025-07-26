@@ -12,7 +12,7 @@
 @endsection
 
 @section('content')
-    @if(isset($harvests) && count($harvests) > 0)
+    @if (isset($harvests) && count($harvests) > 0)
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">
@@ -20,7 +20,7 @@
                     All Harvests
                 </h2>
             </div>
-            
+
             <div class="table-container">
                 <table class="table">
                     <thead>
@@ -30,13 +30,14 @@
                             <th>Grade</th>
                             <th>Quantity (kg)</th>
                             <th>Available (kg)</th>
+                            <th>Reserved (kg)</th>
                             <th>Harvest Date</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($harvests as $harvest)
+                        @foreach ($harvests as $harvest)
                             @include('farmers.partials.table-row', [
                                 'item' => $harvest,
                                 'columns' => [
@@ -45,13 +46,23 @@
                                     ['field' => 'grade'],
                                     ['field' => 'quantity_kg', 'type' => 'number'],
                                     ['field' => 'available_quantity_kg', 'type' => 'number'],
+                                    ['field' => 'reserved_quantity_kg', 'type' => 'number'],
                                     ['field' => 'harvest_date', 'type' => 'date'],
-                                    ['field' => 'availability_status', 'type' => 'status']
+                                    ['field' => 'availability_status', 'type' => 'status'],
                                 ],
                                 'actions' => [
-                                    ['type' => 'link', 'url' => route('farmers.harvests.edit', $harvest['harvest_id']), 'icon' => 'edit', 'style' => 'outline', 'title' => 'Edit'],
-                                    ['type' => 'delete', 'url' => route('farmers.harvests.destroy', $harvest['harvest_id'])]
-                                ]
+                                    [
+                                        'type' => 'link',
+                                        'url' => route('farmers.harvests.edit', $harvest['harvest_id']),
+                                        'icon' => 'edit',
+                                        'style' => 'outline',
+                                        'title' => 'Edit',
+                                    ],
+                                    [
+                                        'type' => 'delete',
+                                        'url' => route('farmers.harvests.destroy', $harvest['harvest_id']),
+                                    ],
+                                ],
                             ])
                         @endforeach
                     </tbody>
